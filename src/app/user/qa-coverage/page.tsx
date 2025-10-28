@@ -34,8 +34,8 @@ export default function QACoveragePage() {
   }, [year, filteredCoverage]);
 
   return (
-    <div className="min-h-dvh bg-gray-50">
-      <header className="sticky top-0 z-40 w-full border-b border-indigo-100/70 bg-white/90 backdrop-blur">
+    <div className="min-h-screen w-full bg-gray-50">
+        <header className="sticky top-0 z-40 w-full border-b border-indigo-100/70 bg-white/90 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -68,8 +68,7 @@ export default function QACoveragePage() {
           </div>
         </div>
       </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-6">
+       <main className="w-full px-8 py-8">
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard
             icon={<Layers3 className="h-5 w-5" />}

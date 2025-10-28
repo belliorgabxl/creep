@@ -83,6 +83,7 @@ export function Sidebar() {
         w-14 hover:w-72 transition-[width] duration-200 ease-out
         top-0
         h-[100dvh]
+        z-[80]
       "
       aria-label="Sidebar"
     >
