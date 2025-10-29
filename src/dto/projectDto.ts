@@ -16,3 +16,13 @@ export interface Project {
   strategies?: string[];
   attachmentsCount?: number;
 }
+
+export type Department = {
+  id: string
+  code: string
+  name: string
+  head?: string
+  employees?: number
+  projectsCount?: number
+  updatedAt?: string
+}

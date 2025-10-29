@@ -9,7 +9,7 @@ export function ProjectCard({ p }: { p: Project }) {
 
   return (
     <Link
-      href={`/user/projects/${p.id}`}
+      href={`/user/projects/details/${p.id}`}
       className="group block rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
     >
 
