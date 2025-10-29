@@ -114,7 +114,7 @@ export default function Page() {
                   value={projects.filter((p) => p.status === "on_hold").length}
                 />
               </section>
-              <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
                 {projects.slice(0, 9).map((p) => (
                   <ProjectCard key={p.id} p={p} />
                 ))}
