@@ -36,7 +36,7 @@ export function ActivityBudgetTable() {
     <div className="space-y-3">
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-300">
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-100 lg:text-base text-sm">
             <tr>
               <th className="border border-gray-300 px-4 py-2 text-center w-1/2">
                 รายการ

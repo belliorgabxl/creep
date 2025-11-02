@@ -33,7 +33,7 @@ export default function CreateProjectPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-0">
+    <main className="lg:mx-auto lg:max-w-7xl w-full px-2 lg:px-6 py-0">
       <h1 className="text-2xl font-semibold text-gray-900 mb-1">
         สร้างโปรเจ็คใหม่
       </h1>
@@ -49,7 +49,7 @@ export default function CreateProjectPage() {
               }`}
             />
             <p
-              className={`text-[10px] mt-1 text-center ${
+              className={`text-[10px] lg:block hidden mt-1 text-center ${
                 index === step ? "text-indigo-700 font-medium" : "text-gray-500"
               }`}
             >
@@ -71,8 +71,8 @@ export default function CreateProjectPage() {
               className="space-y-4"
             >
               <h2 className="font-medium text-gray-800">ข้อมูลพื้นฐาน</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex gap-3 items-center">
+              <div className="grid lg:grid-cols-2 gap-4">
+                <div className="lg:flex grid  gap-3 items-center">
                   <label className="text-sm text-gray-700">
                     ชื่อแผนการ / โครงการ
                   </label>
@@ -81,7 +81,7 @@ export default function CreateProjectPage() {
                     placeholder="Project name"
                   />
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="lg:flex grid  gap-3 items-center">
                   <label className="text-sm text-gray-700">ประเภทโครงการ</label>
                   <select className="px-4 py-1 border rounded-lg border-gray-300">
                     <option>เลือกประเภท</option>
@@ -89,7 +89,7 @@ export default function CreateProjectPage() {
                     <option>โครงการพิเศษ / พัฒนา</option>
                   </select>
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="lg:flex grid  gap-3 items-center">
                   <label className="text-sm text-gray-700">
                     หน่วยงาน / แผนกที่รับผิดชอบ
                   </label>
@@ -98,7 +98,7 @@ export default function CreateProjectPage() {
                     placeholder="Department"
                   />
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="lg:flex grid gap-3 items-center">
                   <label className="text-sm text-gray-700">
                     ผู้รับผิดชอบโครงการ
                   </label>
@@ -122,7 +122,7 @@ export default function CreateProjectPage() {
                 ความสอดคล้องเชิงยุทธศาสตร์
               </h2>
               <div className="grid gap-4">
-                <div className="flex  gap-3 items-center">
+                <div className="lg:flex grid   gap-3 items-center">
                   <label className="text-sm text-gray-700">
                     สอดคล้องกับแผนยุทธศาสตร์ของสถานศึกษา
                   </label>
@@ -131,19 +131,21 @@ export default function CreateProjectPage() {
                     placeholder="กรอกข้อมูล..."
                   />
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="lg:flex grid  gap-3 items-center">
                   <label className="text-sm text-gray-700">
-                    สอดคล้องกับนโยบาย /
-                    ยุทธศาสตร์ของสำนักงานคณะกรรมการการอาชีวศึกษา (สอศ.)
+                    สอดคล้องกับนโยบาย / ยุทธศาสตร์ของสำนักงาน
+                    <br className="lg:hidden block" />
+                    คณะกรรมการการอาชีวศึกษา (สอศ.)
                   </label>
                   <input
                     className="px-4 py-1 border rounded-lg border-gray-300"
                     placeholder="กรอกข้อมูล..."
                   />
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="lg:flex grid gap-3 items-center">
                   <label className="text-sm text-gray-700">
                     สอดคล้องกับตัวชี้วัดงานประกันคุณภาพภายใน
+                    <br className="lg:hidden block" />
                     (ระบุมาตรฐานและตัวบ่งชี้)
                   </label>
                   <input
@@ -214,8 +216,8 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <div className="flex gap-5 items-center justify-start">
-                <div className="flex gap-3 items-center">
+              <div className=" grid lg:flex gap-5 items-center justify-start">
+                <div className="grid lg:flex gap-3 items-center">
                   <label className="text-sm text-gray-700">วันเริ่มต้น</label>
                   <input
                     type="date"
@@ -223,17 +225,17 @@ export default function CreateProjectPage() {
                     placeholder="3"
                   />
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="grid lg:flex gap-3 items-center">
                   <label className="text-sm text-gray-700">วันที่สิ้นสุด</label>
                   <input
                     type="date"
-                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    className="px-4 py-1  border rounded-lg border-gray-300"
                     placeholder="3"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 items-center">
+              <div className="grid lg:flex gap-3 items-center">
                 <label className="text-sm text-gray-700">
                   ระยะเวลา (เดือน)
                 </label>
@@ -268,19 +270,21 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-6"
             >
-              <div className="flex flex-col gap-2">
-                <label className="font-medium">
-                  งบประมาณทั้งหมด :
-                  <input
-                    type="number"
-                    placeholder="ระบุจำนวนเงิน"
-                    className="ml-2 w-40 border-b border-gray-400 focus:outline-none text-center"
-                  />{" "}
-                  บาท
-                </label>
+              <div className="flex flex-col lg:gap-2 gap-4">
+                <div className="grid lg:flex lg:gap-2 gap-3">
+                  <label className="font-medium ">งบประมาณทั้งหมด</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="ระบุจำนวนเงิน"
+                      className="ml-2 w-40 border-b border-gray-400 focus:outline-none text-center"
+                    />
+                    บาท
+                  </div>
+                </div>
 
-                <div className="flex flex-wrap gap-4">
-                  <span className="font-medium">แหล่งงบประมาณ :</span>
+                <div className="grid lg:flex flex-wrap gap-4">
+                  <span className="font-medium">แหล่งงบประมาณ </span>
                   <label className="flex items-center gap-1">
                     <input type="checkbox" className="h-4 w-4" />
                     <span>งบสถานศึกษา</span>
@@ -289,9 +293,11 @@ export default function CreateProjectPage() {
                     <input type="checkbox" className="h-4 w-4" />
                     <span>เงินรายได้</span>
                   </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" className="h-4 w-4" />
-                    <span>ภายนอก (ระบุหน่วยงาน)</span>
+                  <label className="grid lg:flex items-center gap-1">
+                    <div className="flex gap-2 item-center">
+                      <input type="checkbox" className="h-4 w-4" />
+                      <span>ภายนอก (ระบุหน่วยงาน)</span>
+                    </div>
                     <input
                       type="text"
                       placeholder="เช่น กระทรวงศึกษา"
