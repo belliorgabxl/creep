@@ -3,23 +3,37 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Save, Send } from "lucide-react";
+import { ActivityBudgetTable } from "@/components/project/ActivityTable";
+import KPIActivitiesTable from "@/components/project/KPITable";
+import FollowUpEvaluationForm from "@/components/project/FollowUpEvaluationForm";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
-  "วัตถุประสงค์ / เป้าหมาย",
+  "ความสอดคล้องเชิงยุทธศาสตร์",
+  "หลักการและเหตุผล",
+  "วัตถุประสงค์ของโครงการ",
+  "เป้าหมายของโครงการ",
+  "ระยะเวลาดำเนินงาน",
+  "สถานที่ดำเนินงาน",
+  "งบประมาณ",
   "ตัวชี้วัดความสำเร็จ (KPI)",
-  "งบประมาณที่ขอ",
-  "QA & Strategy Alignment",
-  "แนบไฟล์เอกสาร",
+  "การติดตามและประเมินผล",
+  "ผลที่คาดว่าจะได้รับ",
+  "ข้อเสนอแนะ",
+  "การอนุมัติและลงนาม",
 ];
 
 export default function CreateProjectPage() {
   const [step, setStep] = useState(0);
-
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
+
+  const [rowsKPI, setRowKPI] = useState([
+    { id: 1, activity: "", period: "", owner: "" },
+  ]);
+
   return (
-    <main className="mx-auto max-w-5xl px-6 py-0">
+    <main className="mx-auto max-w-7xl px-6 py-0">
       <h1 className="text-2xl font-semibold text-gray-900 mb-1">
         สร้างโปรเจ็คใหม่
       </h1>
@@ -35,7 +49,7 @@ export default function CreateProjectPage() {
               }`}
             />
             <p
-              className={`text-[11px] mt-1 text-center ${
+              className={`text-[10px] mt-1 text-center ${
                 index === step ? "text-indigo-700 font-medium" : "text-gray-500"
               }`}
             >
@@ -59,7 +73,9 @@ export default function CreateProjectPage() {
               <h2 className="font-medium text-gray-800">ข้อมูลพื้นฐาน</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">ชื่อโครงการ</label>
+                  <label className="text-sm text-gray-700">
+                    ชื่อแผนการ / โครงการ
+                  </label>
                   <input
                     className="px-4 py-1 border rounded-lg border-gray-300"
                     placeholder="Project name"
@@ -69,13 +85,13 @@ export default function CreateProjectPage() {
                   <label className="text-sm text-gray-700">ประเภทโครงการ</label>
                   <select className="px-4 py-1 border rounded-lg border-gray-300">
                     <option>เลือกประเภท</option>
-                    <option>Internal</option>
-                    <option>External</option>
+                    <option>แผนงานประจำ</option>
+                    <option>โครงการพิเศษ / พัฒนา</option>
                   </select>
                 </div>
                 <div className="flex gap-3 items-center">
                   <label className="text-sm text-gray-700">
-                    แผนกที่เกี่ยวข้อง
+                    หน่วยงาน / แผนกที่รับผิดชอบ
                   </label>
                   <input
                     className="px-4 py-1 border rounded-lg border-gray-300"
@@ -84,12 +100,11 @@ export default function CreateProjectPage() {
                 </div>
                 <div className="flex gap-3 items-center">
                   <label className="text-sm text-gray-700">
-                    ระยะเวลา (เดือน)
+                    ผู้รับผิดชอบโครงการ
                   </label>
                   <input
-                    type="number"
                     className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="3"
+                    placeholder="Department"
                   />
                 </div>
               </div>
@@ -104,7 +119,66 @@ export default function CreateProjectPage() {
               className="space-y-4"
             >
               <h2 className="font-medium text-gray-800">
-                วัตถุประสงค์ / เป้าหมาย
+                ความสอดคล้องเชิงยุทธศาสตร์
+              </h2>
+              <div className="grid gap-4">
+                <div className="flex  gap-3 items-center">
+                  <label className="text-sm text-gray-700">
+                    สอดคล้องกับแผนยุทธศาสตร์ของสถานศึกษา
+                  </label>
+                  <input
+                    className="px-4  py-1 border rounded-lg border-gray-300"
+                    placeholder="กรอกข้อมูล..."
+                  />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">
+                    สอดคล้องกับนโยบาย /
+                    ยุทธศาสตร์ของสำนักงานคณะกรรมการการอาชีวศึกษา (สอศ.)
+                  </label>
+                  <input
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="กรอกข้อมูล..."
+                  />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">
+                    สอดคล้องกับตัวชี้วัดงานประกันคุณภาพภายใน
+                    (ระบุมาตรฐานและตัวบ่งชี้)
+                  </label>
+                  <input
+                    className="px-4  py-1 border rounded-lg border-gray-300"
+                    placeholder="กรอกข้อมูล..."
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+          {step === 2 && (
+            <motion.div
+              key="step-3"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">หลักการและเหตุผล</h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="ระบุหลักการและเหตุผล..."
+              />
+            </motion.div>
+          )}
+          {step === 3 && (
+            <motion.div
+              key="step-4"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">
+                วัตถุประสงค์ของโครงการ
               </h2>
               <textarea
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
@@ -112,123 +186,253 @@ export default function CreateProjectPage() {
               />
             </motion.div>
           )}
-
-          {step === 2 && (
-            <motion.div
-              key="step-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <h2 className="font-medium text-gray-800 mb-2">
-                ตัวชี้วัดความสำเร็จ (KPI)
-              </h2>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-3">
-                    <input
-                      className="input px-3 py-1 flex-1 border border-gray-300 rounded-lg"
-                      placeholder={`ตัวชี้วัดที่ ${i}`}
-                    />
-                    <input
-                      type="number"
-                      className="px-3 py-1 border border-gray-300 rounded-lg w-32"
-                      placeholder="เป้าหมาย"
-                    />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {step === 3 && (
-            <motion.div
-              key="step-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <h2 className="font-medium text-gray-800 mb-2">งบประมาณที่ขอ</h2>
-              <input
-                type="number"
-                className="px-3 py-1 border border-gray-300 rounded-lg w-64"
-                placeholder="จำนวนเงิน (บาท)"
-              />
-              <p className="text-xs text-gray-500 mt-1">*ระบุยอดรวมโดยประมาณ</p>
-            </motion.div>
-          )}
-
           {step === 4 && (
             <motion.div
               key="step-5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800 mb-2">
-                QA & Strategy Alignment
-              </h2>
-              <p className="text-sm text-gray-600 mb-3">
-                เลือกตัวชี้วัดงานประกันคุณภาพ (QA Indicators)
-                และแผนยุทธศาสตร์ที่เกี่ยวข้อง
-              </p>
-              <div className="space-y-3">
-                <fieldset>
-                  <legend className="text-sm font-medium mb-1">
-                    QA Indicators
-                  </legend>
-                  <div className="space-y-1">
-                    <label className="flex gap-2 items-center">
-                      <input type="checkbox" className="w-4 h-4"/> ระบบสารสนเทศมีประสิทธิภาพ
-                    </label>
-                    <label className="flex gap-2 items-center">
-                      <input type="checkbox" className="w-4 h-4"/> การบริการนักศึกษามีคุณภาพ
-                    </label>
-                    <label className="flex gap-2 items-center">
-                      <input type="checkbox" className="w-4 h-4" />{" "}
-                      กระบวนการบริหารจัดการมีประสิทธิผล
-                    </label>
-                  </div>
-                </fieldset>
-
-                <fieldset className="mt-3">
-                  <legend className="text-sm font-medium mb-1">
-                    Strategic Plan
-                  </legend>
-                  <div className="space-y-1">
-                    <label className="flex gap-2 items-center">
-                      <input type="checkbox" className="w-4 h-4"/> แผนยุทธศาสตร์ด้านการเรียนรู้
-                    </label>
-                    <label className="flex gap-2 items-center">
-                      <input type="checkbox" className="w-4 h-4"/> แผนยุทธศาสตร์ด้านนวัตกรรม
-                    </label>
-                    <label className="flex gap-2 items-center">
-                      <input type="checkbox" className="w-4 h-4"/> แผนยุทธศาสตร์ด้านบุคลากร
-                    </label>
-                  </div>
-                </fieldset>
-              </div>
+              <h2 className="font-medium text-gray-800">เป้าหมายเชิงปริมาณ</h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="เป้าหมายเชิงปริมาณ..."
+              />
+              <h2 className="font-medium text-gray-800">เป้าหมายเชิงคุณภาพ</h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="เป้าหมายเชิงคุณภาพ..."
+              />
             </motion.div>
           )}
           {step === 5 && (
             <motion.div
               key="step-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800 mb-2">แนบไฟล์เอกสาร</h2>
-              <div className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-300 rounded-xl py-10">
-                <p className="text-sm text-gray-500">
-                  ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์
-                </p>
-                <input type="file" className="hidden" id="file" />
-                <label
-                  htmlFor="file"
-                  className="px-4 py-2 text-sm font-medium bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-900"
-                >
-                  เลือกไฟล์
+              <div className="flex gap-5 items-center justify-start">
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">วันเริ่มต้น</label>
+                  <input
+                    type="date"
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="3"
+                  />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">วันที่สิ้นสุด</label>
+                  <input
+                    type="date"
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="3"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 items-center">
+                <label className="text-sm text-gray-700">
+                  ระยะเวลา (เดือน)
                 </label>
+                <input
+                  type="number"
+                  className="px-4 py-1 border rounded-lg border-gray-300"
+                  placeholder="3"
+                />
+              </div>
+            </motion.div>
+          )}
+          {step === 6 && (
+            <motion.div
+              key="step-7"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">สถานที่ดำเนินงาน</h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="สถานที่ดำเนินงาน..."
+              />
+            </motion.div>
+          )}
+          {step === 7 && (
+            <motion.div
+              key="step-8"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col gap-2">
+                <label className="font-medium">
+                  งบประมาณทั้งหมด :
+                  <input
+                    type="number"
+                    placeholder="ระบุจำนวนเงิน"
+                    className="ml-2 w-40 border-b border-gray-400 focus:outline-none text-center"
+                  />{" "}
+                  บาท
+                </label>
+
+                <div className="flex flex-wrap gap-4">
+                  <span className="font-medium">แหล่งงบประมาณ :</span>
+                  <label className="flex items-center gap-1">
+                    <input type="checkbox" className="h-4 w-4" />
+                    <span>งบสถานศึกษา</span>
+                  </label>
+                  <label className="flex items-center gap-1">
+                    <input type="checkbox" className="h-4 w-4" />
+                    <span>เงินรายได้</span>
+                  </label>
+                  <label className="flex items-center gap-1">
+                    <input type="checkbox" className="h-4 w-4" />
+                    <span>ภายนอก (ระบุหน่วยงาน)</span>
+                    <input
+                      type="text"
+                      placeholder="เช่น กระทรวงศึกษา"
+                      className="ml-2 w-56 border-b border-gray-400 focus:outline-none"
+                    />
+                  </label>
+                </div>
+              </div>
+              <ActivityBudgetTable />
+            </motion.div>
+          )}
+          {step === 8 && (
+            <motion.div
+              key="step-9"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <KPIActivitiesTable value={rowsKPI} onChange={setRowKPI} />
+            </motion.div>
+          )}
+
+          {step === 9 && (
+            <motion.div
+              key="step-10"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">
+                ตัวชี้วัดผลผลิต (Output Indicators):{" "}
+              </h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="ตัวชี้วัดผลผลิต..."
+              />
+              <h2 className="font-medium text-gray-800">
+                ตัวชี้วัดผลลัพธ์ (Outcome Indicators):{" "}
+              </h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="ตัวชี้วัดผลลัพธ์..."
+              />
+            </motion.div>
+          )}
+          {step === 10 && (
+            <motion.div
+              key="step-11"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-6"
+            >
+              <FollowUpEvaluationForm />
+            </motion.div>
+          )}
+          {step === 11 && (
+            <motion.div
+              key="step-12"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">ผลที่คาดว่าจะได้รับ</h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="ผลที่คาดว่าจะได้รับ..."
+              />
+            </motion.div>
+          )}
+          {step === 12 && (
+            <motion.div
+              key="step-13"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">
+                ข้อเสนอแนะ / การพัฒนาในอนาคต
+              </h2>
+              <textarea
+                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
+                placeholder="ข้อเสนอแนะ..."
+              />
+            </motion.div>
+          )}
+          {step === 13 && (
+            <motion.div
+              key="step-14"
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="space-y-4"
+            >
+              <h2 className="font-medium text-gray-800">การอนุมัติและลงนาม</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">ผู้เสนอ</label>
+                  <input
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="...."
+                  />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">ตำแหน่ง</label>
+                  <input
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="...."
+                  />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">วันที่เสนอ</label>
+                  <input
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="....."
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4">
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">
+                    ความคิดเห็นของหัวหน้างาน/แผนก
+                  </label>
+                  <input
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="....."
+                  />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm text-gray-700">
+                    ความคิดเห็นของผู้บริหาร / ผู้อำนวยการสถานศึกษา
+                  </label>
+                  <input
+                    className="px-4 py-1 border rounded-lg border-gray-300"
+                    placeholder="Department"
+                  />
+                </div>
               </div>
             </motion.div>
           )}
