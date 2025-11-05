@@ -79,7 +79,6 @@ export function Sidebar() {
       "
       aria-label="Sidebar"
     >
-      {/* --- RAIL หลัก: กว้างคงที่ w-16 โชว์เฉพาะไอคอน --- */}
       <div
         className="
           h-full w-16 border-r border-gray-200 bg-gray-50 text-gray-800

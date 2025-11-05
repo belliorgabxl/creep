@@ -28,7 +28,7 @@ export function ChartsSection({ dataBudgetByDept, dataProjectTypes }: ChartsSect
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
         <div className="border-b border-gray-200 px-4 py-3">
-          <h3 className="text-base font-semibold text-gray-900">งบประมาณตามหน่วยงาน</h3>
+          <h3 className="text-base font-semibold text-gray-900">โครงงานตามหน่วยงาน</h3>
           <p className="mt-1 text-xs text-gray-500 ">แยกตามสถานะการอนุมัติ</p>
         </div>
         <div className="p-4">

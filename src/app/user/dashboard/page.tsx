@@ -53,7 +53,7 @@ export default function UserDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 text-gray-900">
+        <div className="min-h-screen text-gray-900">
             <Sidebar />
             <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
                 <div className="container mx-auto px-4">
