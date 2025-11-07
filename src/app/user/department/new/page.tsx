@@ -141,7 +141,7 @@ export default function CreateDepartmentPage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-indigo-500 to-blue-700 px-4 py-2 text-sm font-medium text-white  hover:from-blue-700 hover:to-blue-700 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {loading ? "กำลังบันทึก..." : "บันทึกหน่วยงาน"}

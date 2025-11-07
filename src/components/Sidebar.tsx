@@ -13,9 +13,7 @@ import {
   LogOut,
 } from "lucide-react"
 
-/**
- * Helper: อ่าน cookie (simple)
- */
+
 function getCookie(name: string) {
   if (typeof document === "undefined") return null
   const value = `; ${document.cookie}`
@@ -24,10 +22,7 @@ function getCookie(name: string) {
   return null
 }
 
-/**
- * Helper: normalize path -> ตัด trailing slash, query, hash
- * รองรับทั้ง absolute และ relative paths
- */
+
 const normalizePath = (p: string) => {
   if (!p) return ""
   try {
@@ -132,7 +127,7 @@ export function Sidebar() {
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 min-h-[73px]">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-md">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white ">
           <span className="text-sm font-semibold">{initials}</span>
         </div>
         {/* label โผล่เมื่อ hover บน aside (group-hover) */}
@@ -174,7 +169,7 @@ export function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="px-2 py-3">
+      {/* <div className="px-2 py-3">
         <button
           onClick={handleLogout}
           className="
@@ -189,7 +184,7 @@ export function Sidebar() {
             ออกจากระบบ
           </span>
         </button>
-      </div>
+      </div> */}
     </aside>
   )
 }
