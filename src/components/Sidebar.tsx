@@ -179,41 +179,19 @@ export function Sidebar() {
       : "ผู้ใช้"
 
   return (
-    <>
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-md md:hidden"
-        aria-label="เปิด/ปิดเมนู"
-      >
-        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setMobileOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-      <aside
-        ref={sidebarRef}
-        className={`
-          group fixed left-0 top-0 z-40 flex h-screen flex-col
-          bg-white shadow-sm transition-all duration-300 ease-in-out
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          w-64
-          md:translate-x-0 md:w-16 md:hover:w-64
-        `}
-        aria-label="Sidebar"
-      >
-        <div className="flex items-center gap-3 px-4 py-4 min-h-[73px]">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-md">
-            <span className="text-sm font-semibold">{initials}</span>
-          </div>
-          <div className="overflow-hidden whitespace-nowrap opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100">
-            <div className="text-sm font-semibold text-gray-900">{username || "Guest"}</div>
-            <div className="text-xs text-gray-500">{roleLabel}</div>
-          </div>
+    <aside
+      className="
+        group fixed left-0 top-0 z-40 hidden h-screen
+        bg-white shadow-sm
+        md:flex md:flex-col
+        w-16 hover:w-64 transition-all duration-300 ease-in-out
+      "
+      aria-label="Sidebar"
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-4 min-h-[73px]">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white ">
+          <span className="text-sm font-semibold">{initials}</span>
         </div>
         <nav className="flex-1 overflow-y-auto px-2 py-4">
           <div className="space-y-1">
@@ -259,8 +237,57 @@ export function Sidebar() {
             </span>
           </button>
         </div>
-      </aside>
-    </>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-2 py-4">
+        <div className="space-y-1">
+          {items.map(({ href, icon: Icon, label }) => {
+            const nh = normalizePath(href)
+            const np = clientPath // ใช้ client-side stabilized path
+
+            // active ถ้า path ตรงกันหรือเป็น subpath (เช่น /user/projects/my-project/123)
+            const active = np === nh || np.startsWith(nh + "/")
+
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={(e) => handleLinkClick(href, e)}
+                aria-current={active ? "page" : undefined}
+                className={`group/item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+                  active ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+                title={label}
+              >
+                <Icon className={`h-5 w-5 flex-shrink-0 ${active ? "text-blue-600" : ""}`} />
+                <span className="overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  {label}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+
+      {/* Logout */}
+      {/* <div className="px-2 py-3">
+        <button
+          onClick={handleLogout}
+          className="
+            flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+            text-red-600 transition-all duration-200
+            hover:bg-red-50 hover:text-red-700
+          "
+          title="ออกจากระบบ"
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span className="overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">
+            ออกจากระบบ
+          </span>
+        </button>
+      </div> */}
+    </aside>
   )
 }
 
