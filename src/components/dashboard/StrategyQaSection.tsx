@@ -25,7 +25,6 @@ export function StrategyQaSection({ onFilterChange }: StrategyQaSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* สรุปตามแผนยุทธศาสตร์ */}
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <h3 className="text-base font-semibold text-gray-900">สรุปตามแผนยุทธศาสตร์</h3>
@@ -48,8 +47,6 @@ export function StrategyQaSection({ onFilterChange }: StrategyQaSectionProps) {
           </div>
         </div>
       </div>
-
-      {/* ความครอบคลุมตัวบ่งชี้ QA */}
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">

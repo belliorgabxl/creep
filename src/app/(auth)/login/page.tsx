@@ -103,7 +103,7 @@ function LoginInner() {
               <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-slate-900/5"></div>
 
               <div className="p-8">
-                {/* Header */}
+     
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 rounded-full flex items-center justify-center border-2 border-indigo-600">
                     <HandCoins className="text-indigo-600 w-6 h-6 " />
@@ -114,7 +114,7 @@ function LoginInner() {
                   </div>
                 </div>
 
-                {/* Form */}
+     
                 <form onSubmit={handleSubmit} className="grid gap-4" noValidate autoComplete="off">
                   <div>
                     <label htmlFor="username" className="block text-sm font-medium text-slate-700">

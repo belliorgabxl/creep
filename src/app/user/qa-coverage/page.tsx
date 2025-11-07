@@ -11,8 +11,10 @@ import {
 
 import AddQAModal from "./qa-add-modal";
 import QADetailModal from "./qa-detail-modal";
+import CoverageRow from "./component/CoverageRow";
+import StatCard from "./component/StatCard";
+import IndicatorCard from "./component/IndicatorCard";
 
-/** ชนิดข้อมูลที่รับจาก modal */
 type NewQA = {
   code: string;
   name: string;
@@ -26,7 +28,6 @@ export default function QACoveragePage() {
   const [year, setYear] = useState<string>("2568");
   const [query, setQuery] = useState("");
 
-  // ใช้สำเนาของ mock เป็น local state เพื่อให้สามารถแก้/เพิ่มได้
   const [coverageList, setCoverageList] = useState<QACoverage[]>(MOCK_QA_COVERAGE);
   const [qaList, setQaList] = useState<QAIndicator[]>(MOCK_QA_INDICATORS as QAIndicator[]);
 
@@ -199,91 +200,6 @@ export default function QACoveragePage() {
       {showAddModal && <AddQAModal onClose={() => setShowAddModal(false)} onAdd={handleAddQA} year={year} />}
 
       {selectedQA && <QADetailModal qa={selectedQA} onClose={() => setSelectedQA(null)} onUpdate={handleUpdateQA} />}
-    </div>
-  );
-}
-
-/* ===== Sub Components ===== */
-
-function StatCard({
-  icon,
-  title,
-  value,
-  hint,
-  color = "indigo",
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: string | number;
-  hint?: string;
-  color?: "indigo" | "emerald" | "amber";
-}) {
-  const colorMap = {
-    indigo: "bg-indigo-50 text-indigo-700 ring-indigo-100",
-    emerald: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    amber: "bg-amber-50 text-amber-700 ring-amber-100",
-  } as const;
-
-  return (
-    <div className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <span className={`inline-flex items-center gap-2 rounded-xl px-2.5 py-1 text-xs ring-1 ${colorMap[color]}`}>{icon}{title}</span>
-        {hint && <span className="text-xs text-slate-400">{hint}</span>}
-      </div>
-      <div className="mt-3 text-2xl font-semibold text-slate-900">{value}</div>
-    </div>
-  );
-}
-
-function CoverageRow({ item, onViewDetail }: { item: QACoverage; onViewDetail?: () => void }) {
-  const pct = Math.min(100, Math.round(((item.projects ?? 0) / 80) * 100));
-  return (
-    <div className="grid grid-cols-12 items-center gap-2 px-4 py-3 hover:bg-slate-50 transition-colors">
-      <div className="col-span-3 sm:col-span-2">
-        <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">{item.code}</span>
-      </div>
-
-      <div className="col-span-5 sm:col-span-6">
-        <div className="text-sm font-medium text-slate-800">{item.name}</div>
-        <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-          <div className="h-2.5 rounded-full bg-indigo-500 transition-[width]" style={{ width: `${pct}%` }} title={`โครงการ: ${String(item.projects ?? 0)}`} />
-        </div>
-      </div>
-
-      <div className="col-span-2 text-right text-sm font-medium text-slate-800 sm:col-span-2 sm:text-center">{(item.projects ?? 0).toLocaleString()}</div>
-
-      <div className="col-span-2">
-        {item.gaps ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-amber-100">
-            <AlertTriangle className="h-3.5 w-3.5" /> มีช่องว่าง
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-100">
-            <CheckCircle2 className="h-3.5 w-3.5" /> ครอบคลุมดี
-          </span>
-        )}
-      </div>
-
-      <div className="col-span-1 text-center">
-        <button onClick={onViewDetail} className="inline-flex items-center justify-center rounded-lg p-1.5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="ดูรายละเอียด">
-          <Eye className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function IndicatorCard({ item, onView }: { item: QAIndicator; onView?: () => void }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={onView}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">{item.code}</div>
-          <div className="mt-2 text-sm font-medium text-slate-900">{item.name}</div>
-          {item.year && <div className="mt-1 text-xs text-slate-500">ปีอ้างอิง: {item.year}</div>}
-        </div>
-        <div className="mt-1 h-8 w-8 shrink-0 rounded-xl bg-indigo-100 text-indigo-700 grid place-items-center text-xs font-semibold">QA</div>
-      </div>
     </div>
   );
 }
