@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Sidebar } from "@/components/Sidebar"
+// import { Sidebar } from "@/components/Sidebar" // <-- เอาออก
 import { FilterBar } from "@/components/dashboard/FilterBar"
 import { KpiCards } from "@/components/dashboard/KpiCards"
 import { ChartsSection } from "@/components/dashboard/ChartsSection"
@@ -17,7 +17,6 @@ import {
     MOCK_PROJECTS,
     MOCK_CALENDAR
 } from "@/app/mock"
-import { Section } from "lucide-react"
 import QuarterCalendar from "@/components/dashboard/QuarterCalendar"
 
 export default function UserDashboardPage() {
@@ -53,8 +52,9 @@ export default function UserDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen text-gray-900">
-            <Sidebar />
+        // เพิ่ม padding-left เพื่อเว้นที่ให้ sidebar (w-16 = 4rem)
+        // บนหน้าจอขนาด md ขึ้นไป ให้เว้น 4rem
+        <div className="min-h-screen text-gray-900 md:pl-16">
             <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
                 <div className="container mx-auto px-4">
                     <div className="flex h-14 items-center justify-between">

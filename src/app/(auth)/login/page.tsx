@@ -5,21 +5,21 @@ import { HandCoins } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { isValidMockLogin, getRoleByUsername } from "@/app/mock";
 
 function LoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const redirect = sp.get("redirect") || sp.get("callbackUrl") || "/user/dashboard";
 
-  const [username, setUsername]   = useState("");
-  const [password, setPassword]   = useState("");
-  const [remember, setRemember]   = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [capsOn, setCapsOn]       = useState(false);
+  const [capsOn, setCapsOn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError]         = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
+  // โหลด username ที่บันทึกไว้
   useEffect(() => {
     const saved = localStorage.getItem("ebudget_login");
     if (saved) {
@@ -33,11 +33,12 @@ function LoginInner() {
     }
   }, []);
 
+  // ตรวจสอบว่า login แล้วหรือยัง
   useEffect(() => {
-    const hasUid = document.cookie.split("; ").some((c) => c.startsWith("mock_uid="));
-    if (hasUid) {
+    const hasToken = document.cookie.split("; ").some((c) => c.startsWith("auth_token="));
+    if (hasToken) {
       const cookieRole =
-        (document.cookie.split("; ").find((c) => c.startsWith("mock_role=")) || "")
+        (document.cookie.split("; ").find((c) => c.startsWith("user_role=")) || "")
           .split("=")[1] || "user";
       const home = cookieRole === "admin" ? "/admin" : "/user/dashboard";
       router.replace(home);
@@ -48,28 +49,39 @@ function LoginInner() {
     if ("getModifierState" in e) setCapsOn(e.getModifierState("CapsLock"));
   }
 
-  async function mockLoginClient(u: string, p: string) {
-    await new Promise((r) => setTimeout(r, 250));
-    if (!isValidMockLogin(u, p)) {
-      throw new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
-    }
-    document.cookie = `mock_uid=${encodeURIComponent(u)}; Path=/; Max-Age=${60 * 60 * 4}; SameSite=Lax`;
-    const role = getRoleByUsername(u);
-    document.cookie = `mock_role=${encodeURIComponent(role)}; Path=/; Max-Age=${60 * 60 * 4}; SameSite=Lax`;
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
+
     try {
-      await mockLoginClient(username.trim(), password.trim());
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+      }
+
+      // บันทึก username ถ้าเลือก remember
       if (remember) {
         localStorage.setItem("ebudget_login", JSON.stringify({ username }));
       } else {
         localStorage.removeItem("ebudget_login");
       }
+
+      // Redirect ไปหน้าที่ต้องการ
       router.replace(redirect);
+      router.refresh();
     } catch (err: any) {
       setError(err?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
@@ -118,6 +130,7 @@ function LoginInner() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required
+                      disabled={isLoading}
                       onKeyUp={onKeyEvent}
                       onKeyDown={onKeyEvent}
                     />
@@ -137,6 +150,7 @@ function LoginInner() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        disabled={isLoading}
                         minLength={4}
                         onKeyUp={onKeyEvent}
                         onKeyDown={onKeyEvent}
@@ -152,13 +166,13 @@ function LoginInner() {
                           onClick={() => setShowPassword((v) => !v)}
                           className="rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 focus:outline-none"
                           aria-label={showPassword ? "Hide password" : "Show password"}
+                          disabled={isLoading}
                         >
                           {showPassword ? "ซ่อน" : "แสดง"}
                         </button>
                       </div>
                     </div>
 
-                    {/* ลิงก์ลืมรหัสไว้ใต้ช่องรหัสผ่าน */}
                     <div className="mt-2">
                       <Link href="/forgot-password" className="text-xs text-slate-600 hover:text-slate-800">
                         ลืมรหัสผ่าน?
@@ -173,6 +187,7 @@ function LoginInner() {
                         className="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-300"
                         checked={remember}
                         onChange={(e) => setRemember(e.target.checked)}
+                        disabled={isLoading}
                       />
                       จดจำการเข้าสู่ระบบ
                     </label>
@@ -187,7 +202,7 @@ function LoginInner() {
                   <button
                     type="submit"
                     disabled={!canSubmit}
-                    className="group relative inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-900 to-indigo-800 px-4 text-sm font-medium text-white shadow transition active:scale-[0.99] disabled:opacity-80"
+                    className="group relative inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-900 to-indigo-800 px-4 text-sm font-medium text-white shadow transition active:scale-[0.99] disabled:opacity-80 disabled:cursor-not-allowed"
                   >
                     <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 opacity-0 transition group-hover:opacity-100" />
                     <span className="relative">
