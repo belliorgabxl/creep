@@ -1,7 +1,7 @@
 // Sidebar.tsx
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -11,9 +11,8 @@ import {
   TrendingUp,
   ClipboardList,
   LogOut,
-  Menu,
-  X,
 } from "lucide-react"
+
 
 function getCookie(name: string) {
   if (typeof document === "undefined") return null
@@ -22,6 +21,7 @@ function getCookie(name: string) {
   if (parts.length === 2) return parts.pop()!.split(";").shift() || null
   return null
 }
+
 
 const normalizePath = (p: string) => {
   if (!p) return ""
@@ -35,30 +35,27 @@ const normalizePath = (p: string) => {
 }
 
 export function Sidebar() {
-  const nextPathname = usePathname()
+  const nextPathname = usePathname() // may be undefined during SSR/hydration
   const router = useRouter()
 
+  // clientPath จะถูกตั้งเมื่อ client mount เพื่อให้แน่ใจว่าเป็นค่า pathname ที่ browser เห็นจริง
   const [clientPath, setClientPath] = useState<string>("")
+
+  // user info จาก cookie (mock)
   const [username, setUsername] = useState<string | null>(null)
   const [role, setRole] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState(false)
-  
-  // State สำหรับ mobile/tablet sidebar
-  const [mobileOpen, setMobileOpen] = useState(false)
-  
-  // Refs สำหรับ swipe gesture
-  const touchStartX = useRef<number>(0)
-  const touchCurrentX = useRef<number>(0)
-  const sidebarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // หลัง client mount ให้ตั้ง clientPath จาก window.location
     setClientPath(normalizePath(window.location.pathname || ""))
 
+    // ฟัง popstate เพื่ออัปเดตเมื่อ history เปลี่ยน
     const onPop = () => setClientPath(normalizePath(window.location.pathname))
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
   }, [])
 
+  // อัปเดต clientPath เมื่อ nextPathname มีการเปลี่ยน (Next navigation)
   useEffect(() => {
     if (nextPathname) {
       setClientPath(normalizePath(nextPathname))
@@ -69,67 +66,6 @@ export function Sidebar() {
     setUsername(getCookie("mock_uid"))
     setRole(getCookie("mock_role"))
   }, [])
-
-  // Handle swipe gestures
-  useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      // ตรวจสอบว่าเริ่ม swipe จากขอบซ้าย (0-30px) หรือจาก sidebar
-      const touch = e.touches[0]
-      const isFromEdge = touch.clientX < 30
-      const isFromSidebar = sidebarRef.current?.contains(e.target as Node)
-      
-      if (isFromEdge || isFromSidebar) {
-        touchStartX.current = touch.clientX
-        touchCurrentX.current = touch.clientX
-      }
-    }
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (touchStartX.current === 0) return
-      
-      const touch = e.touches[0]
-      touchCurrentX.current = touch.clientX
-      const diff = touch.clientX - touchStartX.current
-
-      // ถ้า swipe จากซ้ายไปขวา มากกว่า 50px ให้เปิด
-      if (!mobileOpen && diff > 50) {
-        setMobileOpen(true)
-        touchStartX.current = 0
-      }
-      // ถ้า swipe จากขวาไปซ้าย มากกว่า 50px ให้ปิด
-      else if (mobileOpen && diff < -50) {
-        setMobileOpen(false)
-        touchStartX.current = 0
-      }
-    }
-
-    const handleTouchEnd = () => {
-      touchStartX.current = 0
-      touchCurrentX.current = 0
-    }
-
-    document.addEventListener("touchstart", handleTouchStart, { passive: true })
-    document.addEventListener("touchmove", handleTouchMove, { passive: true })
-    document.addEventListener("touchend", handleTouchEnd)
-
-    return () => {
-      document.removeEventListener("touchstart", handleTouchStart)
-      document.removeEventListener("touchmove", handleTouchMove)
-      document.removeEventListener("touchend", handleTouchEnd)
-    }
-  }, [mobileOpen])
-
-  // ล็อค scroll เมื่อ sidebar เปิดบน mobile
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [mobileOpen])
 
   const items = useMemo(
     () => [
@@ -150,18 +86,19 @@ export function Sidebar() {
   function handleLogout() {
     clearCookie("mock_uid")
     clearCookie("mock_role")
-    setMobileOpen(false)
     router.replace("/login")
   }
 
+  // ถ้าคลิกไปยัง href เดิม (normalize เท่ากัน) ให้บังคับ replace เพื่อรีเซ็ต lifecycle
   const handleLinkClick = useCallback(
     (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
       const nh = normalizePath(href)
       if (clientPath === nh) {
+        // กรณี Dashboard คลิกซ้ำแล้วเกิดปัญหา UI ค้าง ให้บังคับ replace
+        // ใช้ replace แทน push เพื่อไม่เพิ่ม history entry
         router.replace(href)
       }
-      // ปิด sidebar บน mobile หลังคลิก
-      setMobileOpen(false)
+      // ไม่ต้อง preventDefault — Link จะทำ navigation ปกติ
     },
     [clientPath, router],
   )
@@ -193,49 +130,10 @@ export function Sidebar() {
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white ">
           <span className="text-sm font-semibold">{initials}</span>
         </div>
-        <nav className="flex-1 overflow-y-auto px-2 py-4">
-          <div className="space-y-1">
-            {items.map(({ href, icon: Icon, label }) => {
-              const nh = normalizePath(href)
-              const np = clientPath
-              const active = np === nh || np.startsWith(nh + "/")
-
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={(e) => handleLinkClick(href, e)}
-                  aria-current={active ? "page" : undefined}
-                  className={`group/item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
-                    active ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                  title={label}
-                >
-                  <Icon className={`h-5 w-5 flex-shrink-0 ${active ? "text-blue-600" : ""}`} />
-         
-                  <span className="overflow-hidden whitespace-nowrap opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100">
-                    {label}
-                  </span>
-                </Link>
-              )
-            })}
-          </div>
-        </nav>
-        <div className="px-2 py-3">
-          <button
-            onClick={handleLogout}
-            className="
-              flex w-full items-center gap-3 rounded-lg px-3 py-2.5
-              text-red-600 transition-all duration-200
-              hover:bg-red-50 hover:text-red-700
-            "
-            title="ออกจากระบบ"
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            <span className="overflow-hidden whitespace-nowrap opacity-100 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100">
-              ออกจากระบบ
-            </span>
-          </button>
+        {/* label โผล่เมื่อ hover บน aside (group-hover) */}
+        <div className="overflow-hidden opacity-0 transition-all duration-300 group-hover:opacity-100 whitespace-nowrap">
+          <div className="text-sm font-semibold text-gray-900">{username || "Guest"}</div>
+          <div className="text-xs text-gray-500">{roleLabel}</div>
         </div>
       </div>
 
