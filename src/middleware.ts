@@ -1,99 +1,79 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const PUBLIC_PATHS = ["/", "/login", "/forgot-password"];
+const PUBLIC_PREFIXES = ["/", "/login", "/forgot-password"];
 
-interface TokenPayload {
-  sub: string;
-  username: string;
-  role: string;
-  name: string;
-  iat: number;
-  exp: number;
-}
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET
+);
 
-async function verifyToken(token: string): Promise<TokenPayload | null> {
-  try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || "your-secret-key-min-32-characters-long"
-    );
-    const { payload } = await jwtVerify(token, secret);
-    return payload as unknown as TokenPayload;
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    return null;
-  }
+function isPublicPath(pathname: string) {
+  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 function pickHomeByRole(role?: string): string {
-  if (role === "admin") return "/admin";
-  return "/user/dashboard";
+  switch (role) {
+    case "admin": return "/admin";
+    case "planning": return "/planning";
+    case "director": return "/director";
+    case "hr": return "/hr";
+    case "department_head": return "/department/head";
+    default: return "/user/dashboard";
+  }
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const token = request.cookies.get("auth_token")?.value ?? null;
 
-  // ตรวจสอบว่าเป็น public path หรือไม่
-  if (PUBLIC_PATHS.includes(pathname)) {
-    // ถ้า login แล้วพยายามเข้า public path ให้ redirect ไปหน้าหลัก
-    const token = request.cookies.get("auth_token")?.value;
+  if (isPublicPath(pathname)) {
     if (token) {
-      const payload = await verifyToken(token);
-      if (payload) {
-        const homeUrl = new URL(pickHomeByRole(payload.role), request.url);
+      try {
+        const { payload } = await jwtVerify(token, JWT_SECRET);
+        const homeUrl = new URL(pickHomeByRole(payload.role as string), request.url);
         return NextResponse.redirect(homeUrl);
-      }
+      } catch {}
     }
     return NextResponse.next();
   }
 
-  // ตรวจสอบ token
-  const token = request.cookies.get("auth_token")?.value;
-
   if (!token) {
-    // ไม่มี token ให้ redirect ไป login
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname + (search || ""));
     return NextResponse.redirect(loginUrl);
   }
 
-  // Verify token
-  const payload = await verifyToken(token);
-
-  if (!payload) {
-    // Token ไม่ valid ให้ลบ cookies และ redirect ไป login
-    const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete("auth_token");
-    response.cookies.delete("user_role");
-    return response;
+  let payload: any;
+  try {
+    ({ payload } = await jwtVerify(token, JWT_SECRET));
+  } catch {
+    const res = NextResponse.redirect(new URL("/login", request.url));
+    res.cookies.delete("auth_token");
+    res.cookies.delete("api_token");
+    return res;
   }
 
-  // ตรวจสอบ role-based access
-  if (pathname.startsWith("/admin") && payload.role !== "admin") {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname + (search || ""));
-    const response = NextResponse.redirect(loginUrl);
-    return response;
-  }
+  const role = (payload.role as string) || "department_user";
+  const roleToPrefixes: Record<string, string[]> = {
+    admin: ["/admin", "/planning", "/director", "/hr", "/department", "/user"],
+    planning: ["/planning", "/user"],
+    director: ["/director", "/user"],
+    hr: ["/hr", "/user"],
+    department_head: ["/department/head", "/user"],
+    department_user: ["/user"],
+  };
+  const allowed = (roleToPrefixes[role] || ["/user"])
+    .some((p) => pathname === p || pathname.startsWith(p + "/"));
+  if (!allowed) return NextResponse.redirect(new URL("/403", request.url));
 
-  if (pathname.startsWith("/user") && payload.role !== "user") {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname + (search || ""));
-    const response = NextResponse.redirect(loginUrl);
-    return response;
-  }
+  const headers = new Headers(request.headers);
+  if (payload.sub) headers.set("x-user-id", payload.sub);
+  if (payload.role) headers.set("x-user-role", payload.role);
+  if (payload.name) headers.set("x-user-name", payload.name);
+  if (payload.org_id) headers.set("x-org-id", payload.org_id);
+  if (payload.department_id) headers.set("x-dept-id", payload.department_id);
 
-  // เพิ่ม user info ใน request headers สำหรับใช้ใน API routes
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-user-id", payload.sub);
-  requestHeaders.set("x-user-role", payload.role);
-  requestHeaders.set("x-user-name", payload.name);
-
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {

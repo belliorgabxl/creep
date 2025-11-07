@@ -1,131 +1,78 @@
-// app/api/auth/login/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { SignJWT } from "jose";
+import { NextResponse } from "next/server";
+import { decodeExternalJwt, signUserToken } from "@/lib/auth";
 
-// ฟังก์ชันสำหรับตรวจสอบ user กับ database
-async function verifyUserCredentials(username: string, password: string) {
-  try {
-    const mockUsers = [
-      { username: "admin", password: "admin123", role: "admin", id: "1", name: "Admin User" },
-      { username: "user", password: "user123", role: "user", id: "2", name: "Regular User" },
-    ];
+type LoginBody = { username: string; password: string; remember?: boolean };
 
-    const user = mockUsers.find(
-      (u) => u.username === username && u.password === password
-    );
+// เดาว่า endpoint รับ { username, password } ตามสกรีนช็อต
+async function loginExternal(username: string, password: string) {
+  const url = (process.env.API_BASE_URL || "") + ("/auth/login");
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
 
-    if (!user) return null;
-
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  } catch (error) {
-    console.error("Login error:", error);
-    return null;
+  // รองรับได้หลายรูปแบบ response
+  if (!res.ok) {
+    const msg = await safeMessage(res);
+    throw new Error(msg || `External login failed (${res.status})`);
   }
+  const data: any = await res.json();
+  // อาจชื่อ token / access_token / jwt
+  const token: string | undefined = data?.token || data?.access_token || data?.jwt || data?.data?.token;
+  if (!token) throw new Error("No token returned from external API");
+  return { token, raw: data };
 }
 
-// สร้าง JWT token
-async function createToken(payload: any) {
-  const secret = new TextEncoder().encode(
-    process.env.JWT_SECRET || "your-secret-key-min-32-characters-long"
-  );
-
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("4h")
-    .sign(secret);
-}
-
-export async function POST(request: NextRequest) {
+async function safeMessage(res: Response) {
   try {
-    const body = await request.json();
-    const { username, password } = body;
+    const j: any = await res.json();
+    return j?.message || j?.error || "";
+  } catch { return ""; }
+}
 
-    // Validate input
-    if (!username || !password) {
-      return NextResponse.json(
-        { success: false, message: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน" },
-        { status: 400 }
-      );
-    }
+export async function POST(req: Request) {
+  try {
+    const { username, password, remember }: LoginBody = await req.json();
 
-    const user = await verifyUserCredentials(username.trim(), password.trim());
+    const { token: externalToken } = await loginExternal(username, password);
 
-    // if (!user) {
-    //   return NextResponse.json(
-    //     { success: false, message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" },
-    //     { status: 401 }
-    //   );
-    // }
+    // พยายามดึง claims จาก external JWT (ถ้ามี)
+    const claims = decodeExternalJwt<any>(externalToken) || {};
+    const userForOurJwt = {
+      sub: (claims.sub as string) || claims.user_id || claims.id || username,
+      username: (claims.username as string) || username,
+      role: (claims.role as string) || claims.user_role || "department_user",
+      name: (claims.name as string) || claims.fullname || username,
+      org_id: claims.org_id || claims.organization_id,
+      department_id: claims.department_id || claims.dept_id,
+    };
 
-    // สร้าง JWT token
-    // const token = await createToken({
-    //   sub: user.id,
-    //   username: user.username,
-    //   role: user.role,
-    //   name: user.name,
-    // });
-    const token = await createToken({
-      sub: 123456,
-      username: "demo",
-      role: "user",
-      name: "toto",
-    });
+    const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60; // 7 วัน / 1 ชม.
+    const ourJwt = await signUserToken(userForOurJwt, ttl);
 
+    const res = NextResponse.json({ success: true });
 
-    // const response = NextResponse.json({
-    //   success: true,
-    //   user: {
-    //     id: user.id,
-    //     username: user.username,
-    //     name: user.name,
-    //     role: user.role,
-    //   },
-    // });
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: 123456,
-        username: "demo",
-        name: "toto",
-        role: "user",
-      },
-    });
-
-    response.cookies.set({
-      name: "auth_token",
-      value: token,
+    // เก็บ external token ไว้เรียก API ต่อ ๆ ไป
+    res.cookies.set("api_token", externalToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 4, // 4 hours
       path: "/",
+      maxAge: ttl,
     });
 
-    // response.cookies.set({
-    //   name: "user_role",
-    //   value: user.role,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "lax",
-    //   maxAge: 60 * 60 * 4,
-    //   path: "/",
-    // });
-
-     response.cookies.set({
-      name: "user_role",
-      value: "user",
+    // เก็บ auth_token (ของเรา) สำหรับ middleware/RBAC
+    res.cookies.set("auth_token", ourJwt, {
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 4,
       path: "/",
+      maxAge: ttl,
     });
-    return response;
-  } catch (error) {
-    console.error("Login API error:", error);
-    return NextResponse.json(
-      { success: false, message: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
-      { status: 500 }
-    );
+
+    return res;
+  } catch (e: any) {
+    return NextResponse.json({ success: false, message: e?.message || "เกิดข้อผิดพลาด" }, { status: 401 });
   }
 }
