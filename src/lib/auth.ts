@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 export interface UserPayload {
   sub: string;
   username: string;
-  role?: string;
+  role?: string;      
+  role_id?: number;
   name?: string;
   org_id?: string;
   department_id?: string;
@@ -12,9 +13,7 @@ export interface UserPayload {
   exp?: number;
 }
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET 
-);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 // เซ็น JWT ของฝั่งเราเอง
 export async function signUserToken(user: Omit<UserPayload, "iat" | "exp">, ttlSec: number) {
@@ -33,7 +32,6 @@ export async function verifyAuth(token: string): Promise<UserPayload | null> {
   }
 }
 
-// ดึง user ปัจจุบันจาก auth_token (ของเราเอง)
 export async function getCurrentUser(): Promise<UserPayload | null> {
   const jar = await cookies();
   const token = jar.get("auth_token")?.value;
@@ -41,7 +39,6 @@ export async function getCurrentUser(): Promise<UserPayload | null> {
   return await verifyAuth(token);
 }
 
-// ถอด payload จาก external JWT (ไม่ verify)
 export function decodeExternalJwt<T = any>(token: string): T | null {
   try {
     return decodeJwt(token) as unknown as T;

@@ -1,4 +1,4 @@
-// Sidebar.tsx
+// components/Sidebar.tsx
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -13,16 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-/** อ่าน cookie แบบง่าย (client only) */
-function getCookie(name: string) {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()!.split(";").shift() || null;
-  return null;
-}
-
-/** normalize path เพื่อเทียบ active state */
+/** normalize path เพื่อเทียบ active state และกันเครื่องหมาย / ท้าย URL */
 const normalizePath = (p: string) => {
   if (!p) return "";
   try {
@@ -34,17 +25,36 @@ const normalizePath = (p: string) => {
   }
 };
 
+type MeResponse =
+  | {
+      authenticated: true;
+      user: {
+        id: string;
+        username: string;
+        name?: string;
+        role_key: string;              // เช่น "department_user"
+        role_id: number | null;        // 1..6
+        role_label: string | null;     // เช่น "ผู้ใช้แผนก"
+        org_id?: string | null;
+        department_id?: string | null;
+      };
+    }
+  | { authenticated: false; message?: string };
+
 export function Sidebar() {
   const nextPathname = usePathname();
   const router = useRouter();
 
-  // ใช้ path จากฝั่ง client เพื่อกัน hydration mismatch
+  /** ป้องกัน hydration mismatch: ใช้ path จากฝั่ง client */
   const [clientPath, setClientPath] = useState<string>("");
 
-  // user info (ชั่วคราวจาก cookie mock; ระบบจริงอ่านจาก /api/auth/me ได้)
+  /** สถานะผู้ใช้งาน */
   const [username, setUsername] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [roleLabel, setRoleLabel] = useState<string>("ผู้ใช้");
+  const [loadingMe, setLoadingMe] = useState<boolean>(true);
 
+  // ติดตาม path เมื่อผู้ใช้กด back/forward
   useEffect(() => {
     setClientPath(normalizePath(window.location.pathname || ""));
     const onPop = () => setClientPath(normalizePath(window.location.pathname));
@@ -56,11 +66,56 @@ export function Sidebar() {
     if (nextPathname) setClientPath(normalizePath(nextPathname));
   }, [nextPathname]);
 
+  // โหลดข้อมูลผู้ใช้จาก /api/auth/me (อ่านจาก httpOnly cookie)
   useEffect(() => {
-    setUsername(getCookie("mock_uid"));
-    setRole(getCookie("mock_role"));
-  }, []);
+    let active = true;
+    (async () => {
+      try {
+        setLoadingMe(true);
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
 
+        if (!res.ok) {
+          if (active) {
+            setUsername(null);
+            setDisplayName(null);
+            setRoleLabel("ผู้ใช้");
+          }
+          if (res.status === 401) {
+            // แนบ redirect ปัจจุบันกลับไปหน้า login
+            const url = new URL("/login", window.location.href);
+            url.searchParams.set("redirect", window.location.pathname + window.location.search);
+            router.replace(url.toString());
+          }
+          return;
+        }
+
+        const data = (await res.json()) as MeResponse;
+        if (active && "authenticated" in data && data.authenticated) {
+          const u = data.user;
+          setUsername(u.username);
+          setDisplayName(u.name ?? u.username);
+          setRoleLabel(u.role_label ?? "ผู้ใช้");
+        }
+      } catch {
+        if (active) {
+          setUsername(null);
+          setDisplayName(null);
+          setRoleLabel("ผู้ใช้");
+        }
+      } finally {
+        if (active) setLoadingMe(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  /** รายการเมนู (ถ้าต้องการซ่อน/แสดงตาม role ค่อยเติมเงื่อนไขที่นี่) */
   const items = useMemo(
     () => [
       { href: "/user/dashboard", icon: LayoutDashboard, label: "ภาพรวม" },
@@ -72,29 +127,19 @@ export function Sidebar() {
     []
   );
 
-  /** ลบ cookie ฝั่ง client (เผื่อเคยใช้ mock) */
-  function clearCookie(name: string) {
-    if (typeof document === "undefined") return;
-    document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
-  }
-
   /** ออกจากระบบ: เรียก API เพื่อลบ httpOnly cookies แล้วพาไปหน้า login */
   async function handleLogout() {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      // เผื่อมี mock cookie เก่า ลบทิ้งด้วย
-      clearCookie("mock_uid");
-      clearCookie("mock_role");
     } catch (e) {
       console.error("Logout error:", e);
-      // ถึงจะ error ก็พาผู้ใช้ออกอยู่ดี
     } finally {
       router.replace("/login");
       router.refresh();
     }
   }
 
-  // ถ้าคลิกลิงก์เดิม ให้ replace เพื่อรีเซ็ต lifecycle ของหน้า
+  /** ถ้าคลิกลิงก์เดิม ให้ replace เพื่อรีเซ็ต lifecycle ของหน้า */
   const handleLinkClick = useCallback(
     (href: string) => {
       const nh = normalizePath(href);
@@ -105,17 +150,7 @@ export function Sidebar() {
     [clientPath, router]
   );
 
-  const initials = (username ?? "U").slice(0, 2).toUpperCase();
-  const roleLabel =
-    role === "head"
-      ? "หัวหน้า"
-      : role === "planning"
-      ? "แผนงาน"
-      : role === "director"
-      ? "ผู้อำนวยการ"
-      : role === "admin"
-      ? "ผู้ดูแลระบบ"
-      : "ผู้ใช้";
+  const initials = (displayName ?? username ?? "U").slice(0, 2).toUpperCase();
 
   return (
     <aside
@@ -133,8 +168,12 @@ export function Sidebar() {
           <span className="text-sm font-semibold">{initials}</span>
         </div>
         <div className="overflow-hidden opacity-0 transition-all duration-300 group-hover:opacity-100 whitespace-nowrap">
-          <div className="text-sm font-semibold text-gray-900">{username || "Guest"}</div>
-          <div className="text-xs text-gray-500">{roleLabel}</div>
+          <div className="text-sm font-semibold text-gray-900">
+            {loadingMe ? "กำลังโหลด..." : displayName || username || "Guest"}
+          </div>
+          <div className="text-xs text-gray-500">
+            {loadingMe ? " " : roleLabel}
+          </div>
         </div>
       </div>
 

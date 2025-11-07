@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET 
-);
+import { getCurrentUser } from "@/lib/auth";
+import { roleIdToLabel } from "@/lib/rbac";
 
 export async function GET() {
-  const jar = await cookies();
-  const token = jar.get("auth_token")?.value;
-  if (!token) return NextResponse.json({ authenticated: false }, { status: 401 });
-
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const user = {
-      id: (payload.sub as string) || "",
-      username: (payload.username as string) || "",
-      name: (payload.name as string) || "",
-      role: (payload.role as string) || "",
-      org_id: (payload.org_id as string) || undefined,
-      department_id: (payload.department_id as string) || undefined,
-    };
-    return NextResponse.json({ authenticated: true, user });
-  } catch {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json(
+      { authenticated: false, message: "Unauthenticated" },
+      { status: 401 }
+    );
   }
+
+  const role_label = roleIdToLabel(user.role_id) ?? null;
+
+  return NextResponse.json({
+    authenticated: true,
+    user: {
+      id: user.sub,
+      username: user.username,
+      name: user.name ?? user.username,
+      role_key: user.role ?? null,   
+      role_id: user.role_id ?? null,              
+      role_label,                              
+      org_id: user.org_id ?? null,
+      department_id: user.department_id ?? null,
+    },
+  });
 }

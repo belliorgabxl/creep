@@ -1,3 +1,4 @@
+// lib/roles.ts
 export type RoleKey =
   | "department_user"
   | "department_head"
@@ -6,23 +7,23 @@ export type RoleKey =
   | "admin"
   | "hr";
 
-export type Permission =
-  | "budget:create:self-department"
-  | "budget:approve:department"
-  | "budget:approve:org"
-  | "system:manage"
-  | "hr:manage";
-
-export const ROLE_PERMISSIONS: Record<RoleKey, Permission[]> = {
-  department_user: ["budget:create:self-department"],
-  department_head: ["budget:create:self-department", "budget:approve:department"],
-  planning: ["budget:approve:org"],
-  director: ["budget:approve:org"],
-  admin: ["budget:create:self-department", "budget:approve:department", "budget:approve:org", "system:manage", "hr:manage"],
-  hr: ["hr:manage"],
+export const ROLE_MAP: Record<number, { key: RoleKey; label: string }> = {
+  1: { key: "department_user",  label: "ผู้ใช้แผนก" },
+  2: { key: "department_head",  label: "หัวหน้าแผนก" },
+  3: { key: "planning",         label: "ฝ่ายวางแผน" },
+  4: { key: "director",         label: "ผู้อำนวยการ" },
+  5: { key: "admin",            label: "ผู้ดูแลระบบ" },
+  6: { key: "hr",               label: "ฝ่ายบุคคล" },
 };
 
-export function hasPermission(role: RoleKey, perm: Permission) {
-  const list = ROLE_PERMISSIONS[role] || [];
-  return list.includes(perm);
+export function roleIdToKey(id?: unknown): RoleKey | null {
+  const n = Number(id);
+  if (!Number.isFinite(n)) return null;
+  return ROLE_MAP[n]?.key ?? null;
+}
+
+export function roleIdToLabel(id?: unknown): string | null {
+  const n = Number(id);
+  if (!Number.isFinite(n)) return null;
+  return ROLE_MAP[n]?.label ?? null;
 }
