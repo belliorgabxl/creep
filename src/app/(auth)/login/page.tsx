@@ -19,7 +19,6 @@ function LoginInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // โหลด username ที่บันทึกไว้
   useEffect(() => {
     const saved = localStorage.getItem("ebudget_login");
     if (saved) {
@@ -33,7 +32,6 @@ function LoginInner() {
     }
   }, []);
 
-  // ตรวจสอบว่า login แล้วหรือยัง
   useEffect(() => {
     const hasToken = document.cookie.split("; ").some((c) => c.startsWith("auth_token="));
     if (hasToken) {
@@ -72,14 +70,12 @@ function LoginInner() {
         throw new Error(data.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
       }
 
-      // บันทึก username ถ้าเลือก remember
       if (remember) {
         localStorage.setItem("ebudget_login", JSON.stringify({ username }));
       } else {
         localStorage.removeItem("ebudget_login");
       }
 
-      // Redirect ไปหน้าที่ต้องการ
       router.replace(redirect);
       router.refresh();
     } catch (err: any) {
