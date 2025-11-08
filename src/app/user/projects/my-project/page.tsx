@@ -1,9 +1,9 @@
 "use client";
 
 import { EmptyState } from "@/components/project/EmptyState";
+import { Stat } from "@/components/project/Helper";
 import { LoadData } from "@/components/project/LoadData";
 import { ProjectTable } from "@/components/project/ProjectTable";
-import { Stat } from "@/components/project/State";
 import { Project } from "@/dto/projectDto";
 import { mockProjects } from "@/resource/mock-data";
 import { Plus } from "lucide-react";
