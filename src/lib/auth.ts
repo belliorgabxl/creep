@@ -15,7 +15,6 @@ export interface UserPayload {
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
-// เซ็น JWT ของฝั่งเราเอง
 export async function signUserToken(user: Omit<UserPayload, "iat" | "exp">, ttlSec: number) {
   const now = Math.floor(Date.now() / 1000);
   return await new SignJWT({ ...user, iat: now, exp: now + ttlSec })

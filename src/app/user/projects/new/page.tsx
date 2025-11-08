@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Save, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Save, Send } from "lucide-react";
 import { ActivityBudgetTable } from "@/components/project/ActivityTable";
 import KPIActivitiesTable from "@/components/project/KPITable";
 import FollowUpEvaluationForm from "@/components/project/FollowUpEvaluationForm";
+import { useRouter } from "next/navigation";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
@@ -31,6 +32,12 @@ export default function CreateProjectPage() {
   const [rowsKPI, setRowKPI] = useState([
     { id: 1, activity: "", period: "", owner: "" },
   ]);
+
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const onSaveProject = () => {
+    setIsLoading(true);
+  };
 
   return (
     <main className="lg:mx-auto lg:max-w-7xl w-full px-2 lg:px-6 py-0">
@@ -463,11 +470,37 @@ export default function CreateProjectPage() {
           </button>
         ) : (
           <div className="flex gap-2">
-            <button className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-50">
-              <Save className="h-4 w-4" /> บันทึก Draft
+            <button
+              onClick={() => {
+                onSaveProject();
+                setTimeout(() => {
+                  router.push("/user/projects/my-project");
+                }, 1000);
+              }}
+              className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-50"
+            >
+              {isLoading ? (
+                <Loader2 className="animate-spin h-4 w-4 " />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}{" "}
+              บันทึก Draft
             </button>
-            <button className="inline-flex items-center gap-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
-              <Send className="h-4 w-4" /> ส่งอนุมัติ
+            <button
+              onClick={() => {
+                onSaveProject();
+                setTimeout(() => {
+                  router.push("/user/projects/my-project");
+                }, 1000);
+              }}
+              className="inline-flex items-center gap-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+            >
+              {isLoading ? (
+                <Loader2 className="animate-spin h-4 w-4 " />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}{" "}
+              ส่งอนุมัติ
             </button>
           </div>
         )}

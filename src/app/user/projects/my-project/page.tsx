@@ -1,7 +1,8 @@
 "use client";
+
 import { EmptyState } from "@/components/project/EmptyState";
 import { LoadData } from "@/components/project/LoadData";
-import { ProjectCard } from "@/components/project/ProjectCard";
+import { ProjectTable } from "@/components/project/ProjectTable";
 import { Stat } from "@/components/project/State";
 import { Project } from "@/dto/projectDto";
 import { mockProjects } from "@/resource/mock-data";
@@ -34,7 +35,7 @@ async function getMyProjects(): Promise<Project[]> {
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
   } catch (err) {
-    console.warn("⚠️ ใช้ mock data เนื่องจาก API ล้มเหลว:", err);
+    console.warn("ใช้ mock data เนื่องจาก API ล้มเหลว:", err);
     return mockProjects;
   }
 }
@@ -114,10 +115,8 @@ export default function Page() {
                   value={projects.filter((p) => p.status === "on_hold").length}
                 />
               </section>
-              <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                {projects.slice(0, 9).map((p) => (
-                  <ProjectCard key={p.id} p={p} />
-                ))}
+              <section>
+                <ProjectTable projects={projects.slice(0, 100)} />
               </section>
             </>
           )}

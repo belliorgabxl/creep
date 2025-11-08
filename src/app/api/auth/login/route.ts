@@ -1,30 +1,53 @@
 import { NextResponse } from "next/server";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
-import { ROLE_MAP, roleIdToKey } from "@/lib/rbac";
+import { roleIdToKey } from "@/lib/rbac";
+import ApiClient from "@/lib/api-centralize";
 
 type LoginBody = { username: string; password: string; remember?: boolean };
 
-async function safeMessage(res: Response) {
-  try { const j: any = await res.json(); return j?.message || j?.error || ""; }
-  catch { return ""; }
+function pickSafeMessage(data: any) {
+  return data?.message || data?.error || "";
 }
 
 async function loginExternal(username: string, password: string) {
-  const url = (process.env.API_BASE_URL || "") + "/auth/login";
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-  if (!res.ok) {
-    const msg = await safeMessage(res);
-    throw new Error(msg || `External login failed (${res.status})`);
+  const baseURL = process.env.API_BASE_URL || "";
+  if (!baseURL) {
+    throw new Error("Missing API_BASE_URL");
   }
-  const data: any = await res.json();
-  const token: string | undefined =
-    data?.token || data?.access_token || data?.jwt || data?.data?.token;
-  if (!token) throw new Error("No token returned from external API");
-  return { token, raw: data };
+
+  try {
+    const res = await ApiClient.post(
+      "/auth/login",
+      { username, password },
+      {
+        baseURL,
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        timeout: 10_000,
+        withCredentials: false,
+      }
+    );
+    const data: any = res?.data ?? {};
+
+    const token: string | undefined =
+      data?.token || data?.access_token || data?.jwt || data?.data?.token;
+    if (!token) throw new Error("No token returned from external API");
+
+    return { token, raw: data };
+
+  } catch (err: any) {
+
+    const safe = pickSafeMessage(err?.response?.data) || "External login failed";
+    
+    const status = err?.response?.status;
+    if (status === 401 || status === 403) {
+      const e = new Error("Invalid username or password");
+      (e as any).status = 401;
+      throw e;
+    }
+    const e = new Error(safe);
+    (e as any).status = status || 502;
+    throw e;
+  }
 }
 
 export async function POST(req: Request) {
@@ -33,68 +56,81 @@ export async function POST(req: Request) {
 
     const { token: externalToken } = await loginExternal(username, password);
 
-    // claims จาก external (อาจเป็นเลข)
     const claims = decodeExternalJwt<any>(externalToken) || {};
 
-    // ----------------------------
-    // ⭐ ตรวจ role และ map ให้ถูกต้อง
-    // ----------------------------
-    // รองรับหลายชื่อ field ที่อาจมาจากระบบหลังบ้าน
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (typeof claims.exp === "number" && claims.exp + 300 < nowSec) {
+      return NextResponse.json(
+        { success: false, message: "External token expired" },
+        { status: 401 }
+      );
+    }
+    if (typeof claims.nbf === "number" && claims.nbf - 300 > nowSec) {
+      return NextResponse.json(
+        { success: false, message: "External token not yet valid" },
+        { status: 401 }
+      );
+    }
     const rawRoleId =
-      claims.role_id ?? claims.role ?? claims.user_role ?? claims.roleId ?? claims.user_role_id;
+      claims.role_id ??
+      claims.role ??
+      claims.user_role ??
+      claims.roleId ??
+      claims.user_role_id;
 
     const role_key = roleIdToKey(rawRoleId);
     if (!role_key) {
-      // ถ้าเลข role ไม่ตรง mapping → ไม่อนุญาต
       return NextResponse.json(
         { success: false, message: "สิทธิ์การใช้งานไม่ถูกต้อง (Unknown role)" },
         { status: 403 }
       );
     }
-
     const role_id = Number(rawRoleId);
 
     const userForOurJwt = {
       sub: (claims.sub as string) || claims.user_id || claims.id || username,
       username: (claims.username as string) || username,
-      role: role_key,        // ใช้ key เพื่อ middleware
-      role_id,               // เก็บเลขไว้เผื่อใช้งานแสดงผล/อ้างอิง
+      role: role_key,
+      role_id,
       name: (claims.name as string) || claims.fullname || username,
-      org_id: claims.org_id || claims.organization_id,
-      department_id: claims.department_id || claims.dept_id,
+      org_id: claims.org_id || claims.organization_id || undefined,
+      department_id: claims.department_id || claims.dept_id || undefined,
+  
     };
 
-    const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60; // 7 วัน / 1 ชม.
+    const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60;
+
     const ourJwt = await signUserToken(userForOurJwt, ttl);
 
     const res = NextResponse.json(
       { success: true },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
+    const isProd = process.env.NODE_ENV === "production";
 
-    // external token
     res.cookies.set("api_token", externalToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
       sameSite: "lax",
       path: "/",
       maxAge: ttl,
+      priority: "high",
     });
 
-    // auth_token ของเรา (มี role_key + role_id)
     res.cookies.set("auth_token", ourJwt, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
       sameSite: "lax",
       path: "/",
       maxAge: ttl,
+      priority: "high",
     });
 
     return res;
   } catch (e: any) {
-    return NextResponse.json(
-      { success: false, message: e?.message || "เกิดข้อผิดพลาด" },
-      { status: 401 }
-    );
+    const status = e?.status ?? 401;
+    const message =
+      status === 401 ? "Invalid username or password" : e?.message || "เกิดข้อผิดพลาด";
+    return NextResponse.json({ success: false, message }, { status });
   }
 }
