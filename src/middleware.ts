@@ -3,22 +3,28 @@ import { jwtVerify } from "jose";
 
 const PUBLIC_PREFIXES = ["/", "/login", "/forgot-password"];
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET
-);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  return PUBLIC_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
 }
 
 function pickHomeByRole(role?: string): string {
   switch (role) {
-    case "admin": return "/admin";
-    case "planning": return "/planning";
-    case "director": return "/director";
-    case "hr": return "/hr";
-    case "department_head": return "/department/head";
-    default: return "/user/dashboard";
+    case "admin":
+      return "/admin";
+    case "planning":
+      return "/planning";
+    case "director":
+      return "/director";
+    case "hr":
+      return "/hr";
+    case "department_head":
+      return "/department/head";
+    default:
+      return "/user/dashboard";
   }
 }
 
@@ -30,7 +36,10 @@ export async function middleware(request: NextRequest) {
     if (token) {
       try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        const homeUrl = new URL(pickHomeByRole(payload.role as string), request.url);
+        const homeUrl = new URL(
+          pickHomeByRole(payload.role as string),
+          request.url
+        );
         return NextResponse.redirect(homeUrl);
       } catch {}
     }
@@ -62,8 +71,9 @@ export async function middleware(request: NextRequest) {
     department_head: ["/department/head", "/user"],
     department_user: ["/user"],
   };
-  const allowed = (roleToPrefixes[role] || ["/user"])
-    .some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const allowed = (roleToPrefixes[role] || ["/user"]).some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
   if (!allowed) return NextResponse.redirect(new URL("/403", request.url));
 
   const headers = new Headers(request.headers);

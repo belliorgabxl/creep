@@ -1,36 +1,33 @@
 "use client";
 import React, { useMemo, useState } from "react";
+import { BadgeCreateFormProject } from "../Helper";
+import { ActivitiesRow } from "@/dto/projectDto";
 
-export type KPIRow = {
-  id: number;
-  activity: string;
-  period: string;
-  owner: string;
-};
+
 
 type Props = {
-  value?: KPIRow[];
-  onChange?: (rows: KPIRow[]) => void;
-  defaultRows?: KPIRow[];
+  value?: ActivitiesRow[];
+  onChange?: (rows: ActivitiesRow[]) => void;
+  defaultRows?: ActivitiesRow[];
   className?: string;
   hideRemove?: boolean;
 };
 
-export default function KPIActivitiesTable({
+export default function ActivitiesTable({
   value,
   onChange,
   defaultRows,
   className,
   hideRemove = false,
 }: Props) {
-  const [internal, setInternal] = useState<KPIRow[]>(
+  const [internal, setInternal] = useState<ActivitiesRow[]>(
     defaultRows ?? [{ id: 1, activity: "", period: "", owner: "" }]
   );
 
   const controlled = value !== undefined;
-  const rows = controlled ? (value as KPIRow[]) : internal;
+  const rows = controlled ? (value as ActivitiesRow[]) : internal;
 
-  const setRows = (next: KPIRow[]) => {
+  const setRows = (next: ActivitiesRow[]) => {
     if (!controlled) setInternal(next);
     onChange?.(next);
   };
@@ -48,9 +45,13 @@ export default function KPIActivitiesTable({
     setRows(reindexed);
   };
 
-  const updateRow = (index: number, field: keyof KPIRow, value: string) => {
+  const updateRow = (
+    index: number,
+    field: keyof ActivitiesRow,
+    value: string
+  ) => {
     const next = [...rows];
-    next[index] = { ...next[index], [field]: value } as KPIRow;
+    next[index] = { ...next[index], [field]: value } as ActivitiesRow;
     setRows(next);
   };
 
@@ -58,6 +59,7 @@ export default function KPIActivitiesTable({
 
   return (
     <div className={["space-y-3", className].filter(Boolean).join(" ")}>
+      <BadgeCreateFormProject title="ขั้นตอนการดำเนินงานกิจกรรม" />
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-300">
           <thead className="bg-gray-100">

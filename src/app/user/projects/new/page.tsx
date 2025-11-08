@@ -1,12 +1,32 @@
 "use client";
-
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, Save, Send } from "lucide-react";
-import { ActivityBudgetTable } from "@/components/project/ActivityTable";
-import KPIActivitiesTable from "@/components/project/KPITable";
-import FollowUpEvaluationForm from "@/components/project/FollowUpEvaluationForm";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ActivitiesRow,
+  ApproveParams,
+  BudgetTableValue,
+  DateDurationValue,
+  EstimateParams,
+  ExpectParams,
+  GeneralInfoParams,
+  GoalParams,
+  KPIParams,
+  StrategyParams,
+} from "@/dto/projectDto";
+import DateDurationSection from "@/components/project/new/DateDurationSection";
+import { BudgetTable } from "@/components/project/new/BudgetTable";
+import GeneralInfoTable from "@/components/project/new/GeneralInfoTable";
+import StrategyForm from "@/components/project/new/StrategyForm";
+import ApproveForm from "@/components/project/new/ApproveForm";
+import { BadgeCreateFormProject } from "@/components/project/Helper";
+import GoalForm from "@/components/project/new/GoalForm";
+import KPIAndEstimateForm from "@/components/project/new/EstimateForm";
+import ActivitiesTable from "@/components/project/new/ActivitiesTable";
+import KPIForm from "@/components/project/new/KPIForm";
+import EstimateForm from "@/components/project/new/EstimateForm";
+import ExpectForm from "@/components/project/new/ExpectForm";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
@@ -17,6 +37,7 @@ const steps = [
   "ระยะเวลาดำเนินงาน",
   "สถานที่ดำเนินงาน",
   "งบประมาณ",
+  "ขั้นตอนการดำเนินงานกิจกรรม",
   "ตัวชี้วัดความสำเร็จ (KPI)",
   "การติดตามและประเมินผล",
   "ผลที่คาดว่าจะได้รับ",
@@ -25,16 +46,102 @@ const steps = [
 ];
 
 export default function CreateProjectPage() {
+  // setup state
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(0);
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
-  const [rowsKPI, setRowKPI] = useState([
+  // general info part
+  const [generalInfo, setGeneralInfo] = useState<GeneralInfoParams>({
+    name: "",
+    type: "",
+    department: "",
+    owner: "",
+  });
+
+  // strategy part
+  const [strategy, setStrategy] = useState<StrategyParams>({
+    schoolPlan: "",
+    ovEcPolicy: "",
+    qaIndicator: "",
+  });
+  const handleStrategyChange = useCallback((v: StrategyParams) => {
+    setStrategy(v);
+  }, []);
+
+  // duration section state
+  const [dateDur, setDateDur] = useState<DateDurationValue>({
+    startDate: "",
+    endDate: "",
+    durationMonths: 0,
+  });
+
+  // expectation part
+  const [expectation, setExpectation] = useState<ExpectParams>({
+    result: "",
+  });
+  const handleExpectChange = useCallback((v: ExpectParams) => {
+    setExpectation(v);
+  }, []);
+
+  // budget part
+  const [budget, setBudget] = useState<BudgetTableValue | null>(null);
+  const handleBudgetChange = useCallback((v: BudgetTableValue) => {
+    setBudget(v);
+  }, []);
+
+  // activity part
+  const [activity, setActivity] = useState<ActivitiesRow[]>([
     { id: 1, activity: "", period: "", owner: "" },
   ]);
+  const handleActivityChange = useCallback(
+    (rows: ActivitiesRow[]) => setActivity(rows),
+    []
+  );
 
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  // expectation part
+  const [estimate, setEstimate] = useState<EstimateParams>({
+    method: "",
+    evaluator: "",
+    period: "",
+  });
+  const handleEstimateChange = useCallback((v: EstimateParams) => {
+    setEstimate(v);
+  }, []);
+
+  // approve part
+  const [approve, setApprove] = useState<ApproveParams>({
+    proposerName: "",
+    proposerPosition: "",
+    proposeDate: "",
+    deptComment: "",
+    directorComment: "",
+  });
+  const handleApproveChange = useCallback((v: ApproveParams) => {
+    setApprove(v);
+  }, []);
+
+  // goal part
+  const [goal, setGoal] = useState<GoalParams>({
+    quantityGoal: "",
+    qualityGoal: "",
+  });
+  const handleGoalChange = useCallback((v: GoalParams) => {
+    setGoal(v);
+  }, []);
+
+  // kpi part
+  const [kpi, setKpi] = useState<KPIParams>({
+    output: "",
+    outcome: "",
+  });
+  const handleKpiChange = useCallback((v: KPIParams) => {
+    setKpi(v);
+  }, []);
+
+  // process part
   const onSaveProject = () => {
     setIsLoading(true);
   };
@@ -77,44 +184,7 @@ export default function CreateProjectPage() {
               transition={{ duration: 0.2 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">ข้อมูลพื้นฐาน</h2>
-              <div className="grid lg:grid-cols-2 gap-4">
-                <div className="lg:flex grid  gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    ชื่อแผนการ / โครงการ
-                  </label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="Project name"
-                  />
-                </div>
-                <div className="lg:flex grid  gap-3 items-center">
-                  <label className="text-sm text-gray-700">ประเภทโครงการ</label>
-                  <select className="px-4 py-1 border rounded-lg border-gray-300">
-                    <option>เลือกประเภท</option>
-                    <option>แผนงานประจำ</option>
-                    <option>โครงการพิเศษ / พัฒนา</option>
-                  </select>
-                </div>
-                <div className="lg:flex grid  gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    หน่วยงาน / แผนกที่รับผิดชอบ
-                  </label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="Department"
-                  />
-                </div>
-                <div className="lg:flex grid gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    ผู้รับผิดชอบโครงการ
-                  </label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="Department"
-                  />
-                </div>
-              </div>
+              <GeneralInfoTable onChange={setGeneralInfo} value={generalInfo} />
             </motion.div>
           )}
           {step === 1 && (
@@ -125,42 +195,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">
-                ความสอดคล้องเชิงยุทธศาสตร์
-              </h2>
-              <div className="grid gap-4">
-                <div className="lg:flex grid   gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    สอดคล้องกับแผนยุทธศาสตร์ของสถานศึกษา
-                  </label>
-                  <input
-                    className="px-4  py-1 border rounded-lg border-gray-300"
-                    placeholder="กรอกข้อมูล..."
-                  />
-                </div>
-                <div className="lg:flex grid  gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    สอดคล้องกับนโยบาย / ยุทธศาสตร์ของสำนักงาน
-                    <br className="lg:hidden block" />
-                    คณะกรรมการการอาชีวศึกษา (สอศ.)
-                  </label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="กรอกข้อมูล..."
-                  />
-                </div>
-                <div className="lg:flex grid gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    สอดคล้องกับตัวชี้วัดงานประกันคุณภาพภายใน
-                    <br className="lg:hidden block" />
-                    (ระบุมาตรฐานและตัวบ่งชี้)
-                  </label>
-                  <input
-                    className="px-4  py-1 border rounded-lg border-gray-300"
-                    placeholder="กรอกข้อมูล..."
-                  />
-                </div>
-              </div>
+              <StrategyForm value={strategy} onChange={handleStrategyChange} />
             </motion.div>
           )}
           {step === 2 && (
@@ -171,7 +206,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">หลักการและเหตุผล</h2>
+              <BadgeCreateFormProject title="หลักการและเหตุผล" />
               <textarea
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุหลักการและเหตุผล..."
@@ -186,9 +221,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">
-                วัตถุประสงค์ของโครงการ
-              </h2>
+              <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
               <textarea
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุวัตถุประสงค์ของโครงการ..."
@@ -203,16 +236,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">เป้าหมายเชิงปริมาณ</h2>
-              <textarea
-                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
-                placeholder="เป้าหมายเชิงปริมาณ..."
-              />
-              <h2 className="font-medium text-gray-800">เป้าหมายเชิงคุณภาพ</h2>
-              <textarea
-                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
-                placeholder="เป้าหมายเชิงคุณภาพ..."
-              />
+              <GoalForm value={goal} onChange={handleGoalChange} />
             </motion.div>
           )}
           {step === 5 && (
@@ -223,35 +247,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <div className=" grid lg:flex gap-5 items-center justify-start">
-                <div className="grid lg:flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">วันเริ่มต้น</label>
-                  <input
-                    type="date"
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="3"
-                  />
-                </div>
-                <div className="grid lg:flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">วันที่สิ้นสุด</label>
-                  <input
-                    type="date"
-                    className="px-4 py-1  border rounded-lg border-gray-300"
-                    placeholder="3"
-                  />
-                </div>
-              </div>
-
-              <div className="grid lg:flex gap-3 items-center">
-                <label className="text-sm text-gray-700">
-                  ระยะเวลา (เดือน)
-                </label>
-                <input
-                  type="number"
-                  className="px-4 py-1 border rounded-lg border-gray-300"
-                  placeholder="3"
-                />
-              </div>
+              <DateDurationSection value={dateDur} onChange={setDateDur} />
             </motion.div>
           )}
           {step === 6 && (
@@ -262,7 +258,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">สถานที่ดำเนินงาน</h2>
+              <BadgeCreateFormProject title="สถานที่ดำเนินงาน" />
               <textarea
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="สถานที่ดำเนินงาน..."
@@ -277,43 +273,10 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-6"
             >
-              <div className="flex flex-col lg:gap-2 gap-4">
-                <div className="grid lg:flex lg:gap-2 gap-3">
-                  <label className="font-medium ">งบประมาณทั้งหมด</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="ระบุจำนวนเงิน"
-                      className="ml-2 w-40 border-b border-gray-400 focus:outline-none text-center"
-                    />
-                    บาท
-                  </div>
-                </div>
-
-                <div className="grid lg:flex flex-wrap gap-4">
-                  <span className="font-medium">แหล่งงบประมาณ </span>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" className="h-4 w-4" />
-                    <span>งบสถานศึกษา</span>
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" className="h-4 w-4" />
-                    <span>เงินรายได้</span>
-                  </label>
-                  <label className="grid lg:flex items-center gap-1">
-                    <div className="flex gap-2 item-center">
-                      <input type="checkbox" className="h-4 w-4" />
-                      <span>ภายนอก (ระบุหน่วยงาน)</span>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="เช่น กระทรวงศึกษา"
-                      className="ml-2 w-56 border-b border-gray-400 focus:outline-none"
-                    />
-                  </label>
-                </div>
-              </div>
-              <ActivityBudgetTable />
+              <BudgetTable
+                value={budget ?? undefined}
+                onChange={handleBudgetChange}
+              />
             </motion.div>
           )}
           {step === 8 && (
@@ -324,7 +287,10 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <KPIActivitiesTable value={rowsKPI} onChange={setRowKPI} />
+              <ActivitiesTable
+                value={activity}
+                onChange={handleActivityChange}
+              />
             </motion.div>
           )}
 
@@ -336,20 +302,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">
-                ตัวชี้วัดผลผลิต (Output Indicators):{" "}
-              </h2>
-              <textarea
-                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
-                placeholder="ตัวชี้วัดผลผลิต..."
-              />
-              <h2 className="font-medium text-gray-800">
-                ตัวชี้วัดผลลัพธ์ (Outcome Indicators):{" "}
-              </h2>
-              <textarea
-                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
-                placeholder="ตัวชี้วัดผลลัพธ์..."
-              />
+              <KPIForm value={kpi} onChange={handleKpiChange} />
             </motion.div>
           )}
           {step === 10 && (
@@ -360,7 +313,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-6"
             >
-              <FollowUpEvaluationForm />
+              <EstimateForm value={estimate} onChange={handleEstimateChange} />
             </motion.div>
           )}
           {step === 11 && (
@@ -371,11 +324,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">ผลที่คาดว่าจะได้รับ</h2>
-              <textarea
-                className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
-                placeholder="ผลที่คาดว่าจะได้รับ..."
-              />
+              <ExpectForm value={expectation} onChange={handleExpectChange} />
             </motion.div>
           )}
           {step === 12 && (
@@ -386,9 +335,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">
-                ข้อเสนอแนะ / การพัฒนาในอนาคต
-              </h2>
+              <BadgeCreateFormProject title="ข้อเสนอแนะ" />
               <textarea
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ข้อเสนอแนะ..."
@@ -403,50 +350,7 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <h2 className="font-medium text-gray-800">การอนุมัติและลงนาม</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">ผู้เสนอ</label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="...."
-                  />
-                </div>
-                <div className="flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">ตำแหน่ง</label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="...."
-                  />
-                </div>
-                <div className="flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">วันที่เสนอ</label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="....."
-                  />
-                </div>
-              </div>
-              <div className="grid gap-4">
-                <div className="flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    ความคิดเห็นของหัวหน้างาน/แผนก
-                  </label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="....."
-                  />
-                </div>
-                <div className="flex gap-3 items-center">
-                  <label className="text-sm text-gray-700">
-                    ความคิดเห็นของผู้บริหาร / ผู้อำนวยการสถานศึกษา
-                  </label>
-                  <input
-                    className="px-4 py-1 border rounded-lg border-gray-300"
-                    placeholder="Department"
-                  />
-                </div>
-              </div>
+              <ApproveForm onChange={handleApproveChange} value={approve} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -456,7 +360,8 @@ export default function CreateProjectPage() {
         <button
           onClick={prev}
           disabled={step === 0}
-          className="flex items-center gap-1 text-gray-700 hover:text-gray-900 disabled:opacity-40"
+          className="flex items-center gap-1 text-gray-700 hover:text-gray-900 enabled:hover:bg-slate-200 
+          py-1 px-4 rounded-sm disabled:opacity-40"
         >
           <ChevronLeft className="h-4 w-4" /> ย้อนกลับ
         </button>
@@ -477,38 +382,19 @@ export default function CreateProjectPage() {
                   router.push("/user/projects/my-project");
                 }, 1000);
               }}
-              className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-50"
+              className="inline-flex items-center gap-1 rounded-md border border-gray-300
+               bg-green-600 hover:bg-green-700 hover:scale-[102%] duration-300 text-white px-4 py-2 text-sm   "
             >
               {isLoading ? (
                 <Loader2 className="animate-spin h-4 w-4 " />
               ) : (
                 <Save className="h-4 w-4" />
               )}{" "}
-              บันทึก Draft
-            </button>
-            <button
-              onClick={() => {
-                onSaveProject();
-                setTimeout(() => {
-                  router.push("/user/projects/my-project");
-                }, 1000);
-              }}
-              className="inline-flex items-center gap-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-            >
-              {isLoading ? (
-                <Loader2 className="animate-spin h-4 w-4 " />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}{" "}
-              ส่งอนุมัติ
+              สร้างและบันทึกโครงงาน
             </button>
           </div>
         )}
       </div>
     </main>
   );
-}
-
-function inputClass() {
-  return "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500";
 }

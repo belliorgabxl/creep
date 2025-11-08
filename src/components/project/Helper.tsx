@@ -1,4 +1,4 @@
-import { Project } from "@/dto/projectDto";
+import { Project, TdProps } from "@/dto/projectDto";
 
 export function Section({
   title,
@@ -116,4 +116,42 @@ export function formatThaiDateTime(iso: string) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+
+
+export function Td({ children, className = "", ...rest }: TdProps) {
+  return (
+    <td
+      {...rest}
+      className={`px-3 py-3 align-top min-w-0 overflow-hidden ${className}`}
+    >
+      {children}
+    </td>
+  );
+}
+
+export function BadgeTiny({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title?: string;
+}) {
+  return (
+    <span
+      className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] max-w-[12rem] overflow-hidden"
+      title={title}
+    >
+      <span className="line-clamp-1">{children}</span>
+    </span>
+  );
+}
+
+export function BadgeCreateFormProject({ title }: { title: string }) {
+  return (
+    <h1 className="px-4 py-1 text-white bg-gradient-to-r from-blue-600 to-indigo-500 rounded-md w-fit ">
+      {title}
+    </h1>
+  );
 }
