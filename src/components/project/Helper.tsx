@@ -57,7 +57,7 @@ export function StatusBadge({ status }: { status: Project["status"] }) {
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${map[status]}`}
+      className={`justify-center flex items-center rounded-full w-full text-center px-2.5 py-0.5 text-xs font-medium ${map[status]}`}
     >
       {label[status]}
     </span>
@@ -117,8 +117,6 @@ export function formatThaiDateTime(iso: string) {
     timeStyle: "short",
   });
 }
-
-
 
 export function Td({ children, className = "", ...rest }: TdProps) {
   return (

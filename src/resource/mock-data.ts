@@ -3,81 +3,173 @@ import { Department, Project } from "@/dto/projectDto";
 export const mockProjects: Project[] = [
   {
     id: "pj-001",
-    name: "ระบบบริหารคลังสินค้า SOOK",
+    name: "โครงการพัฒนาทักษะดิจิทัลนักศึกษา",
     owner: "ภัทรจาริน นภากาญจน์",
-    role: "owner",
+    role: "หัวหน้าโครงการ",
     status: "in_progress",
     progress: 60,
     updatedAt: new Date("2025-10-26T10:00:00Z").toISOString(),
 
-    type: "Internal",
-    department: "ฝ่ายพัฒนาโซลูชันธุรกิจ",
+    type: "โครงการพิเศษ",
+    department: "แผนกเทคโนโลยีสารสนเทศ",
     durationMonths: 6,
 
     objective:
-      "พัฒนาระบบจัดการคลังสินค้าภายในองค์กรให้สามารถตรวจสอบสต็อกได้แบบเรียลไทม์",
+      "พัฒนาทักษะการใช้เทคโนโลยีดิจิทัลสำหรับนักศึกษา เพื่อเตรียมพร้อมสู่ตลาดแรงงานยุคใหม่",
 
     kpis: [
-      { name: "ลดระยะเวลาในการตรวจนับสต็อก", target: 30 },
-      { name: "เพิ่มความถูกต้องของข้อมูลสินค้า", target: 99 },
+      { name: "นักศึกษาผ่านการอบรมครบตามหลักสูตร", target: 100 },
+      { name: "นักศึกษานำความรู้ไปใช้จริง", target: 80 },
     ],
 
-    budget: 850000,
+    budget: 180000,
 
-    qaIndicators: ["ระบบสารสนเทศมีประสิทธิภาพ", "กระบวนการทำงานเป็นมาตรฐาน"],
-    strategies: ["ยุทธศาสตร์ด้านประสิทธิภาพองค์กร"],
+    qaIndicators: ["มาตรฐานที่ 1 ตัวบ่งชี้ 1.2", "มาตรฐานที่ 2 ตัวบ่งชี้ 2.1"],
+    strategies: [
+      "เพิ่มขีดความสามารถทางดิจิทัล",
+      "ส่งเสริมการเรียนรู้ตลอดชีวิต",
+    ],
 
     attachmentsCount: 3,
   },
-
   {
     id: "pj-002",
-    name: "CareLink Platform",
-    owner: "ภัทรจาริน นภากาญจน์",
-    role: "assignee",
-    status: "on_hold",
-    progress: 35,
-    updatedAt: new Date("2025-10-20T09:00:00Z").toISOString(),
+    name: "โครงการส่งเสริมการอ่านภาษาอังกฤษ",
+    owner: "อ.กิตติศักดิ์ บุญช่วย",
+    role: "ผู้รับผิดชอบโครงการ",
+    status: "draft",
+    progress: 25,
+    updatedAt: new Date("2025-09-15T08:30:00Z").toISOString(),
 
-    type: "External",
-    department: "ทีมโครงการพิเศษ",
-    durationMonths: 8,
-    objective: "สร้างแพลตฟอร์มจับคู่ผู้ดูแลผู้สูงอายุ (Caregiver) กับลูกค้า",
+    type: "แผนงานประจำ",
+    department: "แผนกภาษาต่างประเทศ",
+    durationMonths: 3,
+
+    objective:
+      "สร้างสภาพแวดล้อมแห่งการเรียนรู้ภาษาอังกฤษผ่านกิจกรรมการอ่านและสื่อมัลติมีเดีย",
+
     kpis: [
-      { name: "เปิดตัว MVP ภายใน 8 เดือน" },
-      { name: "ผู้ใช้ที่สมัครใช้งาน 1000 รายในไตรมาสแรก" },
+      { name: "นักเรียนเข้าร่วมกิจกรรม", target: 50 },
+      { name: "คะแนนเฉลี่ยการอ่านเพิ่มขึ้น", target: 10 },
     ],
-    budget: 1200000,
-    qaIndicators: ["การบริการผู้ใช้มีคุณภาพ"],
-    strategies: ["ยุทธศาสตร์ด้านนวัตกรรมบริการ"],
-    attachmentsCount: 2,
-  },
 
+    budget: 50000,
+
+    qaIndicators: ["มาตรฐานที่ 3 ตัวบ่งชี้ 3.1"],
+    strategies: ["พัฒนาทักษะภาษาเพื่อการสื่อสารสากล"],
+
+    attachmentsCount: 1,
+  },
   {
     id: "pj-003",
-    name: "ระบบจัดการผลการเรียน OBAC",
-    owner: "ภัทรจาริน นภากาญจน์",
-    role: "owner",
+    name: "โครงการฝึกอบรมการใช้ซอฟต์แวร์บัญชี",
+    owner: "อ.ธิดารัตน์ ศรีสวัสดิ์",
+    role: "หัวหน้าโครงการ",
     status: "done",
     progress: 100,
-    updatedAt: new Date("2025-09-30T15:00:00Z").toISOString(),
+    updatedAt: new Date("2025-08-10T14:20:00Z").toISOString(),
 
-    type: "Internal",
-    department: "ฝ่ายพัฒนาซอฟต์แวร์",
-    durationMonths: 5,
+    type: "โครงการพัฒนา",
+    department: "แผนกการบัญชี",
+    durationMonths: 4,
+
     objective:
-      "ปรับปรุงระบบคำนวณเกรดและรายงานผลให้รองรับเกณฑ์ใหม่ของอาชีวศึกษา",
+      "ให้นักเรียนมีความเข้าใจในการใช้ซอฟต์แวร์บัญชีที่ใช้จริงในสถานประกอบการ",
+
     kpis: [
-      { name: "ลดเวลาการกรอกคะแนนของครูลง 50%" },
-      { name: "ลดข้อผิดพลาดในการส่งเกรดลงต่ำกว่า 1%" },
+      { name: "นักเรียนผ่านการประเมินหลังอบรม", target: 90 },
+      { name: "สถานประกอบการให้คะแนนพึงพอใจ", target: 85 },
     ],
-    budget: 600000,
-    qaIndicators: [
-      "คุณภาพข้อมูลมีความถูกต้อง",
-      "ระบบสารสนเทศมีความน่าเชื่อถือ",
+
+    budget: 120000,
+
+    qaIndicators: ["มาตรฐานที่ 1 ตัวบ่งชี้ 1.3"],
+    strategies: ["ยกระดับการเรียนรู้เชิงปฏิบัติการ"],
+
+    attachmentsCount: 5,
+  },
+  {
+    id: "pj-004",
+    name: "โครงการอนุรักษ์สิ่งแวดล้อมในวิทยาลัย",
+    owner: "อ.นฤมล สายธาร",
+    role: "ผู้ประสานงานโครงการ",
+    status: "on_hold",
+    progress: 40,
+    updatedAt: new Date("2025-09-28T09:00:00Z").toISOString(),
+
+    type: "โครงการจิตอาสา",
+    department: "กิจการนักศึกษา",
+    durationMonths: 2,
+
+    objective:
+      "ส่งเสริมการมีส่วนร่วมของนักศึกษาในการอนุรักษ์สิ่งแวดล้อมภายในสถานศึกษา",
+
+    kpis: [
+      { name: "จำนวนนักศึกษาเข้าร่วมกิจกรรม", target: 200 },
+      { name: "ลดปริมาณขยะในพื้นที่ 20%", target: 20 },
     ],
-    strategies: ["ยุทธศาสตร์ด้านดิจิทัลเพื่อการศึกษา"],
+
+    budget: 35000,
+
+    qaIndicators: ["มาตรฐานที่ 5 ตัวบ่งชี้ 5.1"],
+    strategies: ["สร้างสำนึกอนุรักษ์สิ่งแวดล้อม"],
+
+    attachmentsCount: 2,
+  },
+  {
+    id: "pj-005",
+    name: "โครงการฝึกอบรมความปลอดภัยในการทำงาน",
+    owner: "อ.สมชาย วิริยะกิจ",
+    role: "หัวหน้าแผนกช่างกลโรงงาน",
+    status: "in_progress",
+    progress: 70,
+    updatedAt: new Date("2025-11-05T15:45:00Z").toISOString(),
+
+    type: "โครงการฝึกอบรม",
+    department: "ช่างกลโรงงาน",
+    durationMonths: 5,
+
+    objective: "สร้างจิตสำนึกความปลอดภัยให้แก่นักเรียนและบุคลากรภายในวิทยาลัย",
+
+    kpis: [
+      { name: "ผู้เข้าอบรมผ่านการทดสอบความรู้", target: 95 },
+      { name: "ลดอุบัติเหตุในพื้นที่ปฏิบัติงาน", target: 100 },
+    ],
+
+    budget: 95000,
+
+    qaIndicators: ["มาตรฐานที่ 4 ตัวบ่งชี้ 4.2"],
+    strategies: ["พัฒนาความปลอดภัยในสถานศึกษา"],
+
     attachmentsCount: 4,
+  },
+  {
+    id: "pj-006",
+    name: "โครงการพัฒนาเว็บไซต์ประชาสัมพันธ์วิทยาลัย",
+    owner: "อ.วรพล อินทรา",
+    role: "หัวหน้าฝ่ายสารสนเทศ",
+    status: "draft",
+    progress: 10,
+    updatedAt: new Date("2025-10-10T12:00:00Z").toISOString(),
+
+    type: "โครงการเทคโนโลยีสารสนเทศ",
+    department: "ฝ่ายสารสนเทศและประชาสัมพันธ์",
+    durationMonths: 3,
+
+    objective:
+      "จัดทำเว็บไซต์เพื่อเผยแพร่ข่าวสารและผลงานของนักศึกษา รวมถึงการประชาสัมพันธ์กิจกรรมของวิทยาลัย",
+
+    kpis: [
+      { name: "เว็บไซต์ออนไลน์ใช้งานได้ภายในกำหนด", target: 1 },
+      { name: "จำนวนผู้เข้าชมเฉลี่ยต่อเดือน", target: 1000 },
+    ],
+
+    budget: 78000,
+
+    qaIndicators: ["มาตรฐานที่ 2 ตัวบ่งชี้ 2.3"],
+    strategies: ["เพิ่มประสิทธิภาพการสื่อสารภายในองค์กร"],
+
+    attachmentsCount: 0,
   },
 ];
 
@@ -173,25 +265,3 @@ export const mockDepartments: Department[] = [
     updatedAt: "2025-10-17T09:40:00Z",
   },
 ];
-
-export const mockOne: Project = {
-  id: "pj-001",
-  name: "ระบบบริหารคลังสินค้า SOOK",
-  owner: "ภัทรจาริน นภากาญจน์",
-  role: "owner",
-  status: "in_progress",
-  progress: 60,
-  updatedAt: new Date().toISOString(),
-  type: "Internal",
-  department: "ฝ่ายวิชาการ",
-  durationMonths: 6,
-  objective: "พัฒนาระบบติดตามสต็อกแบบเรียลไทม์ ลดเวลาและข้อผิดพลาด",
-  kpis: [
-    { name: "ลดเวลาตรวจนับสต็อก", target: 30 },
-    { name: "ความถูกต้องข้อมูล", target: 99 },
-  ],
-  budget: 850_000,
-  qaIndicators: ["ระบบสารสนเทศมีประสิทธิภาพ", "กระบวนการทำงานเป็นมาตรฐาน"],
-  strategies: ["ยุทธศาสตร์ด้านประสิทธิภาพองค์กร"],
-  attachmentsCount: 3,
-}
