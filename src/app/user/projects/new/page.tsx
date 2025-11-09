@@ -132,6 +132,9 @@ export default function CreateProjectPage() {
     setGoal(v);
   }, []);
 
+  // suggestion part
+  const [suggestion, setSuggestion] = useState<string>("");
+
   // kpi part
   const [kpi, setKpi] = useState<KPIParams>({
     output: "",
@@ -140,6 +143,12 @@ export default function CreateProjectPage() {
   const handleKpiChange = useCallback((v: KPIParams) => {
     setKpi(v);
   }, []);
+
+  // objective part
+  const [objective, setObjective] = useState<string>("");
+
+  //location part
+  const [location, setLocation] = useState<string>("");
 
   // process part
   const onSaveProject = () => {
@@ -223,6 +232,8 @@ export default function CreateProjectPage() {
             >
               <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
               <textarea
+                value={objective}
+                onChange={(e) => setObjective(e.target.value)}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุวัตถุประสงค์ของโครงการ..."
               />
@@ -260,6 +271,8 @@ export default function CreateProjectPage() {
             >
               <BadgeCreateFormProject title="สถานที่ดำเนินงาน" />
               <textarea
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="สถานที่ดำเนินงาน..."
               />
@@ -337,6 +350,8 @@ export default function CreateProjectPage() {
             >
               <BadgeCreateFormProject title="ข้อเสนอแนะ" />
               <textarea
+                value={suggestion}
+                onChange={(e) => setSuggestion(e.target.value)}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ข้อเสนอแนะ..."
               />
