@@ -5,11 +5,52 @@ import { HandCoins } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { pickHomeByRole } from "@/lib/rbac";
+
+type Me = {
+  id: string;
+  name?: string;
+  role?: string;
+  org_id?: string;
+  department_id?: string;
+};
+
+/** อนุญาต redirect เฉพาะ path ภายในเท่านั้น */
+function safeInternalRedirect(path?: string | null): string | null {
+  if (!path) return null;
+  try {
+
+    if (!path.startsWith("/")) return null;
+
+    if (path.startsWith("//")) return null;
+
+    if (path.toLowerCase().startsWith("/javascript:")) return null;
+    return path;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchMe(): Promise<Me | null> {
+  try {
+    const r = await fetch("/api/auth/me", { method: "GET", credentials: "include" });
+    if (!r.ok) return null;
+    const data = await r.json();
+    const me = (data?.data ?? data) as Me | undefined;
+    if (!me?.id) return null;
+    return me;
+  } catch {
+    return null;
+  }
+}
 
 function LoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
-  const redirect = sp.get("redirect") || sp.get("callbackUrl") || "/user/dashboard";
+
+  const redirectParam =
+    safeInternalRedirect(sp.get("redirect")) ??
+    safeInternalRedirect(sp.get("callbackUrl"));
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -34,13 +75,14 @@ function LoginInner() {
 
   useEffect(() => {
     const hasToken = document.cookie.split("; ").some((c) => c.startsWith("auth_token="));
-    if (hasToken) {
-      const cookieRole =
-        (document.cookie.split("; ").find((c) => c.startsWith("user_role=")) || "")
-          .split("=")[1] || "user";
-      const home = cookieRole === "admin" ? "/admin" : "/user/dashboard";
-      router.replace(home);
-    }
+    if (!hasToken) return;
+
+    (async () => {
+      const me = await fetchMe();
+      if (me?.role) {
+        router.replace(pickHomeByRole(me.role));
+      }
+    })();
   }, [router]);
 
   function onKeyEvent(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -55,9 +97,8 @@ function LoginInner() {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           username: username.trim(),
           password: password.trim(),
@@ -66,8 +107,8 @@ function LoginInner() {
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
       }
 
       if (remember) {
@@ -75,9 +116,11 @@ function LoginInner() {
       } else {
         localStorage.removeItem("ebudget_login");
       }
+      const target =
+        redirectParam ??
+        pickHomeByRole((await fetchMe())?.role); 
 
-      router.replace(redirect);
-      router.refresh();
+      router.replace(target);
     } catch (err: any) {
       setError(err?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
@@ -99,7 +142,6 @@ function LoginInner() {
               <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-slate-900/5"></div>
 
               <div className="p-8">
-     
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 rounded-full flex items-center justify-center border-2 border-indigo-600">
                     <HandCoins className="text-indigo-600 w-6 h-6 " />
@@ -110,7 +152,6 @@ function LoginInner() {
                   </div>
                 </div>
 
-     
                 <form onSubmit={handleSubmit} className="grid gap-4" noValidate autoComplete="off">
                   <div>
                     <label htmlFor="username" className="block text-sm font-medium text-slate-700">

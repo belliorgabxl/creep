@@ -55,7 +55,7 @@ export default function UserDashboardPage() {
             <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
                 <div className="container mx-auto px-4">
                     <div className="flex h-14 items-center justify-between">
-                        <h1 className="text-lg font-semibold tracking-tight">Dashboard</h1>
+                        <h1 className="text-lg font-semibold tracking-tight">Dashboard (Admin)</h1>
                         <div className="text-xs text-gray-500">
                             ปีงบประมาณ: <span className="font-medium text-gray-700">{filters.year}</span>
                         </div>

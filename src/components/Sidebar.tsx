@@ -117,11 +117,11 @@ export function Sidebar() {
   /** รายการเมนู (ถ้าต้องการซ่อน/แสดงตาม role ค่อยเติมเงื่อนไขที่นี่) */
   const items = useMemo(
     () => [
-      { href: "/user/dashboard", icon: LayoutDashboard, label: "ภาพรวม" },
-      { href: "/user/projects/my-project", icon: ClipboardList, label: "โครงการ" },
-      { href: "/user/department", icon: Building2, label: "หน่วยงาน" },
-      { href: "/user/reports", icon: TrendingUp, label: "รายงาน" },
-      { href: "/user/setup", icon: Settings, label: "ตั้งค่า" },
+      { href: "/organizer/dashboard", icon: LayoutDashboard, label: "ภาพรวม" },
+      { href: "/organizer/projects/my-project", icon: ClipboardList, label: "โครงการ" },
+      { href: "/organizer/department", icon: Building2, label: "หน่วยงาน" },
+      { href: "/organizer/reports", icon: TrendingUp, label: "รายงาน" },
+      { href: "/organizer/setup", icon: Settings, label: "ตั้งค่า" },
     ],
     []
   );
@@ -206,6 +206,24 @@ export function Sidebar() {
           })}
         </div>
       </nav>
+      {/* Logout */}
+      <div className="px-2 py-3">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="
+            flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+            text-red-600 transition-all duration-200
+            hover:bg-red-50 hover:text-red-700
+          "
+          title="ออกจากระบบ"
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span className="overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">
+            ออกจากระบบ
+          </span>
+        </button>
+      </div>
     </aside>
   );
 }
