@@ -1,3 +1,14 @@
+export type GetApprovalItems = {
+  budget_id: string;
+  amount: number;
+  dept: string;
+  owner: string;
+  last_update: Date | string;
+  priority: number;
+  project: string;
+  stage: string;
+};
+
 export type GetCalenderEventRespond = {
   id: string;
   title: string;
@@ -7,8 +18,6 @@ export type GetCalenderEventRespond = {
   department?: string;
   status?: string;
 };
-
-export const initialCalendarEvents: GetCalenderEventRespond[] = [];
 
 export type GetProjectsByOrgRespond = {
   id: string;
@@ -29,4 +38,23 @@ export type GetProjectsByOrgRespond = {
   updated_by?: string;
 };
 
-export const initialProjectsByOrg: GetProjectsByOrgRespond[] = [];
+export type GetQaIndicatorsRespond = {
+  id: string;
+  name: string;
+  code: string;
+  display_order: number;
+  description: string;
+  organization_id: string;
+  year: number;
+};
+
+
+export type GetStrategicPlanRespond = {
+  id: string;
+  name: string;
+  description: string;
+  count: number;
+  organization_id: string;
+  year_end: string;
+  year_start: string;
+};

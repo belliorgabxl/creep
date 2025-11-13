@@ -6,15 +6,12 @@ import QuarterCalendar from "@/components/dashboard/QuarterCalendar"
 import { ProjectsTable } from "@/components/dashboard/ProjectsTable"
 import { ApprovalQueue } from "@/components/dashboard/ApprovalQueue"
 import { FooterToolbar } from "@/components/dashboard/FooterToolbar"
-import type { GetCalenderEventRespond, GetProjectsByOrgRespond } from "@/api/model/project";
 import {
     MOCK_APPROVALS,
 } from "@/app/mock"
-import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetApprovalItemsFromApi,GetCalendarEventsFromApi } from "@/lib/api/dashboard"
-import { GetApprovalItems } from "@/api/model/budget-plan"
-import { GetStrategicPlanRespond } from "@/api/model/strategic-plans"
-import { GetProjectsByOrgFromApi } from "@/lib/api/dashboard"
-import { GetQaIndicatorsRespond } from "@/api/model/qa"
+import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetApprovalItemsFromApi,GetCalendarEventsFromApi } from "@/api/dashboard/route"
+import { GetApprovalItems,GetStrategicPlanRespond,GetProjectsByOrgRespond,GetQaIndicatorsRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
+import { GetProjectsByOrgFromApi } from "@/api/dashboard/route"
 
 export default function UserDashboardPage() {
     const [filters, setFilters] = useState({

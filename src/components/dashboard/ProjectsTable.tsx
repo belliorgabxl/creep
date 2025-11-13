@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import { Eye, Edit, FileX, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import type { GetProjectsByOrgRespond } from "@/api/model/project"
+import type { GetProjectsByOrgRespond } from "@/dto/dashboardDto"
 
 interface ProjectsTableProps {
   filters?: Record<string, string>
