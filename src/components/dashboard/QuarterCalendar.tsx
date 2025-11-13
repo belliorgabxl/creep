@@ -2,18 +2,39 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
-import type { CalendarEvent, CalendarStatus } from "@/app/mock";
+
+// ====== ชนิดข้อมูลที่ component นี้ "รับเข้ามา" ======
+export type CalendarEventModel = {
+  id: string;
+  title: string;
+  start_date: Date | string;
+  plan_id?: string;
+  end_date?: Date | string;
+  department?: string;
+  status?: string; // อาจเป็นข้อความอะไรก็ได้ เราจะ map ให้
+};
+
+// ====== สถานะภายในที่ปฏิทินรองรับ ======
+type CalendarStatus = "approved" | "pending" | "closed";
 const STATUS: Record<CalendarStatus, { label: string; dot: string; chip: string }> = {
   approved: { label: "อนุมัติ",     dot: "bg-emerald-600", chip: "bg-emerald-100 text-emerald-700" },
   pending:  { label: "รอดำเนินการ", dot: "bg-amber-600",   chip: "bg-amber-100 text-amber-700"   },
   closed:   { label: "ปิดแล้ว",       dot: "bg-gray-500",    chip: "bg-gray-100 text-gray-700"     },
 };
 
+// แปลง string ใด ๆ -> สถานะภายใน
+function mapStatus(s?: string): CalendarStatus {
+  const v = (s ?? "").toLowerCase();
+  if (["approved", "อนุมัติ", "pass", "ok"].includes(v)) return "approved";
+  if (["closed", "ปิด", "done", "finish", "finished"].includes(v)) return "closed";
+  return "pending";
+}
+
 type Props = {
-  events: CalendarEvent[];                      
-  title?: string;                             
-  startFromToday?: boolean;                     
-  initial?: { year: number; month: number }; 
+  events: CalendarEventModel[];
+  title?: string;
+  startFromToday?: boolean;
+  initial?: { year: number; month: number };
 };
 
 export default function MonthCalendar({
@@ -24,17 +45,34 @@ export default function MonthCalendar({
 }: Props) {
   const today = new Date();
 
-  const [viewYear, setViewYear]   = useState<number>(initial?.year ?? (startFromToday ? today.getFullYear() : today.getFullYear()));
-  const [viewMonth, setViewMonth] = useState<number>(initial?.month ?? (startFromToday ? today.getMonth() : today.getMonth()));
+  const [viewYear, setViewYear]   = useState<number>(initial?.year ?? today.getFullYear());
+  const [viewMonth, setViewMonth] = useState<number>(initial?.month ?? today.getMonth());
 
   const monthNames = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
   const weekdays   = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
 
   const cells = useMemo(() => buildMonthMatrix(viewYear, viewMonth), [viewYear, viewMonth]);
 
+  // ====== แปลง events ดิบ -> รูปแบบที่ปฏิทินใช้ ======
+  const normalized = useMemo(() => {
+    return events.map(e => {
+      const start = new Date(e.start_date);
+      const end = e.end_date ? new Date(e.end_date) : new Date(e.start_date);
+      return {
+        id: String(e.id),
+        title: e.title ?? "Untitled",
+        start,
+        end,
+        status: mapStatus(e.status),
+        department: e.department,
+        raw: e,
+      };
+    });
+  }, [events]);
+
   function buildMonthMatrix(y: number, m: number) {
     const firstDay = new Date(y, m, 1);
-    const startWeekday = (firstDay.getDay() + 6) % 7; 
+    const startWeekday = (firstDay.getDay() + 6) % 7;
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const out: { date: Date; inMonth: boolean }[] = [];
 
@@ -55,14 +93,13 @@ export default function MonthCalendar({
   }
 
   function eventsOnDay(d: Date) {
-  return events.filter((ev) => {
-    const s = new Date(ev.start);
-    const e = new Date(ev.end);
-    const isStart = s.toDateString() === d.toDateString();
-    const isEnd = e.toDateString() === d.toDateString();
-    return isStart || isEnd;
-  });
-}
+    // โชว์ถ้าวันนี้เป็นวันเริ่มหรือวันสิ้นสุด (ถ้าอยากครอบคลุมช่วงทั้งหมด เปลี่ยนเงื่อนไขเป็น s<=d<=e)
+    return normalized.filter((ev) => {
+      const isStart = ev.start.toDateString() === d.toDateString();
+      const isEnd = ev.end.toDateString() === d.toDateString();
+      return isStart || isEnd;
+    });
+  }
 
   function prevMonth() {
     if (viewMonth === 0) {
@@ -117,7 +154,7 @@ export default function MonthCalendar({
 
       <div className="px-4 pb-4">
         <div className="grid grid-cols-7 gap-px rounded-t-lg bg-gray-200">
-          {weekdays.map((w) => (
+          {["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"].map((w) => (
             <div key={w} className="bg-white py-2 text-center text-xs font-medium text-gray-500">
               {w}
             </div>
@@ -145,10 +182,10 @@ export default function MonthCalendar({
                   {dayEvents.slice(0, 3).map((e, i) => (
                     <span
                       key={i}
-                      className={`inline-flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px] ${STATUS[e.status].chip}`}
-                      title={`${e.title} • ${STATUS[e.status].label}`}
+                      className={`inline-flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px] ${STATUS[e.status as CalendarStatus].chip}`}
+                      title={`${e.title} • ${STATUS[e.status as CalendarStatus].label}`}
                     >
-                      <i className={`h-1.5 w-1.5 rounded-full ${STATUS[e.status].dot}`} />
+                      <i className={`h-1.5 w-1.5 rounded-full ${STATUS[e.status as CalendarStatus].dot}`} />
                       <span className="truncate">{e.title}</span>
                     </span>
                   ))}

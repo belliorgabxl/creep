@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
 import { roleIdToKey } from "@/lib/rbac";
-import ApiClient from "@/lib/api-centralize";
+import ApiClient from "@/lib/api-clients";
 
 type LoginBody = { username: string; password: string; remember?: boolean };
 
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
     const isProd = process.env.NODE_ENV === "production";
 
     res.cookies.set("api_token", externalToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: "lax",
       path: "/",
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
     });
 
     res.cookies.set("auth_token", ourJwt, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: "lax",
       path: "/",
