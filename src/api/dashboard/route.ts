@@ -1,4 +1,3 @@
-"use server"
 import ApiClient from "@/lib/api-clients";
 import type { GetCalenderEventRespond, GetProjectsByOrgRespond,GetApprovalItems,GetQaIndicatorsRespond,GetStrategicPlanRespond } from "@/dto/dashboardDto";
 import Cookies from "js-cookie";
