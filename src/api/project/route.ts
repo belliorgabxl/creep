@@ -2,7 +2,7 @@
 
 import ApiClient from "@/lib/api-clients";
 import { cookies } from "next/headers";
-import type { GetCalenderEventRespond } from "../model/project";
+import type { GetCalenderEventRespond } from "@/dto/dashboardDto";
 
 type ApiResp =
   | { success: true; data: any[] }

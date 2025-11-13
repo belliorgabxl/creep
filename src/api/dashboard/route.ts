@@ -1,8 +1,6 @@
+"use server"
 import ApiClient from "@/lib/api-clients";
-import type { GetCalenderEventRespond, GetProjectsByOrgRespond } from "@/api/model/project";
-import type { GetApprovalItems } from "@/api/model/budget-plan";
-import type { GetStrategicPlanRespond } from "@/api/model/strategic-plans";
-import type { GetQaIndicatorsRespond } from "@/api/model/qa";
+import type { GetCalenderEventRespond, GetProjectsByOrgRespond,GetApprovalItems,GetQaIndicatorsRespond,GetStrategicPlanRespond } from "@/dto/dashboardDto";
 import Cookies from "js-cookie";
 
 export async function GetCalendarEventsFromApi(): Promise<GetCalenderEventRespond[]> {
@@ -24,29 +22,19 @@ export async function GetCalendarEventsFromApi(): Promise<GetCalenderEventRespon
     console.debug("[GetCalendarEventsFromApi] raw data:", response.data);
 
     const body = response?.data;
-
-    // Case A: API returns array directly
     if (Array.isArray(body)) {
-      console.debug("[GetCalendarEventsFromApi] detected array response");
       return body as GetCalenderEventRespond[];
     }
 
-    // Case B: API returns wrapper { data: [...] } or { data: item }
     if (body && typeof body === "object" && (body as any).data !== undefined) {
       const payload = (body as any).data;
-      console.debug("[GetCalendarEventsFromApi] detected wrapper response, payload:", payload);
       if (!payload) return [];
       return Array.isArray(payload) ? (payload as GetCalenderEventRespond[]) : [payload as GetCalenderEventRespond];
     }
-
-    // Case C: API returns single object (one event)
     if (body && typeof body === "object") {
       console.debug("[GetCalendarEventsFromApi] detected single object response");
       return [body as GetCalenderEventRespond];
     }
-
-    // Fallback
-    console.warn("[GetCalendarEventsFromApi] unknown response format, returning []");
     return [];
   } catch (err: any) {
     if (err?.response) {
