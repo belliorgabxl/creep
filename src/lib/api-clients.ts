@@ -5,7 +5,7 @@ const ApiCentralizeBaseUrl =
 
 const ApiClient = axios.create({
   baseURL: ApiCentralizeBaseUrl,
-  timeout: 5000,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

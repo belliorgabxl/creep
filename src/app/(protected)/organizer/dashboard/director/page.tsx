@@ -10,10 +10,11 @@ import type { GetCalenderEventRespond, GetProjectsByOrgRespond } from "@/api/mod
 import {
     MOCK_APPROVALS,
 } from "@/app/mock"
-import { getApprovalBudgetPlans, getCalendarEvents, getStrategicPlans } from "@/app/api/dashboard/route";
+import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetApprovalItemsFromApi,GetCalendarEventsFromApi } from "@/lib/api/dashboard"
 import { GetApprovalItems } from "@/api/model/budget-plan"
 import { GetStrategicPlanRespond } from "@/api/model/strategic-plans"
-import { getProjectsByOrg } from "@/app/api/project/route"
+import { GetProjectsByOrgFromApi } from "@/lib/api/dashboard"
+import { GetQaIndicatorsRespond } from "@/api/model/qa"
 
 export default function UserDashboardPage() {
     const [filters, setFilters] = useState({
@@ -28,7 +29,7 @@ export default function UserDashboardPage() {
 
     const [calendar_events_data, set_calendar_events_data] = useState<GetCalenderEventRespond[]>([]);
     const [approval_items, set_approval_items] = useState<GetApprovalItems[]>([]);
-    const [qa_indicators_data, set_qa_indicators_data] = useState<any[]>([]);
+    const [qa_indicators_data, set_qa_indicators_data] = useState<GetQaIndicatorsRespond[]>([]);
     const [strategic_plans_data, set_strategic_plans_data] = useState<GetStrategicPlanRespond[]>([]);
     const [projects_data, set_projects_data] = useState<GetProjectsByOrgRespond[]>([]);
 
@@ -48,7 +49,8 @@ export default function UserDashboardPage() {
     useEffect(() => {
         const fetchCounts = async () => {
             try {
-                const data = await getCalendarEvents();
+                const data = await GetCalendarEventsFromApi();
+                console.log("calendar events data:", data);
                 set_calendar_events_data(data);
             } catch (err) {
             }
@@ -56,20 +58,20 @@ export default function UserDashboardPage() {
         fetchCounts();
     }, []);
 
+    // useEffect(() => {
+    //     const fetchCounts = async () => {
+    //         try {
+    //             const data = await GetApprovalItemsFromApi();
+    //             set_approval_items(data);
+    //         } catch (err) {
+    //         }
+    //     };
+    //     fetchCounts();
+    // }, []);
     useEffect(() => {
         const fetchCounts = async () => {
             try {
-                const data = await getApprovalBudgetPlans();
-                set_approval_items(data);
-            } catch (err) {
-            }
-        };
-        fetchCounts();
-    }, []);
-    useEffect(() => {
-        const fetchCounts = async () => {
-            try {
-                const data = await getStrategicPlans();
+                const data = await GetStrategicPlansFromApi();
                 set_strategic_plans_data(data);
             } catch (err) {
             }
@@ -79,22 +81,24 @@ export default function UserDashboardPage() {
     useEffect(() => {
         const fetchCounts = async () => {
             try {
-                const data = await getProjectsByOrg();
+                const data = await GetProjectsByOrgFromApi();
                 set_projects_data(data);
             } catch (err) {
             }
         };
         fetchCounts();
     }, []);
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const data = await GetQaIndicatorsFromApi();
+                set_qa_indicators_data(data);
+            } catch (err) {
+            }
+        };
+        fetchCounts();
+    }, []);
 
-    // useEffect(() => {
-    //     let alive = true;
-    //     fetch("/api/qa/qa-indicators", { cache: "no-store" })
-    //         .then(r => r.ok ? r.json() : Promise.reject(r))
-    //         .then(data => { if (alive) set_qa_indicators_data(Array.isArray(data) ? data : data?.data ?? []); })
-    //         .catch(console.error);
-    //     return () => { alive = false; };
-    // }, []);
 
     const clearAllFilters = () => {
         setFilters({
@@ -120,6 +124,7 @@ export default function UserDashboardPage() {
                     </div>
                 </div>
                 <main className="container mx-auto space-y-6 px-4 py-6">
+                    <ProjectsTable filters={filters} projects={projects_data} />
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <div className="lg:col-span-2">
                             <ApprovalQueue filters={filters} approvals={MOCK_APPROVALS} />
@@ -134,10 +139,8 @@ export default function UserDashboardPage() {
                     </div>
 
                     <QuarterCalendar events={calendar_events_data} />
-                    <ProjectsTable filters={filters} projects={projects_data} />
                 </main>
 
-                <FooterToolbar />
             </div>
         </div>
     )

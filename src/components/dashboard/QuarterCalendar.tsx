@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 
-// ====== ชนิดข้อมูลที่ component นี้ "รับเข้ามา" ======
+// ====== ข้อมูลชนิดของ event ======
 export type CalendarEventModel = {
   id: string;
   title: string;
@@ -11,24 +11,14 @@ export type CalendarEventModel = {
   plan_id?: string;
   end_date?: Date | string;
   department?: string;
-  status?: string; // อาจเป็นข้อความอะไรก็ได้ เราจะ map ให้
+  status?: string;
 };
 
-// ====== สถานะภายในที่ปฏิทินรองรับ ======
-type CalendarStatus = "approved" | "pending" | "closed";
-const STATUS: Record<CalendarStatus, { label: string; dot: string; chip: string }> = {
-  approved: { label: "อนุมัติ",     dot: "bg-emerald-600", chip: "bg-emerald-100 text-emerald-700" },
-  pending:  { label: "รอดำเนินการ", dot: "bg-amber-600",   chip: "bg-amber-100 text-amber-700"   },
-  closed:   { label: "ปิดแล้ว",       dot: "bg-gray-500",    chip: "bg-gray-100 text-gray-700"     },
+// ====== สีและข้อความสำหรับวันเริ่ม/สิ้นสุด ======
+const EVENT_TYPE = {
+  start: { label: "วันเริ่มโครงการ", chip: "bg-green-100 text-green-700", dot: "bg-green-600" },
+  end: { label: "วันสิ้นสุดโครงการ", chip: "bg-rose-100 text-rose-700", dot: "bg-rose-600" },
 };
-
-// แปลง string ใด ๆ -> สถานะภายใน
-function mapStatus(s?: string): CalendarStatus {
-  const v = (s ?? "").toLowerCase();
-  if (["approved", "อนุมัติ", "pass", "ok"].includes(v)) return "approved";
-  if (["closed", "ปิด", "done", "finish", "finished"].includes(v)) return "closed";
-  return "pending";
-}
 
 type Props = {
   events: CalendarEventModel[];
@@ -45,31 +35,39 @@ export default function MonthCalendar({
 }: Props) {
   const today = new Date();
 
-  const [viewYear, setViewYear]   = useState<number>(initial?.year ?? today.getFullYear());
+  const [viewYear, setViewYear] = useState<number>(initial?.year ?? today.getFullYear());
   const [viewMonth, setViewMonth] = useState<number>(initial?.month ?? today.getMonth());
 
-  const monthNames = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-  const weekdays   = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
+  const monthNames = [
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+  ];
 
   const cells = useMemo(() => buildMonthMatrix(viewYear, viewMonth), [viewYear, viewMonth]);
 
-  // ====== แปลง events ดิบ -> รูปแบบที่ปฏิทินใช้ ======
+  // ====== normalize event ======
   const normalized = useMemo(() => {
-    return events.map(e => {
-      const start = new Date(e.start_date);
-      const end = e.end_date ? new Date(e.end_date) : new Date(e.start_date);
-      return {
-        id: String(e.id),
-        title: e.title ?? "Untitled",
-        start,
-        end,
-        status: mapStatus(e.status),
-        department: e.department,
-        raw: e,
-      };
-    });
+    return events
+      .map((e) => {
+        const start = e.start_date ? new Date(e.start_date) : null;
+        const end = e.end_date ? new Date(e.end_date) : null;
+        return { raw: e, start, end };
+      })
+      .filter((item) => {
+        if (!item.start || Number.isNaN(item.start.getTime())) return false;
+        return true;
+      })
+      .map(({ raw, start, end }) => ({
+        id: String(raw.id),
+        title: raw.title ?? "Untitled",
+        start: start!,
+        end: end && !Number.isNaN(end.getTime()) ? end : start!,
+        department: raw.department,
+        raw,
+      }));
   }, [events]);
 
+  // ====== สร้างตารางวันที่ ======
   function buildMonthMatrix(y: number, m: number) {
     const firstDay = new Date(y, m, 1);
     const startWeekday = (firstDay.getDay() + 6) % 7;
@@ -92,12 +90,16 @@ export default function MonthCalendar({
     return out;
   }
 
+  // ====== ดึง event ที่เกิดในวันนั้น ======
   function eventsOnDay(d: Date) {
-    // โชว์ถ้าวันนี้เป็นวันเริ่มหรือวันสิ้นสุด (ถ้าอยากครอบคลุมช่วงทั้งหมด เปลี่ยนเงื่อนไขเป็น s<=d<=e)
-    return normalized.filter((ev) => {
+    return normalized.flatMap((ev) => {
+      const results = [];
       const isStart = ev.start.toDateString() === d.toDateString();
       const isEnd = ev.end.toDateString() === d.toDateString();
-      return isStart || isEnd;
+      if (isStart) results.push({ ...ev, kind: "start" as const });
+      if (isEnd && ev.end.getTime() !== ev.start.getTime())
+        results.push({ ...ev, kind: "end" as const });
+      return results;
     });
   }
 
@@ -107,12 +109,14 @@ export default function MonthCalendar({
       setViewYear((y) => y - 1);
     } else setViewMonth((m) => m - 1);
   }
+
   function nextMonth() {
     if (viewMonth === 11) {
       setViewMonth(0);
       setViewYear((y) => y + 1);
     } else setViewMonth((m) => m + 1);
   }
+
   function goToday() {
     setViewYear(today.getFullYear());
     setViewMonth(today.getMonth());
@@ -122,54 +126,85 @@ export default function MonthCalendar({
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4 text-gray-500" />
           <h3 className="text-base font-semibold text-gray-900">{title}</h3>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={prevMonth} className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50">
+          <button
+            onClick={prevMonth}
+            className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50"
+          >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="min-w-[9rem] text-center text-sm font-semibold text-gray-800">
             {monthNames[viewMonth]} {viewYear + 543}
           </div>
-          <button onClick={nextMonth} className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50">
+          <button
+            onClick={nextMonth}
+            className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50"
+          >
             <ChevronRight className="h-4 w-4" />
           </button>
-          <button onClick={goToday} className="ml-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-50">
+          <button
+            onClick={goToday}
+            className="ml-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+          >
             วันนี้
           </button>
         </div>
       </div>
 
+      {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-        {Object.entries(STATUS).map(([k, v]) => (
-          <span key={k} className={`inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-xs font-medium ${v.chip}`}>
-            <span className={`h-2.5 w-2.5 rounded-full ${v.dot}`} />
-            {v.label}
-          </span>
-        ))}
+        <span
+          className={`inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-xs font-medium ${EVENT_TYPE.start.chip}`}
+        >
+          <span className={`h-2.5 w-2.5 rounded-full ${EVENT_TYPE.start.dot}`} />
+          {EVENT_TYPE.start.label}
+        </span>
+        <span
+          className={`inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-xs font-medium ${EVENT_TYPE.end.chip}`}
+        >
+          <span className={`h-2.5 w-2.5 rounded-full ${EVENT_TYPE.end.dot}`} />
+          {EVENT_TYPE.end.label}
+        </span>
       </div>
 
+      {/* Calendar grid */}
       <div className="px-4 pb-4">
         <div className="grid grid-cols-7 gap-px rounded-t-lg bg-gray-200">
           {["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"].map((w) => (
-            <div key={w} className="bg-white py-2 text-center text-xs font-medium text-gray-500">
+            <div
+              key={w}
+              className="bg-white py-2 text-center text-xs font-medium text-gray-500"
+            >
               {w}
             </div>
           ))}
         </div>
+
         <div className="grid grid-cols-7 gap-px rounded-b-lg bg-gray-200">
           {cells.map(({ date, inMonth }, idx) => {
-            const inCurrentMonth = inMonth;
-            const dayEvents = inCurrentMonth ? eventsOnDay(date) : [];
-            const isTodayCell = inCurrentMonth && isSameDay(date, today);
+            const dayEvents = inMonth ? eventsOnDay(date) : [];
+            const isTodayCell = inMonth && isSameDay(date, today);
 
             return (
-              <div key={idx} className={`min-h-[92px] bg-white p-1.5 ${inCurrentMonth ? "text-gray-900" : "text-gray-300"}`}>
+              <div
+                key={idx}
+                className={`min-h-[92px] bg-white p-1.5 ${
+                  inMonth ? "text-gray-900" : "text-gray-300"
+                }`}
+              >
+                {/* date label */}
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs ${isTodayCell ? "font-semibold text-indigo-600" : ""}`}>
+                  <span
+                    className={`text-xs ${
+                      isTodayCell ? "font-semibold text-indigo-600" : ""
+                    }`}
+                  >
                     {date.getDate()}
                   </span>
                   {isTodayCell && (
@@ -178,17 +213,37 @@ export default function MonthCalendar({
                     </span>
                   )}
                 </div>
+
+                {/* events */}
                 <div className="mt-1 flex flex-col gap-1">
                   {dayEvents.slice(0, 3).map((e, i) => (
                     <span
                       key={i}
-                      className={`inline-flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px] ${STATUS[e.status as CalendarStatus].chip}`}
-                      title={`${e.title} • ${STATUS[e.status as CalendarStatus].label}`}
+                      className={`inline-flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px] ${
+                        e.kind === "start"
+                          ? EVENT_TYPE.start.chip
+                          : EVENT_TYPE.end.chip
+                      }`}
+                      title={`${e.title} • ${
+                        e.kind === "start"
+                          ? EVENT_TYPE.start.label
+                          : EVENT_TYPE.end.label
+                      }`}
                     >
-                      <i className={`h-1.5 w-1.5 rounded-full ${STATUS[e.status as CalendarStatus].dot}`} />
-                      <span className="truncate">{e.title}</span>
+                      <i
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          e.kind === "start"
+                            ? EVENT_TYPE.start.dot
+                            : EVENT_TYPE.end.dot
+                        }`}
+                      />
+                      <span className="truncate">
+                        {e.kind === "start" ? "เริ่ม: " : "สิ้นสุด: "}
+                        {e.title}
+                      </span>
                     </span>
                   ))}
+
                   {dayEvents.length > 3 && (
                     <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600">
                       +{dayEvents.length - 3}

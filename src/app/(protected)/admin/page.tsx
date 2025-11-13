@@ -81,7 +81,7 @@ export default function UserDashboardPage() {
                     />
                     <MiniTimeline />
 
-                    <QuarterCalendar
+                    {/* <QuarterCalendar
                         events={MOCK_CALENDAR}
                     />
 
@@ -97,7 +97,7 @@ export default function UserDashboardPage() {
                         </div>
                     </div>
 
-                    <ProjectsTable filters={filters} projects={MOCK_PROJECTS} />
+                    <ProjectsTable filters={filters} projects={MOCK_PROJECTS} /> */}
                 </main>
 
                 <FooterToolbar />

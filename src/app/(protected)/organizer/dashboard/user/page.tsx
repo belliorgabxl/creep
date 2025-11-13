@@ -63,7 +63,7 @@ export default function UserDashboardPage() {
           </div>
         </div>
         <main className="container mx-auto space-y-6 px-4 py-6">
-          <ProjectsTable filters={filters} projects={MOCK_PROJECTS} />
+          {/* <ProjectsTable filters={filters} projects={MOCK_PROJECTS} /> */}
         </main>
 
         <FooterToolbar />

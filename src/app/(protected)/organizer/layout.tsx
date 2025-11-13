@@ -2,8 +2,8 @@
 import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
-import Sidebar from "@/components/Sidebar"   // <- ให้ Sidebar รองรับ prop serverUser
-import TopBar from "@/components/TopBar"     // <- ให้ TopBar รองรับ prop serverUser
+import Sidebar from "@/components/Sidebar"  
+import TopBar from "@/components/TopBar"    
 
 export const metadata: Metadata = { title: "E-Budget" }
 
