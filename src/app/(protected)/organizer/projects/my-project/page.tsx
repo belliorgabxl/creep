@@ -66,7 +66,7 @@ export default function Page() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/user/projects/new"
+            href="/organizer/projects/new"
             className="inline-flex items-center duration-400 gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[102%] px-3.5 py-2 text-sm font-medium text-white hover:bg-black"
           >
             <div className="p-0.5 border-2 border-white rounded-full">

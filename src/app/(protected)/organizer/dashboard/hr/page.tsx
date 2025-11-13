@@ -1,3 +1,4 @@
+// app/(protected)/user/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -51,23 +52,52 @@ export default function UserDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen text-gray-900">
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="container mx-auto px-4">
-          <div className="flex h-14 items-center justify-between">
-            <h1 className="text-lg font-semibold tracking-tight">Dashboard (user)</h1>
-            <div className="text-xs text-gray-500">
-              ปีงบประมาณ:{" "}
-              <span className="font-medium text-gray-700">{filters.year}</span>
-            </div>
-          </div>
+    <div className="text-gray-900 space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold tracking-tight">Dashboard (hr)</h1>
+        <div className="text-xs text-gray-500">
+          ปีงบประมาณ:{" "}
+          <span className="font-medium text-gray-700">{filters.year}</span>
         </div>
-        <main className="container mx-auto space-y-6 px-4 py-6">
-          {/* <ProjectsTable filters={filters} projects={MOCK_PROJECTS} /> */}
-        </main>
+      </header>
 
-        <FooterToolbar />
+      <FilterBar
+        filters={filters}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onClearAll={clearAllFilters}
+      />
+
+      <KpiCards />
+
+      <ChartsSection
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        dataBudgetByDept={MOCK_BUDGET_BY_DEPT}
+        dataProjectTypes={
+          MOCK_PROJECT_TYPES as Array<{ name: string; value: number }>
+        }
+      />
+
+      <MiniTimeline />
+{/* 
+      <QuarterCalendar events={MOCK_CALENDAR} /> */}
+
+      {/* <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ApprovalQueue filters={filters} approvals={MOCK_APPROVALS} />
+        </div>
+        <div>
+          <StrategyQaSection
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        </div>
       </div>
+
+      <ProjectsTable filters={filters} projects={MOCK_PROJECTS} /> */}
+
+      <FooterToolbar />
     </div>
   );
 }
