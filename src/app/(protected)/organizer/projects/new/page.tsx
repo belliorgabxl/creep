@@ -379,7 +379,7 @@ export default function CreateProjectPage() {
               onClick={() => {
                 onSaveProject();
                 setTimeout(() => {
-                  router.push("/user/projects/my-project");
+                  router.push("/organizer/projects/my-project");
                 }, 1000);
               }}
               className="inline-flex items-center gap-1 rounded-md border border-gray-300

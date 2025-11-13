@@ -75,7 +75,7 @@ export default function Page() {
             เพิ่มโปรเจ็คใหม่
           </Link>
           {/* <Link
-            href="/user/projects"
+            href="/organizer/projects"
             className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
           >
             ดูทั้งหมด
