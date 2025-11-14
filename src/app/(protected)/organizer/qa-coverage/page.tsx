@@ -9,8 +9,8 @@ import {
   type QAIndicator,
 } from "@/app/mock";
 
-import AddQAModal from "./qa-add-modal";
-import QADetailModal from "./qa-detail-modal";
+import AddQAModal from "./qa_add_modal";
+import QADetailModal from "./qa_detail_modal";
 import CoverageRow from "./component/CoverageRow";
 import StatCard from "./component/StatCard";
 import IndicatorCard from "./component/IndicatorCard";

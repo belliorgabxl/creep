@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import type { QACoverage } from "@/app/mock"; // <-- ใช้ชนิดจาก mock ของคุณ
+// import type { QACoverage } from "@/app/mock"; // <-- ใช้ชนิดจาก mock ของคุณ
 
 type AddQAModalProps = {
   onClose: () => void;
