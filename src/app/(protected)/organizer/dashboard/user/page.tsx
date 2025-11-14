@@ -17,8 +17,8 @@ import {
   MOCK_CALENDAR,
 } from "@/app/mock";
 import QuarterCalendar from "@/components/dashboard/QuarterCalendar";
-import { GetProjectsByOrgFromApi } from "@/lib/api/dashboard";
-import { GetProjectsByOrgRespond } from "@/api/model/project";
+import { GetProjectsByOrgFromApi } from "@/api/dashboard/route";
+import { GetProjectsByOrgRespond } from "@/dto/dashboardDto";
 
 export default function UserDashboardPage() {
   const [filters, setFilters] = useState({
