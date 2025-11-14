@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+// src/app/api/auth/logout/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
-  const res = NextResponse.json({ success: true });
-  res.cookies.delete("auth_token");
-  res.cookies.delete("api_token");
+export async function POST(req: NextRequest) {
+  const redirectUrl = new URL("/login", req.url);
+  const res = NextResponse.redirect(redirectUrl);
+  res.cookies.set("auth_token", "", { maxAge: 0, path: "/" });
+  res.cookies.set("api_token", "", { maxAge: 0, path: "/" });
+
   return res;
 }

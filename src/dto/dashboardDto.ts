@@ -1,0 +1,60 @@
+export type GetApprovalItems = {
+  budget_id: string;
+  amount: number;
+  dept: string;
+  owner: string;
+  last_update: Date | string;
+  priority: number;
+  project: string;
+  stage: string;
+};
+
+export type GetCalenderEventRespond = {
+  id: string;
+  title: string;
+  start_date: Date | string;
+  plan_id?: string;
+  end_date?: Date | string;
+  department?: string;
+  status?: string;
+};
+
+export type GetProjectsByOrgRespond = {
+  id: string;
+  name: string;
+  code?: string;
+  department_id?: string;
+  description?: string;
+  location?: string;
+  organization_id?: string;
+  owner_user_id?: string;
+  plan_type?: 'regular_work' | string;
+  qualitative_goal?: string;
+  quantitative_goal?: string;
+  rationale?: string;
+  regular_work_template_id?: string;
+  start_date?: string | Date;
+  end_date?: string | Date;
+  updated_by?: string;
+};
+
+export type GetQaIndicatorsRespond = {
+  id: string;
+  name: string;
+  code: string;
+  display_order: number;
+  description: string;
+  organization_id: string;
+  year: number;
+};
+
+
+export type GetStrategicPlanRespond = {
+  id: string;
+  name: string;
+  description: string;
+  count: number;
+  organization_id: string;
+  year_end: string;
+  year_start: string;
+};

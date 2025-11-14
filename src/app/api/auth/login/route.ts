@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
 import { roleIdToKey } from "@/lib/rbac";
-import ApiClient from "@/lib/api-centralize";
+import ApiClient from "@/lib/api-clients";
 
 type LoginBody = { username: string; password: string; remember?: boolean };
 
@@ -21,7 +21,10 @@ async function loginExternal(username: string, password: string) {
       { username, password },
       {
         baseURL,
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         timeout: 10_000,
         withCredentials: false,
       }
@@ -33,11 +36,10 @@ async function loginExternal(username: string, password: string) {
     if (!token) throw new Error("No token returned from external API");
 
     return { token, raw: data };
-
   } catch (err: any) {
+    const safe =
+      pickSafeMessage(err?.response?.data) || "External login failed";
 
-    const safe = pickSafeMessage(err?.response?.data) || "External login failed";
-    
     const status = err?.response?.status;
     if (status === 401 || status === 403) {
       const e = new Error("Invalid username or password");
@@ -95,12 +97,16 @@ export async function POST(req: Request) {
       name: (claims.name as string) || claims.fullname || username,
       org_id: claims.org_id || claims.organization_id || undefined,
       department_id: claims.department_id || claims.dept_id || undefined,
-  
     };
 
-    const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60;
+    const seconds = (n: number) => n;
+    const minutes = (n: number) => n * 60;
+    const hours = (n: number) => n * 3600;
+    const days = (n: number) => n * 86400;
 
-    const ourJwt = await signUserToken(userForOurJwt, ttl);
+    const expiretoken = remember ? hours(1) : hours(1);
+
+    const ourJwt = await signUserToken(userForOurJwt, expiretoken);
 
     const res = NextResponse.json(
       { success: true },
@@ -109,20 +115,20 @@ export async function POST(req: Request) {
     const isProd = process.env.NODE_ENV === "production";
 
     res.cookies.set("api_token", externalToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: "lax",
       path: "/",
-      maxAge: ttl,
+      maxAge: expiretoken,
       priority: "high",
     });
 
     res.cookies.set("auth_token", ourJwt, {
-      httpOnly: true,
+      httpOnly: false,
       secure: isProd,
       sameSite: "lax",
       path: "/",
-      maxAge: ttl,
+      maxAge: expiretoken,
       priority: "high",
     });
 
@@ -130,7 +136,9 @@ export async function POST(req: Request) {
   } catch (e: any) {
     const status = e?.status ?? 401;
     const message =
-      status === 401 ? "Invalid username or password" : e?.message || "เกิดข้อผิดพลาด";
+      status === 401
+        ? "Invalid username or password"
+        : e?.message || "เกิดข้อผิดพลาด";
     return NextResponse.json({ success: false, message }, { status });
   }
 }

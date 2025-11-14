@@ -27,3 +27,20 @@ export function roleIdToLabel(id?: unknown): string | null {
   if (!Number.isFinite(n)) return null;
   return ROLE_MAP[n]?.label ?? null;
 }
+
+export function pickHomeByRole(role?: string): string {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "director":
+      return "/organizer/dashboard/director";
+    case "hr":
+      return "/organizer/dashboard/hr";
+    case "department_user":
+      return "/organizer/dashboard/user";
+    case "planning":
+    case "department_head":
+    default:
+      return "/login";
+  }
+}

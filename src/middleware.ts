@@ -1,8 +1,9 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { pickHomeByRole } from "@/lib/rbac";
 
 const PUBLIC_PREFIXES = ["/", "/login", "/forgot-password"];
-
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 function isPublicPath(pathname: string) {
@@ -11,21 +12,8 @@ function isPublicPath(pathname: string) {
   );
 }
 
-function pickHomeByRole(role?: string): string {
-  switch (role) {
-    case "admin":
-      return "/admin";
-    case "planning":
-      return "/planning";
-    case "director":
-      return "/director";
-    case "hr":
-      return "/hr";
-    case "department_head":
-      return "/department/head";
-    default:
-      return "/user/dashboard";
-  }
+function pathStarts(pathname: string, base: string) {
+  return pathname === base || pathname.startsWith(base + "/");
 }
 
 export async function middleware(request: NextRequest) {
@@ -36,12 +24,10 @@ export async function middleware(request: NextRequest) {
     if (token) {
       try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        const homeUrl = new URL(
-          pickHomeByRole(payload.role as string),
-          request.url
-        );
+        const homeUrl = new URL(pickHomeByRole(payload.role as string), request.url);
         return NextResponse.redirect(homeUrl);
-      } catch {}
+      } catch {
+      }
     }
     return NextResponse.next();
   }
@@ -63,18 +49,34 @@ export async function middleware(request: NextRequest) {
   }
 
   const role = (payload.role as string) || "department_user";
-  const roleToPrefixes: Record<string, string[]> = {
-    admin: ["/admin", "/planning", "/director", "/hr", "/department", "/user"],
-    planning: ["/planning", "/user"],
-    director: ["/director", "/user"],
-    hr: ["/hr", "/user"],
-    department_head: ["/department/head", "/user"],
-    department_user: ["/user"],
-  };
-  const allowed = (roleToPrefixes[role] || ["/user"]).some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
-  if (!allowed) return NextResponse.redirect(new URL("/403", request.url));
+
+  const forbid = () => NextResponse.redirect(new URL("/403", request.url));
+
+  if (pathStarts(pathname, "/organizer/dashboard/user") && role !== "department_user") {
+    return forbid();
+  }
+  if (pathStarts(pathname, "/organizer/dashboard/hr") && role !== "hr") {
+    return forbid();
+  }
+  if (pathStarts(pathname, "/organizer/dashboard/director") && role !== "director") {
+    return forbid();
+  }
+
+  if (pathStarts(pathname, "/organizer/qa-coverage")) {
+    if (["department_user", "hr", "admin"].includes(role)) return forbid();
+  }
+
+  if (pathStarts(pathname, "/organizer/projects")) {
+    if (["hr", "admin"].includes(role)) return forbid();
+  }
+
+  if (pathStarts(pathname, "/organizer/department")) {
+    if (role !== "hr") return forbid();
+  }
+
+  if (pathStarts(pathname, "/admin") && role !== "admin") {
+    return forbid();
+  }
 
   const headers = new Headers(request.headers);
   if (payload.sub) headers.set("x-user-id", payload.sub);

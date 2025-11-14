@@ -1,36 +1,48 @@
 "use server";
-import ApiClient from "@/lib/api-centralize";
+
+import ApiClient from "@/lib/api-clients";
 import { cookies } from "next/headers";
+import type { GetCalenderEventRespond } from "@/dto/dashboardDto";
 
-export const fetchGetAllProjects = async () => {
+type ApiResp =
+  | { success: true; data: any[] }
+  | { success: false; message?: string; data: any[] }
+  | any[];
+
+export async function getCalendarEvents(): Promise<GetCalenderEventRespond[]> {
   try {
-    const token = (await cookies()).get("token")?.value;
-
+    const token = (await cookies()).get("api_token")?.value;
     if (!token) {
       throw new Error("No authentication token found");
     }
 
-    const response = await ApiClient.get("/projects", {
+    const response = await ApiClient.get<ApiResp>("/projects/calendar-events", {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
       },
     });
 
-    if (!response || !response.data) {
-      throw new Error("Invalid response from server");
-    }
+    const payload: any =
+      Array.isArray(response.data)
+        ? response.data
+        : Array.isArray((response.data as any)?.data)
+        ? (response.data as any).data
+        : [];
 
-    return response.data;
+    const mapped: GetCalenderEventRespond[] = payload.map((e: any) => ({
+      id: String(e.id ?? e._id ?? crypto.randomUUID()),
+      title: e.title ?? e.name ?? "Untitled",
+      start_date: e.start_date ?? e.start ?? e.begin_date ?? "",
+      end_date: e.end_date ?? e.end ?? e.finish_date ?? undefined,
+      department: e.department ?? e.dept ?? undefined,
+      status: e.status ?? undefined,
+      plan_id: e.plan_id ?? undefined,
+    }));
+
+    return mapped;
   } catch (error) {
-    console.error("[fetchGetAllProjects] Failed:", error);
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Unknown error occurred while fetching projects",
-      data: [],
-    };
+    console.error("[getCalendarEvents] Failed:", error);
+    return [];
   }
-};
+}

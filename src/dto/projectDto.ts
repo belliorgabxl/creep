@@ -113,5 +113,22 @@ export type KPIParams = {
 
 // expect part
 export type ExpectParams = {
-  result: string;
+  results: string[];
 };
+
+export interface CreateProjectPayload {
+  code: string;
+  department_id: string;
+  description: string;
+  end_date: string;    
+  location: string;
+  name: string;
+  organization_id: string;
+  owner_user_id: string;
+  plan_type: string;       
+  qualitative_goal: string;
+  quantitative_goal: string;
+  rationale: string;
+  start_date: string;      
+  updated_by: string;
+}

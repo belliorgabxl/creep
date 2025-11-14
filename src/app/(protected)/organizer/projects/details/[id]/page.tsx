@@ -13,7 +13,7 @@ import {
 import type {
   ActivitiesRow,
   ApproveParams,
-  BudgetRow,
+  // BudgetRow,
   BudgetTableValue,
   DateDurationValue,
   EstimateParams,
@@ -94,7 +94,7 @@ export default async function Page({ params }: { params: PageParams }) {
     activities,
     kpi,
     estimate,
-    expect,
+    // expect,
     approve,
     goal,
   } = p;
@@ -237,7 +237,7 @@ export default async function Page({ params }: { params: PageParams }) {
 
       {/* Expect */}
       <Section title="ผลที่คาดว่าจะได้รับ">
-        <RichOrDash text={expect?.result} />
+        <RichOrDash text={"ได้ความรู้"} />
       </Section>
 
       {/* Budget */}

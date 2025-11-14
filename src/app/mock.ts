@@ -1,5 +1,3 @@
-// mock.ts
-
 export type Priority = "high" | "medium" | "low"
 
 export interface ApprovalItem {
@@ -18,6 +16,7 @@ export const MOCK_APPROVALS: ApprovalItem[] = [
   { project: "โครงการพัฒนาบุคลากร",         dept: "ฝ่ายแผน",  amount: "฿450,000",  owner: "นายประสิทธิ์ ทำดี",  stage: "รอผู้อำนวยการ", lastUpdate: "1 วัน", priority: "high" },
   { project: "ระบบทะเบียนออนไลน์",           dept: "ทะเบียน",  amount: "฿2,100,000", owner: "นางสาววิไล เก่งงาน", stage: "รอหัวหน้าฝ่าย", lastUpdate: "2 วัน", priority: "low" },
 ]
+
 
 export interface BudgetByDept { dept: string; approved: number; pending: number; rejected: number }
 export const MOCK_BUDGET_BY_DEPT: BudgetByDept[] = [
@@ -85,10 +84,20 @@ export interface CalendarEvent {
 export const MOCK_CALENDAR: CalendarEvent[] = [
   { title: "ปรับปรุงหลักสูตรวิทยาศาสตร์", dept: "วิชาการ", start: "2026-01-10", end: "2026-03-25", status: "approved" },
   { title: "จัดซื้อครุภัณฑ์คอมพิวเตอร์",   dept: "การเงิน", start: "2026-02-01", end: "2026-04-30", status: "pending" },
-  { title: "โครงการพัฒนาบุคลากร",         dept: "ฝ่ายแผน", start: "2026-01-15", end: "2026-06-30", status: "approved" },
+  { title: "โครงการพัฒนาบุคลากร",  dept: "ฝ่ายแผน", start: "2026-01-15", end: "2026-06-30", status: "approved" },
   { title: "ระบบทะเบียนออนไลน์",           dept: "ทะเบียน", start: "2026-01-01", end: "2026-12-31", status: "pending" },
   { title: "กิจกรรมพัฒนานักเรียน",         dept: "กิจการนักเรียน", start: "2026-01-05", end: "2026-03-20", status: "approved" },
 ]
+
+export type CalendarEventModel = {
+  id: string;
+  title: string;
+  start_date: Date | string;
+  plan_id?: string;
+  end_date?: Date | string;
+  department?: string;
+  status?: string;
+};
 
 // ตัวบ่งชี้ QA และยุทธศาสตร์ (ใช้หน้า Alignment)
 export interface QAIndicator { code: string; name: string; year?: number }
