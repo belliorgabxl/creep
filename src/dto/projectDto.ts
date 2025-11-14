@@ -113,7 +113,7 @@ export type KPIParams = {
 
 // expect part
 export type ExpectParams = {
-  result: string;
+  results: string[];
 };
 
 export interface CreateProjectPayload {

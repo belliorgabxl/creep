@@ -24,7 +24,7 @@ async function getMyProjects(): Promise<Project[]> {
     const list = Array.isArray(data) ? data : data.data ?? [];
 
     if (!list.length) {
-      console.log("🔹 ใช้ mock data แทน (ไม่มีข้อมูลจริงจาก API)");
+      console.log("ใช้ mock data แทน (ไม่มีข้อมูลจริงจาก API)");
       return mockProjects;
     }
 

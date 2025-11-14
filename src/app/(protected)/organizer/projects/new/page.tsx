@@ -19,10 +19,9 @@ import DateDurationSection from "@/components/project/new/DateDurationSection";
 import { BudgetTable } from "@/components/project/new/BudgetTable";
 import GeneralInfoTable from "@/components/project/new/GeneralInfoTable";
 import StrategyForm from "@/components/project/new/StrategyForm";
-import ApproveForm from "@/components/project/new/ApproveForm";
+// import ApproveForm from "@/components/project/new/ApproveForm";
 import { BadgeCreateFormProject } from "@/components/project/Helper";
 import GoalForm from "@/components/project/new/GoalForm";
-import KPIAndEstimateForm from "@/components/project/new/EstimateForm";
 import ActivitiesTable from "@/components/project/new/ActivitiesTable";
 import KPIForm from "@/components/project/new/KPIForm";
 import EstimateForm from "@/components/project/new/EstimateForm";
@@ -42,7 +41,7 @@ const steps = [
   "การติดตามและประเมินผล",
   "ผลที่คาดว่าจะได้รับ",
   "ข้อเสนอแนะ",
-  "การอนุมัติและลงนาม",
+  // "การอนุมัติและลงนาม",
 ];
 
 export default function CreateProjectPage() {
@@ -79,9 +78,9 @@ export default function CreateProjectPage() {
   });
 
   // expectation part
-  const [expectation, setExpectation] = useState<ExpectParams>({
-    result: "",
-  });
+const [expectation, setExpectation] = useState<ExpectParams>({
+  results: [""],
+});
   const handleExpectChange = useCallback((v: ExpectParams) => {
     setExpectation(v);
   }, []);
@@ -112,16 +111,16 @@ export default function CreateProjectPage() {
   }, []);
 
   // approve part
-  const [approve, setApprove] = useState<ApproveParams>({
-    proposerName: "",
-    proposerPosition: "",
-    proposeDate: "",
-    deptComment: "",
-    directorComment: "",
-  });
-  const handleApproveChange = useCallback((v: ApproveParams) => {
-    setApprove(v);
-  }, []);
+  // const [approve, setApprove] = useState<ApproveParams>({
+  //   proposerName: "",
+  //   proposerPosition: "",
+  //   proposeDate: "",
+  //   deptComment: "",
+  //   directorComment: "",
+  // });
+  // const handleApproveChange = useCallback((v: ApproveParams) => {
+  //   setApprove(v);
+  // }, []);
 
   // goal part
   const [goal, setGoal] = useState<GoalParams>({
@@ -342,7 +341,7 @@ export default function CreateProjectPage() {
               />
             </motion.div>
           )}
-          {step === 13 && (
+          {/* {step === 13 && (
             <motion.div
               key="step-14"
               initial={{ opacity: 0, x: -40 }}
@@ -352,7 +351,7 @@ export default function CreateProjectPage() {
             >
               <ApproveForm onChange={handleApproveChange} value={approve} />
             </motion.div>
-          )}
+          )} */}
         </AnimatePresence>
       </div>
 
