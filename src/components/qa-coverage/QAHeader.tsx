@@ -8,7 +8,6 @@ type Props = {
   setYear: (y: number) => void;
   onAdd: () => void;
 };
-
 export default function QAHeader({ years, year, setYear, onAdd }: Props) {
   return (
     <header className="border-b border-indigo-100/70 bg-white/90 backdrop-blur">

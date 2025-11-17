@@ -6,7 +6,6 @@ type Props = {
   query: string;
   setQuery: (q: string) => void;
 };
-
 export default function QAControls({ query, setQuery }: Props) {
   return (
     <section className="mt-6 flex flex-col items-stretch justify-between gap-3 md:flex-row md:items-center px-4">

@@ -1,6 +1,5 @@
 import { jwtVerify, SignJWT, decodeJwt } from "jose";
 import { cookies } from "next/headers";
-
 export interface UserPayload {
   sub: string;
   username: string;

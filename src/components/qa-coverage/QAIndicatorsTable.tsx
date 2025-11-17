@@ -17,7 +17,6 @@ type Props = {
  */
 function extractCountFromApi(item: any): number | null {
   if (!item || typeof item !== "object") return null;
-
   const keysToTry = [
     "count_projects",
     "count_project", // <-- บาง API ส่งชื่อแบบนี้
