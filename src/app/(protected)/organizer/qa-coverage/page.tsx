@@ -18,6 +18,7 @@ import type {
   GetQaIndicatorsCountsByYear,
   GetQaIndicatorsRespond,
 } from "@/dto/qaDto";
+import { Search } from "lucide-react";
 
 type NewQA = {
   code: string;
@@ -82,8 +83,8 @@ export default function QACoveragePage() {
           setQaIndicators([]);
           return;
         }
-
         const data = await GetQaIndicatorsByYearFromApi(year_ce);
+        console.log("Fetched QA indicators for year", year_ce, data);
         setQaIndicators(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch QA indicators by year", err);
@@ -119,13 +120,9 @@ export default function QACoveragePage() {
     });
   }, [qaIndicators, query]);
 
-  // totals computed from filteredIndicators (fallback)
-  const computedTotals = useMemo(() => {
-    const indicatorsTotal = filteredIndicators.length;
-    const projectsTotal = filteredIndicators.reduce((s, it) => s + readProjectsCount(it), 0);
-    const gapsTotal = filteredIndicators.reduce((acc, it) => acc + (readProjectsCount(it) === 0 ? 1 : 0), 0);
-    return { indicatorsTotal, projectsTotal, gapsTotal };
-  }, [filteredIndicators]);
+  const selectedRecord = selectedQaId
+    ? qaIndicators.find((q) => String(q.id) === String(selectedQaId)) ?? null
+    : null;
 
   // find aggregated counts for the selected year (count_data likely contains many years)
   const apiCountsForSelectedYear = useMemo(() => {
@@ -133,10 +130,6 @@ export default function QACoveragePage() {
     if (year_ce === null) return null;
     return count_data.find((c) => c.year === year_ce) ?? null;
   }, [count_data, year]);
-
-  const statIndicators = apiCountsForSelectedYear?.qa_count ?? computedTotals.indicatorsTotal;
-  const statProjects = apiCountsForSelectedYear?.total_project_count ?? computedTotals.projectsTotal;
-  const statGaps = apiCountsForSelectedYear?.spaces_project_count ?? computedTotals.gapsTotal;
 
   // handle add: append to local state (UI). Replace with POST call if you want server persist.
   const handleAddQA = (newQA: NewQA) => {
@@ -169,9 +162,6 @@ export default function QACoveragePage() {
       return;
     }
 
-    // fallback: no id available => attempt to open modal with no id (you can change to show local-only view)
-    // In this implementation we'll not open modal without id. Instead we can set selectedQaId = null and maybe show a toast.
-    // For now, try to see if maybeInd has code that maps to a local record with id
     const local = qaIndicators.find(
       (q) => String(q.code ?? q.id ?? "").toLowerCase() === String(maybeInd?.code ?? maybeInd?.id ?? "").toLowerCase()
     );
@@ -187,27 +177,28 @@ export default function QACoveragePage() {
   return (
     <div className="min-h-screen w-full">
       <QAHeader onAdd={() => setShowAddModal(true)} years={years} year={year} setYear={setYear} />
-      <main className="py-8">
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 px-4">
-          <StatCard icon={<></>} title="จำนวนตัวบ่งชี้" value={Number(statIndicators).toLocaleString()} hint={`ปี ${year}`} color="indigo" />
-          <StatCard icon={<></>} title="โครงการทั้งหมด (นับจาก API)" value={Number(statProjects).toLocaleString()} hint={`ปี ${year}`} color="emerald" />
-          <StatCard icon={<></>} title="ตัวบ่งชี้ที่มีช่องว่าง" value={Number(statGaps).toLocaleString()} hint="ต้องการ Action" color="amber" />
+      <main className="py-2">
+
+        <section className="mt-6 flex flex-col items-stretch justify-between gap-3 md:flex-row md:items-center px-4">
+          <div className="relative w-full md:w-1/2">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              placeholder="ค้นหาตามโค้ด/ชื่อตัวบ่งชี้…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-2.5 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
+            />
+          </div>
         </section>
 
-        <QAControls query={query} setQuery={setQuery} />
-
         <section className="mt-6 mx-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-800">ตัวบ่งชี้ QA ทั้งหมด (อ้างอิง)</h3>
+          <div className="mb-2 flex items-center justify-between mx-4 my-2">
+            <h3 className="text-sm font-semibold text-slate-800">ตัวบ่งชี้ QA ทั้งหมด</h3>
             <span className="text-xs text-slate-500">ปี {year} • {filteredIndicators.length} รายการ</span>
           </div>
 
           <QAIndicatorsTable
-            indicators={filteredIndicators.map((it) => ({
-              code: it.code ?? it.id ?? "",
-              name: it.name ?? "",
-              year: it.year ?? undefined,
-            }))}
             qaIndicatorsData={filteredIndicators}
             onView={handleView}
           />
@@ -215,10 +206,13 @@ export default function QACoveragePage() {
       </main>
 
       {showAddModal && <AddQAModal onClose={() => setShowAddModal(false)} onAdd={handleAddQA} year={year} />}
-
-      {/* QADetailModal รับ qaId เป็น string */}
       {selectedQaId && (
-        <QADetailModal qaId={selectedQaId} onClose={() => setSelectedQaId(null)} onUpdate={handleUpdateQA} />
+        <QADetailModal
+          qaId={selectedQaId}
+          initialData={selectedRecord}        
+          onClose={() => setSelectedQaId(null)}
+          onUpdate={handleUpdateQA}
+        />
       )}
     </div>
   );

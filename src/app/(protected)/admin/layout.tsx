@@ -1,4 +1,3 @@
-// app/(protected)/dashboard/layout.tsx
 import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
@@ -43,12 +42,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-dvh bg-white [--app-header-h:64px]">
-      {/* Mobile */}
       <div className="md:hidden">
         <TopBar serverUser={serverUser} />
       </div>
 
-      {/* Desktop */}
       <div className="hidden md:flex">
         <Sidebar serverUser={serverUser} />
       </div>

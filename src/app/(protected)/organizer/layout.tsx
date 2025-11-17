@@ -1,4 +1,3 @@
-// app/(protected)/dashboard/layout.tsx
 import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
-import { roleIdToKey } from "@/lib/rbac";
+import { pickHomeByRole, roleIdToKey } from "@/lib/rbac";
 import ApiClient from "@/lib/api-clients";
 
 type LoginBody = { username: string; password: string; remember?: boolean };
@@ -33,11 +33,8 @@ async function loginExternal(username: string, password: string) {
     if (!token) throw new Error("No token returned from external API");
 
     return { token, raw: data };
-
   } catch (err: any) {
-
     const safe = pickSafeMessage(err?.response?.data) || "External login failed";
-    
     const status = err?.response?.status;
     if (status === 401 || status === 403) {
       const e = new Error("Invalid username or password");
@@ -71,6 +68,7 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
     const rawRoleId =
       claims.role_id ??
       claims.role ??
@@ -95,7 +93,6 @@ export async function POST(req: Request) {
       name: (claims.name as string) || claims.fullname || username,
       org_id: claims.org_id || claims.organization_id || undefined,
       department_id: claims.department_id || claims.dept_id || undefined,
-  
     };
 
     const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60;
@@ -103,24 +100,25 @@ export async function POST(req: Request) {
     const ourJwt = await signUserToken(userForOurJwt, ttl);
 
     const res = NextResponse.json(
-      { success: true },
+      { success: true, home: pickHomeByRole(role_key) },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
+
     const isProd = process.env.NODE_ENV === "production";
 
-    res.cookies.set("api_token", externalToken, {
-      httpOnly: false,
+    res.cookies.set("auth_token", ourJwt, {
+      httpOnly: true,
       secure: isProd,
-      sameSite: "lax",
+      sameSite: isProd ? "none" : "lax",
       path: "/",
       maxAge: ttl,
       priority: "high",
     });
 
-    res.cookies.set("auth_token", ourJwt, {
+    res.cookies.set("api_token", externalToken, {
       httpOnly: false,
       secure: isProd,
-      sameSite: "lax",
+      sameSite: isProd ? "none" : "lax",
       path: "/",
       maxAge: ttl,
       priority: "high",
