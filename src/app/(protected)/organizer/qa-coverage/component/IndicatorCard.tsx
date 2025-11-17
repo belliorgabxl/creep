@@ -10,7 +10,6 @@ interface IndicatorCardProps {
   item: QAIndicator;
   onView?: () => void;
 }
-
 const IndicatorCard: React.FC<IndicatorCardProps> = ({ item, onView }) => {
   return (
     <div

@@ -22,7 +22,6 @@ const HEX = {
   indigo600: "#4f46e5",
 }
 const PIE = [HEX.blue600, HEX.indigo600]
-
 export function ChartsSection({ dataBudgetByDept, dataProjectTypes }: ChartsSectionProps) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

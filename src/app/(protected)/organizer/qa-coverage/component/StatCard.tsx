@@ -14,7 +14,6 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value, hint, color = "
     emerald: "bg-emerald-50 text-emerald-700 ring-emerald-100",
     amber: "bg-amber-50 text-amber-700 ring-amber-100",
   } as const;
-
   return (
     <div className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">

@@ -204,6 +204,7 @@ export default function AccountSettingsPage() {
         onSubmit={handleSubmit}
         className="rounded-xl border border-gray-200 bg-white p-6 shadow-xl space-y-6"
       >
+        
         <div className="flex flex-col items-center justify-center gap-3">
           <div className="relative h-24 w-24">
             <Image

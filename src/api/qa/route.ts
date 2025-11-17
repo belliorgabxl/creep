@@ -116,6 +116,7 @@ export async function GetQaIndicatorsDetailByIdApi(id: string): Promise<GetQaInd
     return [];
   }
 
+  
   try {
     const response = await ApiClient.get<{
       responseCode?: string;

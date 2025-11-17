@@ -20,6 +20,7 @@ import type {
 import { Search } from "lucide-react";
 import AddQAModal from "./qa_add_modal";
 
+
 type NewQA = {
   code: string;
   name: string;

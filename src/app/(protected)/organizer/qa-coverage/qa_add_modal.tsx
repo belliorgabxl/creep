@@ -11,7 +11,6 @@ type AddQAModalProps = {
   onAdd: (newQA: { code: string; name: string; year?: number; projects?: number; gaps?: boolean }) => void;
   year: string | number;
 };
-
 export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
   const [formData, setFormData] = useState<{ code: string; name: string; year?: number }>({
     code: "",

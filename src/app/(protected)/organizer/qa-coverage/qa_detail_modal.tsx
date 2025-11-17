@@ -12,7 +12,6 @@ type QADetailModalProps = {
   initialData?: Partial<GetQaIndicatorsRespond> | null;
   fetchIfMissing?: boolean; // default true
 };
-
 type FormDataType = {
   id: string;
   code?: string;

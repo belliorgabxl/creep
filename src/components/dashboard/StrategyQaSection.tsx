@@ -80,7 +80,6 @@ export function StrategyQaSection({
           )}
         </div>
       </div>
-
       {/* --- QA indicators section (max 4, sorted by display_order asc) --- */}
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 sticky top-0 bg-white z-10">

@@ -12,7 +12,6 @@ interface CoverageRowProps {
   item: QACoverage;
   onViewDetail?: () => void;
 }
-
 const CoverageRow: React.FC<CoverageRowProps> = ({ item, onViewDetail }) => {
   const pct = Math.min(100, Math.round(((item.projects ?? 0) / 80) * 100));
 

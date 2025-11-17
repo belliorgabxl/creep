@@ -16,7 +16,6 @@ export default function ForgotPasswordPage() {
         setSubmitted(true);
         setLoading(false);
     };
-
     return (
         <div className="min-h-[100dvh] w-full">
             <SciFiBackgroundNormal>
