@@ -76,7 +76,7 @@ export default async function Page({ params }: { params: PageParams }) {
         </p>
         <div className="mt-6">
           <Link
-            href="/user/projects/my-project"
+            href="/organizer/projects/my-project"
             className="text-indigo-600 hover:underline"
           >
             ← กลับไปยัง My Project
@@ -102,7 +102,7 @@ export default async function Page({ params }: { params: PageParams }) {
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <nav className="mb-4 text-xs text-gray-500">
-        <Link href="/user/projects/my-project" className="hover:underline">
+        <Link href="/organizer/projects/my-project" className="hover:underline">
           โปรเจ็กต์ของคุณ
         </Link>
         <span className="mx-1">/</span>
@@ -131,13 +131,13 @@ export default async function Page({ params }: { params: PageParams }) {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/user/projects/edit/${p.id}`}
+            href={`/organizer/projects/edit/${p.id}`}
             className="rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
           >
             แก้ไข
           </Link>
           <Link
-            href={`/user/projects/approval/${p.id}`}
+            href={`/organizer/projects/approval/${p.id}`}
             className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             ส่งอนุมัติ

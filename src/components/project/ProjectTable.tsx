@@ -13,7 +13,7 @@ import { ExportPDFDocument } from "../button/ExportProjectButton";
 export function ProjectTable({ projects }: { projects: Project[] }) {
   const router = useRouter();
 
-  // const go = (id: string) => router.push(`/organizer/project/details/${id}`);
+  const go = (id: string) => router.push(`/organizer/projects/details/${id}`);
 
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -34,7 +34,7 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
             >
               <Td>
                 <Link
-                  href={`/organizer/project/details/${p.id}`}
+                  href={`/organizer/projects/details/${p.id}`}
                   className="block font-medium text-gray-900 hover:underline line-clamp-1"
                   onClick={(e) => e.stopPropagation()}
                 >

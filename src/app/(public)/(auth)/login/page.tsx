@@ -69,25 +69,24 @@ function LoginInner() {
           setUsername(p.username);
           setRemember(true);
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
-  useEffect(() => {
-    const hasToken = document.cookie.split("; ").some((c) => c.startsWith("auth_token="));
-    if (!hasToken) return;
+useEffect(() => {
+  (async () => {
+    const me = await fetchMe();
+    if (me?.role) {
+      router.replace(pickHomeByRole(me.role));
+    }
+  })();
+}, [router]);
 
-    (async () => {
-      const me = await fetchMe();
-      if (me?.role) {
-        router.replace(pickHomeByRole(me.role));
-      }
-    })();
-  }, [router]);
 
   function onKeyEvent(e: React.KeyboardEvent<HTMLInputElement>) {
     if ("getModifierState" in e) setCapsOn(e.getModifierState("CapsLock"));
   }
+
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -102,6 +101,7 @@ function LoginInner() {
         body: JSON.stringify({
           username: username.trim(),
           password: password.trim(),
+          remember,
         }),
       });
 
@@ -111,22 +111,15 @@ function LoginInner() {
         throw new Error(data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
       }
 
-      if (remember) {
-        localStorage.setItem("ebudget_login", JSON.stringify({ username }));
-      } else {
-        localStorage.removeItem("ebudget_login");
-      }
-      const target =
-        redirectParam ??
-        pickHomeByRole((await fetchMe())?.role); 
-
-      router.replace(target);
+      const target = redirectParam ?? data.home ?? "/";
+      window.location.replace(target);
     } catch (err: any) {
       setError(err?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     } finally {
       setIsLoading(false);
     }
   }
+
 
   const canSubmit = useMemo(
     () => !!username.trim() && !!password.trim() && !isLoading,

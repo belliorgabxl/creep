@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { KpiCards } from "@/components/dashboard/KpiCards";
 import { ChartsSection } from "@/components/dashboard/ChartsSection";
@@ -17,6 +17,8 @@ import {
   MOCK_CALENDAR,
 } from "@/app/mock";
 import QuarterCalendar from "@/components/dashboard/QuarterCalendar";
+import { GetProjectsByOrgFromApi } from "@/api/dashboard/route";
+import { GetProjectsByOrgRespond } from "@/dto/dashboardDto";
 
 export default function UserDashboardPage() {
   const [filters, setFilters] = useState({
@@ -28,6 +30,7 @@ export default function UserDashboardPage() {
     strategy: "all",
   });
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [projects_data, set_projects_data] = useState<GetProjectsByOrgRespond[]>([]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -37,6 +40,16 @@ export default function UserDashboardPage() {
       setActiveFilters((prev) => prev.filter((f) => f !== key));
     }
   };
+  useEffect(() => {
+          const fetchCounts = async () => {
+              try {
+                  const data = await GetProjectsByOrgFromApi();
+                  set_projects_data(data);
+              } catch (err) {
+              }
+          };
+          fetchCounts();
+      }, []);
 
   const clearAllFilters = () => {
     setFilters({
@@ -63,10 +76,8 @@ export default function UserDashboardPage() {
           </div>
         </div>
         <main className="container mx-auto space-y-6 px-4 py-6">
-          {/* <ProjectsTable filters={filters} projects={MOCK_PROJECTS} /> */}
+          <ProjectsTable filters={filters} projects={projects_data} />
         </main>
-
-        <FooterToolbar />
       </div>
     </div>
   );
