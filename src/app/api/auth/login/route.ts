@@ -1,3 +1,4 @@
+// src/app/api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
 import { pickHomeByRole, roleIdToKey } from "@/lib/rbac";
@@ -37,7 +38,7 @@ async function loginExternal(username: string, password: string) {
     const safe = pickSafeMessage(err?.response?.data) || "External login failed";
     const status = err?.response?.status;
     if (status === 401 || status === 403) {
-      const e = new Error("Invalid username or password");
+      const e = new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       (e as any).status = 401;
       throw e;
     }
@@ -94,7 +95,6 @@ export async function POST(req: Request) {
       org_id: claims.org_id || claims.organization_id || undefined,
       department_id: claims.department_id || claims.dept_id || undefined,
     };
-
     const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60;
 
     const ourJwt = await signUserToken(userForOurJwt, ttl);
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
   } catch (e: any) {
     const status = e?.status ?? 401;
     const message =
-      status === 401 ? "Invalid username or password" : e?.message || "เกิดข้อผิดพลาด";
+      status === 401 ? "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" : e?.message || "เกิดข้อผิดพลาด";
     return NextResponse.json({ success: false, message }, { status });
   }
 }
