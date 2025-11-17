@@ -96,8 +96,6 @@ export default function UserDashboardPage() {
       </div>
 
       <ProjectsTable filters={filters} projects={MOCK_PROJECTS} /> */}
-
-      <FooterToolbar />
     </div>
   );
 }

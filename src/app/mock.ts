@@ -99,14 +99,7 @@ export type CalendarEventModel = {
   status?: string;
 };
 
-// ตัวบ่งชี้ QA และยุทธศาสตร์ (ใช้หน้า Alignment)
-export interface QAIndicator { code: string; name: string; year?: number }
-export const MOCK_QA_INDICATORS: QAIndicator[] = [
-  { code: "QA-2.1", name: "ผู้เรียนเป็นศูนย์กลาง", year: 2568 },
-  { code: "QA-3.2", name: "คุณภาพหลักสูตรสอดคล้องมาตรฐาน", year: 2568 },
-  { code: "QA-4.1", name: "พัฒนาครูและบุคลากร", year: 2568 },
-  { code: "QA-5.3", name: "ระบบประกันคุณภาพภายใน", year: 2568 },
-]
+
 
 export interface StrategyItem { code: string; name: string }
 export const MOCK_STRATEGIES: StrategyItem[] = [

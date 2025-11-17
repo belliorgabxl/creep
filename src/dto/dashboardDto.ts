@@ -37,24 +37,3 @@ export type GetProjectsByOrgRespond = {
   end_date?: string | Date;
   updated_by?: string;
 };
-
-export type GetQaIndicatorsRespond = {
-  id: string;
-  name: string;
-  code: string;
-  display_order: number;
-  description: string;
-  organization_id: string;
-  year: number;
-};
-
-
-export type GetStrategicPlanRespond = {
-  id: string;
-  name: string;
-  description: string;
-  count: number;
-  organization_id: string;
-  year_end: string;
-  year_start: string;
-};

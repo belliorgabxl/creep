@@ -1,5 +1,6 @@
 import ApiClient from "@/lib/api-clients";
-import type { GetCalenderEventRespond, GetProjectsByOrgRespond,GetApprovalItems,GetQaIndicatorsRespond,GetStrategicPlanRespond } from "@/dto/dashboardDto";
+import type { GetCalenderEventRespond, GetProjectsByOrgRespond,GetApprovalItems } from "@/dto/dashboardDto";
+import type { GetStrategicPlanRespond,GetQaIndicatorsRespond } from "@/dto/qaDto";
 import Cookies from "js-cookie";
 
 export async function GetCalendarEventsFromApi(): Promise<GetCalenderEventRespond[]> {
