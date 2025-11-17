@@ -98,7 +98,6 @@ const projectMock = {
     },
   },
 };
-
 export function downloadExamplePdf() {
   const doc = new jsPDF();
   doc.addFileToVFS("THSarabun.ttf", THSarabunFont);

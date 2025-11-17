@@ -5,7 +5,6 @@ export function parseTTL(ttl: string): number {
 
   const value = parseInt(match[1], 10);
   const unit = match[2];
-
   switch (unit) {
     case "s": return value;
     case "m": return value * 60;

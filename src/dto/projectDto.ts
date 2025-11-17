@@ -16,7 +16,6 @@ export interface Project {
   strategies?: string[];
   attachmentsCount?: number;
 }
-
 export type Department = {
   id: string;
   code: string;
