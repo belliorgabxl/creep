@@ -85,7 +85,7 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
           <span className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
             {rows.length} โครงการ
           </span>
-          <Link href="/organizer/projects" className="text-xs text-gray-600 hover:text-indigo-700 hover:underline">
+          <Link href="/organizer/projects/my-project" className="text-xs text-gray-600 hover:text-indigo-700 hover:underline">
             ทั้งหมด
           </Link>
         </div>
@@ -161,7 +161,7 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
                         </Link>
 
                         <Link
-                          href="/organizer/projects"
+                          href="/organizer/projects/my-project"
                           className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                         >
                           ดูทั้งหมด

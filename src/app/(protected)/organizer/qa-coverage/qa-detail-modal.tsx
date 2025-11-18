@@ -10,14 +10,14 @@ type QADetailModalProps = {
   onClose: () => void;
   onUpdate: (updated: any) => void;
   initialData?: Partial<GetQaIndicatorsRespond> | null;
-  fetchIfMissing?: boolean; // default true
+  fetchIfMissing?: boolean;
 };
 
 type FormDataType = {
   id: string;
   code?: string;
   name?: string;
-  projects?: number;
+  projects?: number; // maps to project_count
   description?: string;
   year?: number;
 };
@@ -42,34 +42,52 @@ export default function QADetailModal({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Robust reader for project count (support many keys and string numbers)
   function readProjectsFromRec(rec: any): number {
     if (!rec || typeof rec !== "object") return 0;
-    if (typeof rec.count_projects === "number") return rec.count_projects;
-    if (typeof rec.count_project === "number") return rec.count_project;
-    if (typeof rec.projects === "number") return rec.projects;
-    if (typeof rec.count === "number") return rec.count;
-    const cand = rec.count_projects ?? rec.count_project ?? rec.projects ?? rec.count ?? rec.total ?? rec.value;
-    if (typeof cand === "string" && cand.trim() !== "" && !Number.isNaN(Number(cand))) return Number(cand);
+    // common keys used in your DTOs / APIs
+    const keys = ["project_count", "projectCount", "project_count", "project_count", "project_count", "project_count", "project_count", "project_count", "project_count"];
+    // but also support previous names like project_count, project_count, project_count as in DTO
+    const candidates = [
+      rec.project_count,
+      rec.projectCount,
+      rec.project_count,
+      rec.project_count,
+      rec.project_count,
+      rec.count_projects,
+      rec.count_project,
+      rec.projects,
+      rec.count,
+      rec.total,
+      rec.value,
+    ];
+    for (const c of candidates) {
+      if (typeof c === "number") return c;
+      if (typeof c === "string" && c.trim() !== "" && !Number.isNaN(Number(c))) return Number(c);
+    }
     return 0;
   }
 
   function mapApiRecordToForm(rec: Partial<GetQaIndicatorsRespond> & any, fallbackId: string): FormDataType {
     const projects = readProjectsFromRec(rec);
-    const code = String(rec.code ?? rec.id ?? fallbackId ?? "");
-    const name = String(rec.name ?? rec.title ?? "");
+    const code = rec.code ?? rec.id ?? fallbackId ?? "";
+    const name = rec.name ?? rec.title ?? "";
+    const description = rec.description ?? "";
+    const year = typeof rec.year === "number" ? rec.year : rec.year ? Number(rec.year) : undefined;
 
     return {
       id: String(rec.id ?? fallbackId),
-      code,
-      name,
+      code: String(code),
+      name: String(name),
       projects,
-      description: rec.description ?? "",
-      year: typeof rec.year === "number" ? rec.year : rec.year ? Number(rec.year) : undefined,
+      description: String(description),
+      year,
     };
   }
 
   useEffect(() => {
     let mounted = true;
+
     const applyRecord = (rec: any) => {
       if (!mounted) return;
       const mapped = mapApiRecordToForm(rec ?? {}, qaId);
@@ -79,26 +97,29 @@ export default function QADetailModal({
       setError(null);
     };
 
+    // Always try to fetch detail by id from API when modal opens.
+    // If initialData exists, apply it quickly (optimistic UI) then fetch fresh detail.
     if (initialData) {
+      // optimistic show initial data quickly
       applyRecord(initialData);
-      return () => {
-        mounted = false;
-      };
     }
 
-    if (!fetchIfMissing) {
+    if (!fetchIfMissing && !initialData) {
+      // if caller explicitly disabled fetching and no initial data, close
       onClose();
       return () => {
         mounted = false;
       };
     }
 
+    // fetch authoritative detail from API using id (this is the requested change)
     setLoading(true);
     setError(null);
     (async () => {
       try {
         const data = await GetQaIndicatorsDetailByIdApi(String(qaId));
         if (!mounted) return;
+        // API helper may return array or single object; normalize
         const rec = Array.isArray(data) ? data[0] : data;
         if (!rec) {
           setError("ไม่พบข้อมูลรายละเอียดจาก API");
@@ -119,7 +140,8 @@ export default function QADetailModal({
     return () => {
       mounted = false;
     };
-  }, [qaId, initialData, fetchIfMissing, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qaId]); // only re-run when qaId changes
 
   const startEditing = () => {
     // allow editing only when there are zero projects
