@@ -36,14 +36,14 @@ type SelectedQA = {
 };
 
 // แปลง พ.ศ. -> ค.ศ.
-export function beToCe(yearBe: string | number): number | null {
+function beToCe(yearBe: string | number): number | null {
   const y = Number(yearBe);
   if (Number.isNaN(y)) return null;
   return y - 543;
 }
 
 // แปลง ค.ศ. -> พ.ศ.
-export function ceToBe(yearCe?: number | null): string | undefined {
+function ceToBe(yearCe?: number | null): string | undefined {
   if (yearCe === undefined || yearCe === null) return undefined;
   return String(Number(yearCe) + 543);
 }

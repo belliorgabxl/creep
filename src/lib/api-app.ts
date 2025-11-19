@@ -1,5 +1,4 @@
 import axios from "axios";
-
 const AppClient = axios.create({
   baseURL: process.env.API_BASE_URL ??
     "https://e-budget-api.usefulapps.app/api/v1",

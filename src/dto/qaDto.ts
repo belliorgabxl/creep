@@ -8,7 +8,6 @@ export type GetQaIndicatorsRespond = {
   organization_id: string;
   year: number;
 };
-
 export type GetQaIndicatorsByYearRespond = {
   id: string;
   name: string;

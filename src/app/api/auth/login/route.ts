@@ -22,7 +22,10 @@ async function loginExternal(username: string, password: string) {
       { username, password },
       {
         baseURL,
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         timeout: 10_000,
         withCredentials: false,
       }
@@ -35,7 +38,9 @@ async function loginExternal(username: string, password: string) {
 
     return { token, raw: data };
   } catch (err: any) {
+
     const safe = pickSafeMessage(err?.response?.data) || "External login failed";
+    
     const status = err?.response?.status;
     if (status === 401 || status === 403) {
       const e = new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
@@ -95,9 +100,10 @@ export async function POST(req: Request) {
       org_id: claims.org_id || claims.organization_id || undefined,
       department_id: claims.department_id || claims.dept_id || undefined,
     };
+
     const ttl = remember ? 7 * 24 * 60 * 60 : 60 * 60;
 
-    const ourJwt = await signUserToken(userForOurJwt, ttl);
+    const ourJwt = await signUserToken(userForOurJwt, expiretoken);
 
     const res = NextResponse.json(
       { success: true, home: pickHomeByRole(role_key) },
@@ -111,7 +117,7 @@ export async function POST(req: Request) {
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: ttl,
+      maxAge: expiretoken,
       priority: "high",
     });
 
@@ -120,7 +126,7 @@ export async function POST(req: Request) {
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: ttl,
+      maxAge: expiretoken,
       priority: "high",
     });
 
@@ -128,7 +134,7 @@ export async function POST(req: Request) {
   } catch (e: any) {
     const status = e?.status ?? 401;
     const message =
-      status === 401 ? "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" : e?.message || "เกิดข้อผิดพลาด";
+      status === 401 ? "Invalid username or password" : e?.message || "เกิดข้อผิดพลาด";
     return NextResponse.json({ success: false, message }, { status });
   }
 }

@@ -47,7 +47,6 @@ export async function middleware(request: NextRequest) {
     res.cookies.delete("api_token");
     return res;
   }
-
   const role = (payload.role as string) || "department_user";
 
   const forbid = () => NextResponse.redirect(new URL("/403", request.url));

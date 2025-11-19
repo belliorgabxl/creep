@@ -1,4 +1,3 @@
-
 import { Project } from "@/dto/projectDto";
 import * as React from "react";
 import {
@@ -10,6 +9,7 @@ import {
 } from "./Helper";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ExportPDFDocument } from "../button/ExportProjectButton";
 export function ProjectTable({ projects }: { projects: Project[] }) {
   const router = useRouter();
 
@@ -23,14 +23,14 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
             <tr
               key={p.id}
               className="hover:bg-gray-50/60 cursor-pointer"
-              onClick={() => go(p.id)}
+              // onClick={() => go(p.id)}
               tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  go(p.id);
-                }
-              }}
+              // onKeyDown={(e) => {
+              //   if (e.key === "Enter" || e.key === " ") {
+              //     e.preventDefault();
+              //     // go(p.id);
+              //   }
+              // }}
             >
               <Td>
                 <Link
@@ -49,8 +49,6 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
                   </p>
                 )}
               </Td>
-
-              {/* คอลัมน์อื่น ๆ เหมือนเดิม */}
               <Td className="text-center">
                 {p.department ? (
                   <BadgeTiny title={p.department}>
@@ -73,6 +71,9 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
                 <span className="line-clamp-1">
                   {formatThaiDateTime(p.updatedAt)}
                 </span>
+              </Td>
+              <Td className="text-center">
+                <ExportPDFDocument id={"d"} />
               </Td>
             </tr>
           ))}

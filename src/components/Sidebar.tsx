@@ -11,6 +11,7 @@ import {
   TrendingUp,
   ClipboardList,
   LogOut,
+  Users,
 } from "lucide-react";
 import { pickHomeByRole } from "@/lib/rbac";
 
@@ -23,6 +24,7 @@ type ServerUser = {
   org_id?: string | null;
   department_id?: string | null;
 } | null;
+
 
 const normalizePath = (p: string) => {
   if (!p) return "";
@@ -68,6 +70,12 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
             href: "/organizer/department",
             icon: Building2,
             label: "หน่วยงาน",
+          },
+           {
+            id: "users",
+            href: "/organizer/users",
+            icon: Users,
+            label: "พนักงาน",
           },
           { id: "setup", href: "/organizer/setup", icon: Settings, label: "ตั้งค่า" },
         ].filter(Boolean) as Array<{ id: string; href: string; icon: any; label: string }>

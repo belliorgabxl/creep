@@ -16,7 +16,6 @@ export interface Project {
   strategies?: string[];
   attachmentsCount?: number;
 }
-
 export type Department = {
   id: string;
   code: string;
@@ -113,7 +112,7 @@ export type KPIParams = {
 
 // expect part
 export type ExpectParams = {
-  result: string;
+  results: string[];
 };
 
 export interface CreateProjectPayload {
