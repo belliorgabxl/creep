@@ -13,12 +13,23 @@ type Props = {
 export default function ExpectForm({ value, onChange }: Props) {
   const update = (idx: number, text: string) => {
     const clone = [...value.results];
-    clone[idx] = text;
+    clone[idx] = {
+      ...clone[idx],
+      description: text,
+    };
     onChange({ results: clone });
   };
 
   const addRow = () => {
-    onChange({ results: [...value.results, ""] });
+    onChange({
+      results: [
+        ...value.results,
+        {
+          description: "",
+          type: "objective",
+        },
+      ],
+    });
   };
 
   const removeRow = (idx: number) => {
@@ -32,10 +43,10 @@ export default function ExpectForm({ value, onChange }: Props) {
       <h2 className="font-medium text-gray-800">ผลที่คาดว่าจะได้รับ</h2>
 
       <div className="space-y-4">
-        {value.results.map((res, idx) => (
+        {value.results.map((item, idx) => (
           <div key={idx} className="relative">
             <textarea
-              value={res}
+              value={item.description}
               onChange={(e) => update(idx, e.target.value)}
               className="min-h-[120px] w-full rounded-lg border border-gray-300 py-2 px-4"
               placeholder={`ข้อที่ ${idx + 1}`}
@@ -47,7 +58,7 @@ export default function ExpectForm({ value, onChange }: Props) {
                 onClick={() => removeRow(idx)}
                 className="absolute -top-2 -right-2 rounded-full bg-red-400 text-white p-2 hover:bg-red-600 flex items-center justify-center"
               >
-                <Trash className="h-4 w-4"/>
+                <Trash className="h-4 w-4" />
               </button>
             )}
           </div>

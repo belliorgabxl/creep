@@ -53,47 +53,46 @@ export type BudgetRow = {
 };
 
 export type FundingSources = {
-  school: boolean;
-  revenue: boolean;
-  external: boolean;
+  source: "school" | "revenue" | "external" | "";
   externalAgency: string;
 };
 
 // estimate component part
 export type EstimateParams = {
-  method: string;
+  estimateType: string;
   evaluator: string;
-  period: string;
+  startDate: string;
+  endDate: string;
 };
 
 // general info component part
 export type GeneralInfoParams = {
   name: string;
   type: string;
-  department: string;
-  owner: string;
+  department_id: string;
+  owner_user_id: string;
 };
 
 // strategy component part
 export type StrategyParams = {
-  schoolPlan: string;     
-  ovEcPolicy: string;  
-  qaIndicator: string;   
+  schoolPlan: string;
+  ovEcPolicy: string;
+  qaIndicator: string;
 };
 
 // approve component part
 export type ApproveParams = {
-  proposerName: string; 
-  proposerPosition: string; 
-  proposeDate: string; 
-  deptComment: string; 
+  proposerName: string;
+  proposerPosition: string;
+  proposeDate: string;
+  deptComment: string;
   directorComment: string;
 };
 
 // goal component part
 export type GoalParams = {
   quantityGoal: string;
-  qualityGoal: string;  
+  qualityGoal: string;
 };
 
 // activity component part
@@ -106,28 +105,32 @@ export type ActivitiesRow = {
 
 // kpi component part
 export type KPIParams = {
-  output: string;   
-  outcome: string;  
+  output: string;
+  outcome: string;
 };
 
 // expect part
+export type ExpectItem = {
+  description: string;
+  type: string;
+};
 export type ExpectParams = {
-  results: string[];
+  results: ExpectItem[];
 };
 
 export interface CreateProjectPayload {
-  code: string;
+  code?: string;
   department_id: string;
   description: string;
-  end_date: string;    
+  end_date: string;
   location: string;
   name: string;
   organization_id: string;
   owner_user_id: string;
-  plan_type: string;       
+  plan_type: string;
   qualitative_goal: string;
   quantitative_goal: string;
   rationale: string;
-  start_date: string;      
+  start_date: string;
   updated_by: string;
 }

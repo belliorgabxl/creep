@@ -1,17 +1,20 @@
 import { Department } from "@/dto/departmentDto";
 import ApiClient from "@/lib/api-clients";
+import Cookies from "js-cookie";
 
-interface DepartmentsResponse {
-  data: Department[];
-  message: string;
-  success: boolean;
-}
-
-export const fetchDepartments = async (
-  accessToken: string
-): Promise<Department[]> => {
+export const fetchDepartments = async (): Promise<Department[]> => {
   try {
-    const res = await ApiClient.get<DepartmentsResponse>("api/v1/departments", {
+    const accessToken = Cookies.get("api_token");
+
+    if (!accessToken) {
+      throw new Error("No access token in cookies");
+    }
+
+    const res = await ApiClient.get<{
+      data: Department[];
+      message: string;
+      success: boolean;
+    }>("/departments/", {
       method: "GET",
       headers: {
         accept: "application/json",
@@ -19,7 +22,7 @@ export const fetchDepartments = async (
       },
     });
 
-    return res.data.data;
+    return res.data.data ?? [];
   } catch (error) {
     console.error("fetchDepartments error:", error);
     throw error;

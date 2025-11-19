@@ -3,6 +3,11 @@
 import ApiClient from "@/lib/api-clients";
 import { cookies } from "next/headers";
 import type { GetCalenderEventRespond } from "@/dto/dashboardDto";
+import { CreateProjectPayload } from "@/dto/projectDto";
+import {
+  CreateProjectRequest,
+  CreateProjectResponse,
+} from "@/dto/createProjectDto";
 
 type ApiResp =
   | { success: true; data: any[] }
@@ -23,12 +28,11 @@ export async function getCalendarEvents(): Promise<GetCalenderEventRespond[]> {
       },
     });
 
-    const payload: any =
-      Array.isArray(response.data)
-        ? response.data
-        : Array.isArray((response.data as any)?.data)
-        ? (response.data as any).data
-        : [];
+    const payload: any = Array.isArray(response.data)
+      ? response.data
+      : Array.isArray((response.data as any)?.data)
+      ? (response.data as any).data
+      : [];
 
     const mapped: GetCalenderEventRespond[] = payload.map((e: any) => ({
       id: String(e.id ?? e._id ?? crypto.randomUUID()),
@@ -46,3 +50,46 @@ export async function getCalendarEvents(): Promise<GetCalenderEventRespond[]> {
     return [];
   }
 }
+
+export const createProject = async (
+  payload: CreateProjectPayload
+): Promise<CreateProjectResponse> => {
+  try {
+    const body: CreateProjectRequest = {
+      project: payload,
+    };
+
+    const token = (await cookies()).get("api_token")?.value;
+
+    const res = await ApiClient.post<CreateProjectResponse>(
+      `${process.env.EBUDGET_API_BASE_URL}/projects`,
+      body,
+      {
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(`createProject failed: ${res.status} ${res.statusText}`);
+    }
+
+    return res.data;
+  } catch (error: any) {
+    console.error("createProject error:", error);
+
+    if (error.response) {
+      throw new Error(
+        `API Error ${error.response.status}: ${JSON.stringify(
+          error.response.data
+        )}`
+      );
+    }
+
+    throw error;
+  }
+};
