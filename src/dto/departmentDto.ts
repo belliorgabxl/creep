@@ -1,0 +1,7 @@
+export interface Department {
+  id: string;
+  code: string;
+  name: string;
+  organization_id: string;
+  is_archived: boolean;
+}
