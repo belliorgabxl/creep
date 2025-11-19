@@ -233,36 +233,54 @@ export async function CreateQaFromApi(
     }
 }
 export async function DeleteQaFromApi(
-    id: string
+  id: string
 ): Promise<boolean> {
-    const token = Cookies.get("api_token");
-    if (!token) {
-        console.warn("No token found in cookies.");
-        return false;
-    }
-    try {
-        const response = await ApiClient.delete<{
-            responseCode?: string;
-            responseMessage?: string;
-            data?: boolean;
-        }>(`qa-indicators/${id}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-            },
-        });
-        const body = response?.data;
-        if (!body) {
-            console.error("Empty response body when deleting QA indicator");
-            return false;
-        }
+  const token = Cookies.get("api_token");
+  if (!token) {
+    console.warn("No token found in cookies.");
+    return false;
+  }
+
+  try {
+    const response = await ApiClient.delete<{
+      responseCode?: string;
+      responseMessage?: string;
+      data?: boolean;
+    }>(`qa-indicators/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    const status = response?.status;
+    const body = response?.data;
+
+    // ถ้า server คืน 2xx (รวม 204 No Content) ถือว่า success
+    if (status && status >= 200 && status < 300) {
+      // ถ้ามี body ให้ตรวจ responseCode ถ้ามี
+      if (body) {
         if (body.responseCode && body.responseCode !== "00") {
-            console.error("API returned failure responseCode:", body.responseCode, body.responseMessage);
-            return false;
+          console.error("API returned failure responseCode:", body.responseCode, body.responseMessage);
+          return false;
         }
+        // body present and OK
         return true;
-    } catch (err) {
-        console.error("Error deleting QA indicator:", err);
-        return false;
+      }
+      // no body but 2xx => treat as success (e.g., 204 No Content)
+      return true;
     }
+
+    // non-2xx without throwing (unlikely with axios) — treat as failure and log
+    console.error("Unexpected response while deleting QA indicator", { status, body });
+    return false;
+  } catch (err: any) {
+    // axios error: inspect response if available
+    console.error("Error deleting QA indicator:", err);
+    if (err?.response) {
+      console.error("Delete response status:", err.response.status);
+      console.error("Delete response data:", err.response.data);
+    }
+    return false;
+  }
 }

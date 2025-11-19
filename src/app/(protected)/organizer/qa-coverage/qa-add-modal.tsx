@@ -63,8 +63,6 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
     if (closingRef.current) return;
     closingRef.current = true;
     resetForm();
-    // small timeout to ensure state reset UI updates before parent hides modal (optional)
-    // but we can call onClose immediately
     onClose();
     // allow future opens to work
     setTimeout(() => {
@@ -113,6 +111,7 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
       return;
     }
 
+    // แปลง พ.ศ. -> ค.ศ.
     const yearCe = beToCe(formData.year as number);
     if (yearCe === null) {
       setError("ปีไม่ถูกต้อง");
@@ -133,7 +132,7 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
       const ok = await CreateQaFromApi(payload);
       setLoading(false);
       if (!ok) {
-        setError("สร้างตัวบ่งชี้ไม่สำเร็จ (API คืนค่าไม่สำเร็จ)");
+        setError("สร้างตัวบ่งชี้ไม่สำเร็จ (API คืนค่าไม่สำเร็จหรือไม่มี token)");
         return;
       }
 
@@ -141,7 +140,7 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
       onAdd({
         code: payload.code,
         name: payload.name,
-        year: formData.year, // เก็บเป็น พ.ศ. เพื่อแสดง
+        year: formData.year, // เก็บเป็น พ.ศ. เพื่อแสดงใน UI
         projects: 0,
         gaps: true,
       });

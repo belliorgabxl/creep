@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { X, Edit2, Save } from "lucide-react";
-import { GetQaIndicatorsDetailByIdApi } from "@/api/qa/route";
-import type { GetQaIndicatorsRespond } from "@/dto/qaDto";
+import { GetQaIndicatorsDetailByIdApi, UpdateQaDetailFromApi } from "@/api/qa/route";
+import type { GetQaIndicatorsRespond, QaRequest } from "@/dto/qaDto";
 
 type QADetailModalProps = {
   qaId: string;
@@ -45,15 +45,9 @@ export default function QADetailModal({
   // Robust reader for project count (support many keys and string numbers)
   function readProjectsFromRec(rec: any): number {
     if (!rec || typeof rec !== "object") return 0;
-    // common keys used in your DTOs / APIs
-    const keys = ["project_count", "projectCount", "project_count", "project_count", "project_count", "project_count", "project_count", "project_count", "project_count"];
-    // but also support previous names like project_count, project_count, project_count as in DTO
     const candidates = [
       rec.project_count,
       rec.projectCount,
-      rec.project_count,
-      rec.project_count,
-      rec.project_count,
       rec.count_projects,
       rec.count_project,
       rec.projects,
@@ -97,29 +91,23 @@ export default function QADetailModal({
       setError(null);
     };
 
-    // Always try to fetch detail by id from API when modal opens.
-    // If initialData exists, apply it quickly (optimistic UI) then fetch fresh detail.
     if (initialData) {
-      // optimistic show initial data quickly
       applyRecord(initialData);
     }
 
     if (!fetchIfMissing && !initialData) {
-      // if caller explicitly disabled fetching and no initial data, close
       onClose();
       return () => {
         mounted = false;
       };
     }
 
-    // fetch authoritative detail from API using id (this is the requested change)
     setLoading(true);
     setError(null);
     (async () => {
       try {
         const data = await GetQaIndicatorsDetailByIdApi(String(qaId));
         if (!mounted) return;
-        // API helper may return array or single object; normalize
         const rec = Array.isArray(data) ? data[0] : data;
         if (!rec) {
           setError("ไม่พบข้อมูลรายละเอียดจาก API");
@@ -141,28 +129,62 @@ export default function QADetailModal({
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qaId]); // only re-run when qaId changes
+  }, [qaId]);
 
   const startEditing = () => {
-    // allow editing only when there are zero projects
     if ((formData.projects ?? 0) > 0) return;
     setOriginal(formData);
     setIsEditing(true);
+    setError(null);
   };
 
-  const handleSave = () => {
-    const safe: FormDataType = {
-      ...formData,
-      projects: formData.projects ?? 0,
+  // async save -> call UpdateQaDetailFromApi
+  const handleSave = useCallback(async () => {
+    setError(null);
+
+    // basic validation
+    if (!formData.name || formData.name.trim() === "") {
+      setError("กรุณากรอกชื่อตัวบ่งชี้");
+      return;
+    }
+
+    const safePayload: Partial<QaRequest> = {
+      // we don't change id/code here
+      name: formData.name?.trim(),
+      description: formData.description?.trim(),
+      // assume API expects numeric year (CE). If your UI uses BE, convert here before sending.
+      year: typeof formData.year === "number" ? formData.year : formData.year ? Number(formData.year) : undefined,
     };
-    onUpdate(safe);
-    setOriginal(safe);
-    setIsEditing(false);
-  };
+
+    try {
+      setLoading(true);
+      const ok = await UpdateQaDetailFromApi(String(formData.id), safePayload);
+      setLoading(false);
+
+      if (!ok) {
+        setError("อัปเดตไม่สำเร็จ กรุณาลองอีกครั้ง");
+        return;
+      }
+
+      // success: update original, exit editing, notify parent
+      const updated: FormDataType = { ...formData };
+      setOriginal(updated);
+      setIsEditing(false);
+      setError(null);
+
+      // onUpdate expected to accept updated record (you can change shape as needed)
+      onUpdate(updated);
+    } catch (err: any) {
+      console.error("UpdateQaDetailFromApi error:", err);
+      setLoading(false);
+      setError(err?.message ?? "เกิดข้อผิดพลาดขณะอัปเดต");
+    }
+  }, [formData, onUpdate]);
 
   const handleCancel = () => {
     if (original) setFormData(original);
     setIsEditing(false);
+    setError(null);
   };
 
   const projectsLocked = (formData.projects ?? 0) > 0;
@@ -170,7 +192,6 @@ export default function QADetailModal({
 
   // close modal and reset state
   const handleClose = useCallback(() => {
-    // reset form to original if available
     if (original) setFormData(original);
     setIsEditing(false);
     setError(null);
@@ -190,19 +211,17 @@ export default function QADetailModal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onMouseDown={(e) => {
-        // click on backdrop should close
-        // if target is this overlay (not the modal inner), close
         if (e.target === e.currentTarget) handleClose();
       }}
     >
       <div
         className="w-full max-w-2xl rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto"
-        onMouseDown={(e) => e.stopPropagation()} // prevent backdrop handler
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
           <div>
             <h3 className="text-lg font-semibold text-slate-900">รายละเอียดตัวบ่งชี้ QA</h3>
-            {loading ? <div className="text-xs text-slate-500 mt-1">กำลังโหลดรายละเอียด...</div> : null}
+            {loading ? <div className="text-xs text-slate-500 mt-1">กำลังประมวลผล...</div> : null}
             {error ? <div className="text-xs text-rose-600 mt-1">{error}</div> : null}
           </div>
 
@@ -222,8 +241,12 @@ export default function QADetailModal({
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={handleSave} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors">
-                  <Save className="h-4 w-4" /> บันทึก
+                <button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                >
+                  <Save className="h-4 w-4" /> {loading ? "กำลังบันทึก..." : "บันทึก"}
                 </button>
                 <button onClick={handleCancel} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700 hover:bg-slate-50">
                   ยกเลิก
@@ -286,15 +309,14 @@ export default function QADetailModal({
 
           <div className="flex items-center justify-end gap-2">
             {!isEditing ? null : (
-              <button onClick={handleSave} className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors">
-                <Save className="h-4 w-4" /> บันทึก
+              <button onClick={handleSave} disabled={loading} className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-60">
+                <Save className="h-4 w-4" /> {loading ? "กำลังบันทึก..." : "บันทึก"}
               </button>
             )}
             <button onClick={handleClose} className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700 hover:bg-slate-50">
               ปิด
             </button>
           </div>
-
         </div>
       </div>
     </div>
