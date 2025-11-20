@@ -20,9 +20,10 @@ import type {
   GeneralInfoParams,
   GoalParams,
   KPIParams,
+  ProjectInformationResponse,
   StrategyParams,
 } from "@/dto/projectDto";
-import { mockProject } from "@/resource/mock-project";
+import { fetchProjectInformation } from "@/api/project/route";
 
 type Project = {
   id: string;
@@ -45,19 +46,134 @@ type Project = {
 
 async function getProject(id: string): Promise<Project | null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/projects/${id}`,
-      { cache: "no-store", headers: { accept: "application/json" } }
+    const apiData: ProjectInformationResponse = await fetchProjectInformation(
+      id
     );
-    if (!res.ok) throw new Error();
 
-    const data = (await res.json()) as { data?: Project } | Project;
-    const item = (
-      Array.isArray(data) ? null : (data as any).data ?? data
-    ) as Project | null;
-    return item ?? mockProject;
-  } catch {
-    return { ...mockProject, id };
+    const generalInfo: GeneralInfoParams = {
+      name: apiData.project_name,
+      type: apiData.plane_type || "",
+      department: apiData.department_name || "",
+      owner_user_id: "",
+    } as any;
+
+    const goal: GoalParams = {
+      quantityGoal: apiData.quantitative_goal || "",
+      qualityGoal: apiData.qualitative_goal || "",
+    };
+
+    let startDate = "";
+    let endDate = "";
+
+    if (apiData.progress && apiData.progress.length > 0) {
+      const startList = apiData.progress
+        .map((p) => p.start_date)
+        .filter((d): d is string => !!d);
+      const endList = apiData.progress
+        .map((p) => p.end_date)
+        .filter((d): d is string => !!d);
+
+      if (startList.length) {
+        startDate = startList.sort()[0]!;
+      }
+      if (endList.length) {
+        endDate = endList.sort()[endList.length - 1]!;
+      }
+    }
+
+    const duration: DateDurationValue = {
+      startDate,
+      endDate,
+      durationMonths: 0, // ตอนนี้ backend ยังไม่ได้ส่งจำนวนเดือนมา
+    };
+
+    // ----- map Budget -----
+    let budget: BudgetTableValue | null = null;
+
+    if (apiData.budget_items && apiData.budget_items.length > 0) {
+      const rows = apiData.budget_items.map((b, idx) => ({
+        id: idx + 1,
+        item: b.name || "",
+        amount: String(b.amount ?? 0),
+        note: b.remark || "",
+      }));
+
+      budget = {
+        rows,
+        total:
+          typeof apiData.budget_amount === "number"
+            ? apiData.budget_amount
+            : rows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0),
+        sources: {
+          source: apiData.budget_source || "",
+          externalAgency: apiData.budget_source_department || "",
+        },
+      };
+    }
+
+    const activities: ActivitiesRow[] = (apiData.progress || []).map(
+      (p, idx) =>
+        ({
+          id: p.sequence_number || idx + 1,
+          activity: p.description || "",
+          startDate: p.start_date || "",
+          endDate: p.end_date || "",
+          owner: p.responsible_name || "",
+        } as ActivitiesRow)
+    );
+
+    const strategy: StrategyParams = {
+      schoolPlan: "",
+      ovEcPolicy: "",
+      qaIndicator: "",
+    };
+
+    const kpi: KPIParams = {
+      output: "",
+      outcome: "",
+    };
+
+    const estimate: EstimateParams = {
+      estimateType: "",
+      evaluator: "",
+      startDate: "",
+      endDate: "",
+    };
+
+    const expect: ExpectParams = {
+      results: [],
+    };
+
+    const approve: ApproveParams = {
+      proposerName: "",
+      proposerPosition: "",
+      proposeDate: "",
+      deptComment: "",
+      directorComment: "",
+    };
+
+    const project: Project = {
+      id,
+      status: "in_progress",
+      progress: 0,
+      updatedAt: apiData.updated_at,
+
+      generalInfo,
+      strategy,
+      duration,
+      budget,
+      activities,
+      kpi,
+      estimate,
+      expect,
+      approve,
+      goal,
+    };
+
+    return project;
+  } catch (e) {
+    console.error("getProject error:", e);
+    return null;
   }
 }
 type PageParams = Promise<{ id: string }>;
@@ -97,7 +213,7 @@ export default async function Page({ params }: { params: PageParams }) {
     approve,
     goal,
   } = p;
-
+  
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <nav className="mb-4 text-xs text-gray-500">

@@ -144,9 +144,9 @@ export const createProject = async (
 
 export const fetchProjectInformation = async (
   projectId: string,
-  accessToken: string
 ): Promise<ProjectInformationResponse> => {
   try {
+    const accessToken = Cookies.get("api_token");
     const res = await ApiClient.get<ProjectInformationResponse>(
       `projects/information`,
       {

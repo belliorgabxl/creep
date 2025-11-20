@@ -53,7 +53,7 @@ export type BudgetRow = {
 };
 
 export type FundingSources = {
-  source: "school" | "revenue" | "external" | "";
+  source:string;
   externalAgency: string;
 };
 
