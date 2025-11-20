@@ -73,50 +73,98 @@ export default function Page() {
             <EmptyState />
           ) : (
             <>
-              <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Stat title="โปรเจ็กต์ของฉัน" value={projects.length} />
+              <section className="relative mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-400 to-pink-200 px-6 py-4 text-white shadow-md shadow-indigo-300/30">
+                    <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
+                    <div className="absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-white/10 blur-3xl" />
+
+                    <div className="relative flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-xl shadow-inner shadow-black/10">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-7 w-7 text-white drop-shadow-lg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3 7.5l9-4.5 9 4.5M3 7.5l9 4.5 9-4.5M3 7.5v9l9 4.5 9-4.5v-9"
+                          />
+                        </svg>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <span className="text-sm uppercase tracking-wide text-white font-medium">
+                          โปรเจ็คทั้งหมด
+                        </span>
+                        <span className="text-3xl font-extrabold tracking-tight drop-shadow">
+                          {projects.length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </section>
-              <section className="relative -mx-4 sm:mx-0">
-                <div className="max-h-[70vh] overflow-x-auto overflow-y-auto rounded border border-gray-200 bg-white">
-                  <table className="min-w-[900px] w-full text-sm">
+
+              <section className="relative -mx-4 sm:mx-0 overflow-x-auto ">
+                <div className="max-h-[100vh] w-full overflow-y-auto rounded border border-gray-200 bg-white">
+                  <table className="table-auto min-w-[1100px] text-sm">
                     <thead className="bg-gray-50 text-gray-700">
                       <tr>
-                        <Th className="w-10 text-center">#</Th>
-                        <Th>ชื่อโครงการ</Th>
-                        <Th className="w-32">รหัสโครงการ</Th>
-                        <Th className="w-40">หน่วยงาน (department_id)</Th>
-                        <Th className="w-48">ระยะเวลา</Th>
-                        <Th className="w-40">สถานที่</Th>
+                        <Th className="w-15 text-center">No.</Th>
+                        <Th className="w-100">ชื่อโครงการ</Th>
+                        <Th className="w-50 whitespace-nowrap">รหัสโครงการ</Th>
+                        <Th className="w-60 whitespace-nowrap">
+                          หน่วยงาน (department_id)
+                        </Th>
+                        <Th className="w-48 whitespace-nowrap">ระยะเวลา</Th>
+                        <Th className="w-40 whitespace-nowrap">สถานที่</Th>
+                        <Th className="w-50">ไฟล์</Th>
                         <Th className="w-40 text-center">จัดการ</Th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y divide-gray-100">
                       {projects.map((p, idx) => (
                         <tr key={p.id}>
                           <Td className="text-center">{idx + 1}</Td>
                           <Td>
-                            <div className="flex flex-col">
-                              <span className="font-medium text-gray-900">
+                            <div className="flex flex-col py-1.5">
+                              <span className="font-medium text-blue-900 pl-4 line-clamp-1">
                                 {p.name || "ไม่ระบุชื่อโครงการ"}
                               </span>
                               {p.rationale ? (
-                                <span className="text-xs text-gray-500 line-clamp-1">
+                                <span className="text-xs text-gray-500 line-clamp-1 pl-4">
                                   {p.rationale}
                                 </span>
                               ) : null}
                             </div>
                           </Td>
+
                           <Td className="text-gray-700">{p.code || "—"}</Td>
+
                           <Td className="text-gray-700 text-xs">
-                            {p.department_id ? p.department_id.slice(0, 10)+"....." : "—"}
+                            {p.department_id
+                              ? p.department_id.slice(0, 10) + "....."
+                              : "—"}
                           </Td>
+
                           <Td className="text-gray-700 text-xs">
                             {renderDateRange(p.start_date, p.end_date)}
                           </Td>
-                          <Td className="text-gray-700">{p.location || "—"}</Td>
-                          <Td className="text-gray-700 ">
+
+                          <Td className="text-green-700">
+                            {p.location || "—"}
+                          </Td>
+
+                          <Td className="text-gray-700 flex justify-center items-center">
                             <ExportPDFDocument id={p.id} />
                           </Td>
+
                           <Td className="text-center">
                             <div className="flex flex-col items-center gap-1">
                               <Link

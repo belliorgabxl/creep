@@ -194,7 +194,7 @@ export default async function Page({ params }: { params: PageParams }) {
 
   if (!p) {
     return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto max-w-7xl px-6 py-10 space-y-8">
         <h1 className="text-xl font-semibold text-gray-900">ไม่พบโปรเจ็กต์</h1>
         <p className="text-sm text-gray-600 mt-2">
           โปรเจ็กต์อาจถูกลบหรือคุณไม่มีสิทธิ์เข้าถึง
@@ -237,53 +237,50 @@ export default async function Page({ params }: { params: PageParams }) {
         </span>
       </nav>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900">
             {generalInfo?.name || "ไม่ระบุชื่อโครงการ"}
           </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-600">
             <StatusBadge status={p.status} />
-            {generalInfo?.owner_user_id ? (
-              <>
-                <span>
-                  เจ้าของ:{" "}
-                  <b className="text-gray-800">{mainResponsibleName}</b>
-                </span>
-                <span className="text-gray-400">•</span>
-              </>
-            ) : null}
-            <span>อัปเดตล่าสุด: {formatThaiDateTime(p.updatedAt)}</span>
+
+            <span className="flex items-center gap-1">
+              อัปเดตล่าสุด:
+              <b className="text-gray-800">{formatThaiDateTime(p.updatedAt)}</b>
+            </span>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <Link
             href={`/organizer/projects/edit/${p.id}`}
-            className="rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             แก้ไข
           </Link>
           <Link
             href={`/organizer/projects/approval/${p.id}`}
-            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             ส่งอนุมัติ
           </Link>
         </div>
       </div>
 
-      {/* progress */}
-      <section className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between text-sm text-gray-700">
-          <span>ความคืบหน้า</span>
-          <span className="tabular-nums">{p.progress}%</span>
+      <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700">ความคืบหน้า</span>
+          <span className="text-sm font-semibold text-gray-900 tabular-nums">
+            {p.progress}%
+          </span>
         </div>
-        <div className="mt-2">
+        <div className="mt-3">
           <ProgressBar value={p.progress} status={p.status} />
         </div>
       </section>
 
-      {/* General Info */}
       <Section title="ข้อมูลพื้นฐาน">
         <Grid2>
           <Field label="ประเภทโครงการ" value={generalInfo?.type || "—"} />
@@ -292,7 +289,6 @@ export default async function Page({ params }: { params: PageParams }) {
         </Grid2>
       </Section>
 
-      {/* Goal */}
       <Section title="เป้าหมายของโครงการ">
         <Grid2>
           <Field label="เชิงปริมาณ">
@@ -308,7 +304,6 @@ export default async function Page({ params }: { params: PageParams }) {
         </Grid2>
       </Section>
 
-      {/* Duration */}
       <Section title="ระยะเวลาดำเนินงาน">
         <Grid2>
           <Field label="วันเริ่มต้น" value={dateOrDash(duration?.startDate)} />
@@ -320,7 +315,6 @@ export default async function Page({ params }: { params: PageParams }) {
         </Grid2>
       </Section>
 
-      {/* Strategy */}
       <Section title="ความสอดคล้องเชิงยุทธศาสตร์">
         <Grid2>
           <Field label="แผนยุทธศาสตร์ของสถานศึกษา">
@@ -335,7 +329,6 @@ export default async function Page({ params }: { params: PageParams }) {
         </Grid2>
       </Section>
 
-      {/* KPI */}
       <Section title="ตัวชี้วัดความสำเร็จ (KPIs)">
         <Grid2>
           <Field label="ผลผลิต (Output)">
@@ -403,12 +396,12 @@ export default async function Page({ params }: { params: PageParams }) {
 
             <div className="overflow-x-auto rounded border border-gray-200">
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 text-gray-700">
-                  <tr>
-                    <Th>#</Th>
-                    <Th>รายการ</Th>
-                    <Th className="text-right">จำนวนเงิน (บาท)</Th>
-                    <Th>หมายเหตุ</Th>
+                <thead className="bg-gray-50">
+                  <tr className="text-gray-700">
+                    <Th className="font-semibold">#</Th>
+                    <Th className="font-semibold">รายการ</Th>
+                    <Th className="text-right font-semibold">จำนวนเงิน</Th>
+                    <Th className="font-semibold">หมายเหตุ</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -494,7 +487,6 @@ export default async function Page({ params }: { params: PageParams }) {
   );
 }
 
-/* ---------- helpers เฉพาะหน้านี้ ---------- */
 function Th({
   children,
   className = "",
@@ -503,7 +495,9 @@ function Th({
   className?: string;
 }) {
   return (
-    <th className={`px-3 py-2 text-xs font-semibold ${className}`}>
+    <th
+      className={`px-4 py-2 text-xs font-semibold text-gray-700 whitespace-nowrap ${className}`}
+    >
       {children}
     </th>
   );
