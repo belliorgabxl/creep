@@ -186,9 +186,6 @@ export default function CreateProjectPage() {
     setGoal(v);
   }, []);
 
-  // suggestion part
-  const [suggestion, setSuggestion] = useState<string>("");
-
   // kpi part
   const [kpi, setKpi] = useState<KPIParams>({
     output: "",
@@ -198,14 +195,109 @@ export default function CreateProjectPage() {
     setKpi(v);
   }, []);
 
-  // objective part
-  const [objective, setObjective] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  //location part
-  const [location, setLocation] = useState<string>("");
+  const buildCreateProjectPayload = (): CreateProjectPayload => {
+    const projectCode = generateSixDigitCode();
 
-  // process part
-  const onSaveProject = () => {
+    return {
+      name: generalInfo.name,
+      description: "",
+      department_id: generalInfo.department_id,
+      organization_id: String(authUser?.org_id) ?? "",
+      owner_user_id: generalInfo.owner_user_id,
+      plan_type: generalInfo.type,
+
+      start_date: dateDur.startDate,
+      end_date: dateDur.endDate,
+
+      location: location,
+
+      code: projectCode,
+      quantitative_goal: goal.quantityGoal,
+      qualitative_goal: goal.qualityGoal,
+      rationale: retaional,
+      updated_by: generalInfo.owner_user_id,
+
+      budgets: budget
+        ? {
+            budget_amount: budget.total,
+
+            budget_items: budget.rows.map((row) => ({
+              name: row.item,
+              amount: Number(row.amount),
+              remark: row.note ?? "",
+            })),
+
+            budget_source: budget.sources.source,
+            budget_source_department: budget.sources.externalAgency || "",
+
+            fiscal_year: new Date().getFullYear(),
+
+            organization_id: String(authUser?.org_id),
+
+            plan_number: "",
+            status: "draft",
+
+            approved_at: "",
+            closed_at: "",
+            created_at: "",
+            rejected_at: "",
+            submitted_at: "",
+            updated_at: "",
+            updated_by: generalInfo.owner_user_id,
+            current_approval_level: 0,
+          }
+        : undefined,
+
+      project_kpis:
+        kpi.output || kpi.outcome
+          ? [
+              ...(kpi.output ? [{ description: kpi.output }] : []),
+              ...(kpi.outcome ? [{ description: kpi.outcome }] : []),
+            ]
+          : undefined,
+
+      project_objective_and_outcomes: [
+        ...objective.results
+          .filter((item) => item.description.trim() !== "")
+          .map((item) => ({
+            description: item.description.trim(),
+            type: "objective",
+          })),
+        ...(expectation?.results
+          ?.filter((item) => item.description.trim() !== "")
+          .map((item) => ({
+            description: item.description,
+            type: item.type ?? "expectation",
+          })) ?? []),
+      ],
+      project_progress:
+        activity
+          ?.filter((a) => a.activity.trim() !== "")
+          .map((a) => ({
+            description: a.activity,
+            start_date: a.startDate,
+            end_date: a.endDate,
+            remarks: "",
+            responsible_name: a.owner,
+            updated_by: generalInfo.owner_user_id,
+          })) ?? undefined,
+
+      project_strategy: [],
+
+      project_qa_indicators: [],
+      evaluation: {
+        start_date: estimate.startDate,
+        end_date: estimate.endDate,
+        estimate_type: estimate.estimateType,
+        evaluator_user_id: estimate.evaluator,
+      },
+    };
+  };
+
+  const handleSubmit = async () => {
     setIsLoading(true);
     setError(null);
     setSuccess(null);
@@ -306,8 +398,8 @@ export default function CreateProjectPage() {
             >
               {/* <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
               <textarea
-                value={objective}
                 onChange={(e) => setObjective(e.target.value)}
+                value={objective}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุวัตถุประสงค์ของโครงการ..."
               /> */}
@@ -347,8 +439,8 @@ export default function CreateProjectPage() {
             >
               <BadgeCreateFormProject title="สถานที่ดำเนินงาน" />
               <textarea
-                value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                value={location}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="สถานที่ดำเนินงาน..."
               />
@@ -426,8 +518,6 @@ export default function CreateProjectPage() {
             >
               <BadgeCreateFormProject title="ข้อเสนอแนะ" />
               <textarea
-                value={suggestion}
-                onChange={(e) => setSuggestion(e.target.value)}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ข้อเสนอแนะ..."
               />
