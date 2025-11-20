@@ -38,7 +38,7 @@ export default async function DepartmentPage() {
         </div>
 
         <Link
-          href="/user/department/new"
+          href="/organizer/department/new"
           className="inline-flex items-center gap-4 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-700 px-3.5 py-2 text-sm
            font-medium text-white hover:from-blue-700 hover:to-blue-700"
         >

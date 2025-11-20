@@ -13,7 +13,6 @@ export type GetQaIndicatorsByYearRespond = {
   id: string;
   name: string;
   code: string;
-  display_order: number;
   description: string;
   organization_id: string;
   project_count :number;

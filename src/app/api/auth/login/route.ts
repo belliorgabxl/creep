@@ -56,7 +56,8 @@ export async function POST(req: Request) {
   try {
     const { username, password, remember }: LoginBody = await req.json();
 
-    const { token: externalToken } = await loginExternal(username, password);
+    // <-- ดึง raw (response data) ด้วย
+    const { token: externalToken, raw } = await loginExternal(username, password);
 
     const claims = decodeExternalJwt<any>(externalToken) || {};
 
@@ -116,6 +117,10 @@ export async function POST(req: Request) {
 
     const isProd = process.env.NODE_ENV === "production";
 
+    // ดึง refresh token จาก raw (response จาก external API)
+    const externalRefreshToken = raw?.refresh_token || raw?.data?.refresh_token || undefined;
+
+    // เซ็ต auth_token (httpOnly)
     res.cookies.set("auth_token", ourJwt, {
       httpOnly: true,
       secure: isProd,
@@ -125,6 +130,7 @@ export async function POST(req: Request) {
       priority: "high",
     });
 
+    // เซ็ต api_token (non-httpOnly) ถ้าต้องให้ client-side ใช้งาน
     res.cookies.set("api_token", externalToken, {
       httpOnly: false,
       secure: isProd,
@@ -133,6 +139,19 @@ export async function POST(req: Request) {
       maxAge: expiretoken,
       priority: "high",
     });
+
+    // เซ็ต refresh_token เป็น httpOnly cookie (ตัวอย่าง 30 วัน)
+    const refreshMaxAge = 30 * 24 * 3600; // 30 days in seconds
+    if (externalRefreshToken) {
+      res.cookies.set("refresh_token", externalRefreshToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
+        path: "/",
+        maxAge: refreshMaxAge,
+        priority: "high",
+      });
+    }
 
     return res;
   } catch (e: any) {
@@ -144,3 +163,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message }, { status });
   }
 }
+

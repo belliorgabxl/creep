@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
 
   res.cookies.set("auth_token", "", { maxAge: 0, path: "/" });
   res.cookies.set("api_token", "", { maxAge: 0, path: "/" });
+  res.cookies.set("refresh_token", "", { maxAge: 0, path: "/" });
 
   return res;
 }

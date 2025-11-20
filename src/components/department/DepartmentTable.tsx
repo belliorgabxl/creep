@@ -140,7 +140,7 @@ export function DepartmentTable({ data }: { data: Department[] }) {
               <TD>{formatTH(d.updatedAt)}</TD>
               <TD align="right">
                 <Link
-                  href={`/user/department/${d.id}`}
+                  href={`/organizer/department/${d.id}`}
                   className="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
                 >
                   ดูรายละเอียด

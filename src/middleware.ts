@@ -41,11 +41,29 @@ export async function middleware(request: NextRequest) {
   let payload: any;
   try {
     ({ payload } = await jwtVerify(token, JWT_SECRET));
-  } catch {
-    const res = NextResponse.redirect(new URL("/login", request.url));
-    res.cookies.delete("auth_token");
-    res.cookies.delete("api_token");
-    return res;
+  } catch (err) {
+    try {
+      const refreshRes = await fetch(new URL("/api/auth/refresh", request.url).toString(), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+      });
+      if (refreshRes.ok) {
+        return NextResponse.next();
+      } else {
+        const res = NextResponse.redirect(new URL("/login", request.url));
+        res.cookies.delete("auth_token");
+        res.cookies.delete("api_token");
+        res.cookies.delete("refresh_token");
+        return res;
+      }
+    } catch {
+      const res = NextResponse.redirect(new URL("/login", request.url));
+      res.cookies.delete("auth_token");
+      res.cookies.delete("api_token");
+      res.cookies.delete("refresh_token");
+      return res;
+    }
   }
   const role = (payload.role as string) || "department_user";
 
