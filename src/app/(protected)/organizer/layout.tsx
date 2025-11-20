@@ -18,7 +18,6 @@ type ServerUser = {
   org_id?: string | null
   department_id?: string | null
 } | null
-
 async function getServerUser(): Promise<ServerUser> {
   try {
     const token = (await cookies()).get("auth_token")?.value

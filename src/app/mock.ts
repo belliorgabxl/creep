@@ -54,7 +54,6 @@ export const MOCK_PROJECTS: ProjectRow[] = [
   { name: "ระบบบัญชีอัตโนมัติ",           dept: "การเงิน",        type: "โครงการ", amount: "฿1,800,000",status: "approved", qaCount: 3, strategy: "S3 Innovation", period: "ม.ค. - ก.ย. 68" },
   { name: "จัดซื้อวัสดุสำนักงาน",          dept: "ฝ่ายแผน",        type: "งานประจำ", amount: "฿180,000",  status: "closed",   qaCount: 1, strategy: "S1 Efficiency", period: "ต.ค. - ธ.ค. 67" },
 ]
-
 // ====== เพิ่มต่อจาก MOCK_PROJECTS ด้านบน ======
 
 // แจ้งเตือนในศูนย์ Notification

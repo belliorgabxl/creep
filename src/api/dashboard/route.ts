@@ -152,7 +152,6 @@ export async function GetProjectsByOrgFromApi(): Promise<GetProjectsByOrgRespond
                 Accept: "application/json",
             },
         });
-
         const body = response?.data;
         if (!body) return [];
         if (Array.isArray(body)) return body as GetProjectsByOrgRespond[];

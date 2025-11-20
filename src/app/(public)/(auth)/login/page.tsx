@@ -82,7 +82,6 @@ useEffect(() => {
   })();
 }, [router]);
 
-
   function onKeyEvent(e: React.KeyboardEvent<HTMLInputElement>) {
     if ("getModifierState" in e) setCapsOn(e.getModifierState("CapsLock"));
   }

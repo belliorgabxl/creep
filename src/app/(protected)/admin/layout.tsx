@@ -37,6 +37,7 @@ async function getServerUser(): Promise<ServerUser> {
   }
 }
 
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const serverUser = await getServerUser()
 
