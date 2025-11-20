@@ -1,10 +1,10 @@
-// app/(protected)/dashboard/layout.tsx
 import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
 import Sidebar from "@/components/Sidebar"  
 import TopBar from "@/components/TopBar"    
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export const metadata: Metadata = { title: "E-Budget" }
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET)
@@ -43,6 +43,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-dvh bg-white [--app-header-h:64px]">
+      <ToastContainer
+          position="bottom-right"
+          hideProgressBar
+          className="z-50"
+        />
       {/* Mobile */}
       <div className="md:hidden">
         <TopBar serverUser={serverUser} />

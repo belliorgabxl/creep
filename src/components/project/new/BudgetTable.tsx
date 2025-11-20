@@ -3,8 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { BadgeCreateFormProject } from "../Helper";
 import { BudgetRow, BudgetTableValue, FundingSources } from "@/dto/projectDto";
 
-
-
 export function BudgetTable({
   value,
   onChange,
@@ -18,9 +16,7 @@ export function BudgetTable({
 
   const [sources, setSources] = useState<FundingSources>(
     value?.sources ?? {
-      school: false,
-      revenue: false,
-      external: false,
+      source: "",
       externalAgency: "",
     }
   );
@@ -86,11 +82,17 @@ export function BudgetTable({
 
           <label className="flex items-center gap-1">
             <input
-              type="checkbox"
+              type="radio"
+              name="funding-source"
               className="h-4 w-4"
-              checked={sources.school}
-              onChange={(e) =>
-                setSources((s) => ({ ...s, school: e.target.checked }))
+              checked={sources.source === "school"}
+              onChange={() =>
+                setSources((s) => ({
+                  ...s,
+                  source: "school",
+                  externalAgency:
+                    s.source === "external" ? "" : s.externalAgency,
+                }))
               }
             />
             <span>งบสถานศึกษา</span>
@@ -98,11 +100,17 @@ export function BudgetTable({
 
           <label className="flex items-center gap-1">
             <input
-              type="checkbox"
+              type="radio"
+              name="funding-source"
               className="h-4 w-4"
-              checked={sources.revenue}
-              onChange={(e) =>
-                setSources((s) => ({ ...s, revenue: e.target.checked }))
+              checked={sources.source === "revenue"}
+              onChange={() =>
+                setSources((s) => ({
+                  ...s,
+                  source: "revenue",
+                  externalAgency:
+                    s.source === "external" ? "" : s.externalAgency,
+                }))
               }
             />
             <span>เงินรายได้</span>
@@ -111,14 +119,14 @@ export function BudgetTable({
           <label className="grid lg:flex items-center gap-1">
             <div className="flex gap-2 items-center">
               <input
-                type="checkbox"
+                type="radio"
+                name="funding-source"
                 className="h-4 w-4"
-                checked={sources.external}
-                onChange={(e) =>
+                checked={sources.source === "external"}
+                onChange={() =>
                   setSources((s) => ({
                     ...s,
-                    external: e.target.checked,
-                    externalAgency: e.target.checked ? s.externalAgency : "",
+                    source: "external",
                   }))
                 }
               />
@@ -132,7 +140,7 @@ export function BudgetTable({
               onChange={(e) =>
                 setSources((s) => ({ ...s, externalAgency: e.target.value }))
               }
-              disabled={!sources.external}
+              disabled={sources.source !== "external"}
               className="ml-2 w-56 border-b border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
           </label>

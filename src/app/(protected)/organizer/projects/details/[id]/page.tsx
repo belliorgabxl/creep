@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   formatThaiDateTime,
@@ -13,7 +12,6 @@ import {
 import type {
   ActivitiesRow,
   ApproveParams,
-  // BudgetRow,
   BudgetTableValue,
   DateDurationValue,
   EstimateParams,
@@ -21,9 +19,11 @@ import type {
   GeneralInfoParams,
   GoalParams,
   KPIParams,
+  ProjectInformationResponse,
   StrategyParams,
 } from "@/dto/projectDto";
-import { mockProject } from "@/resource/mock-project";
+import { fetchProjectInformation } from "@/api/project/route";
+import { cookies } from "next/headers";
 
 type Project = {
   id: string;
@@ -46,25 +46,150 @@ type Project = {
 
 async function getProject(id: string): Promise<Project | null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/projects/${id}`,
-      { cache: "no-store", headers: { accept: "application/json" } }
-    );
-    if (!res.ok) throw new Error();
+    const cookieStore = cookies();
+    const accessToken = (await cookieStore).get("api_token")?.value;
 
-    const data = (await res.json()) as { data?: Project } | Project;
-    const item = (
-      Array.isArray(data) ? null : (data as any).data ?? data
-    ) as Project | null;
-    return item ?? mockProject;
-  } catch {
-    return { ...mockProject, id };
+    if (!accessToken) {
+      console.error("getProject: no api_token in server cookies");
+      return null;
+    }
+
+    const apiData: ProjectInformationResponse = await fetchProjectInformation(
+      id,
+      accessToken
+    );
+    console.log(apiData);
+
+    const generalInfo: GeneralInfoParams = {
+      name: apiData.project_name,
+      type: apiData.plane_type || "",
+      department: apiData.department_name || "",
+      owner_user_id: "",
+    } as any;
+
+    const goal: GoalParams = {
+      quantityGoal: apiData.quantitative_goal || "",
+      qualityGoal: apiData.qualitative_goal || "",
+    };
+
+    let startDate = "";
+    let endDate = "";
+
+    if (apiData.progress && apiData.progress.length > 0) {
+      const startList = apiData.progress
+        .map((p) => p.start_date)
+        .filter((d): d is string => !!d);
+      const endList = apiData.progress
+        .map((p) => p.end_date)
+        .filter((d): d is string => !!d);
+
+      if (startList.length) {
+        startDate = startList.sort()[0]!;
+      }
+      if (endList.length) {
+        endDate = endList.sort()[endList.length - 1]!;
+      }
+    }
+
+    const duration: DateDurationValue = {
+      startDate,
+      endDate,
+      durationMonths: 0,
+    };
+    let budget: BudgetTableValue | null = null;
+
+    if (apiData.budget_items && apiData.budget_items.length > 0) {
+      const rows = apiData.budget_items.map((b, idx) => ({
+        id: idx + 1,
+        item: b.name || "",
+        amount: String(b.amount ?? 0),
+        note: b.remark || "",
+      }));
+
+      budget = {
+        rows,
+        total:
+          typeof apiData.budget_amount === "number"
+            ? apiData.budget_amount
+            : rows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0),
+        sources: {
+          source: apiData.budget_source || "",
+          externalAgency: apiData.budget_source_department || "",
+        },
+      };
+    }
+
+    const activities: ActivitiesRow[] = (apiData.progress || []).map(
+      (p, idx) =>
+        ({
+          id: p.sequence_number || idx + 1,
+          activity: p.description || "",
+          startDate: p.start_date || "",
+          endDate: p.end_date || "",
+          owner: p.responsible_name || "",
+        } as ActivitiesRow)
+    );
+
+    const strategy: StrategyParams = {
+      schoolPlan: "",
+      ovEcPolicy: "",
+      qaIndicator: "",
+    };
+
+    const kpi: KPIParams = {
+      output: "",
+      outcome: "",
+    };
+
+    const estimate: EstimateParams = {
+      estimateType: "",
+      evaluator: "",
+      startDate: "",
+      endDate: "",
+    };
+
+    const expect: ExpectParams = {
+      results: [],
+    };
+
+    const approve: ApproveParams = {
+      proposerName: "",
+      proposerPosition: "",
+      proposeDate: "",
+      deptComment: "",
+      directorComment: "",
+    };
+
+    const project: Project = {
+      id,
+      status: "in_progress",
+      progress: 0,
+      updatedAt: apiData.updated_at,
+
+      generalInfo,
+      strategy,
+      duration,
+      budget,
+      activities,
+      kpi,
+      estimate,
+      expect,
+      approve,
+      goal,
+    };
+
+    return project;
+  } catch (e) {
+    console.error("getProject error:", e);
+    return null;
   }
 }
 type PageParams = Promise<{ id: string }>;
 
 export default async function Page({ params }: { params: PageParams }) {
   const { id } = await params;
+  console.log("details page id:", id);
+
   const p = await getProject(id);
 
   if (!p) {
@@ -76,7 +201,7 @@ export default async function Page({ params }: { params: PageParams }) {
         </p>
         <div className="mt-6">
           <Link
-            href="/user/projects/my-project"
+            href="/organizer/projects/my-project"
             className="text-indigo-600 hover:underline"
           >
             ← กลับไปยัง My Project
@@ -94,15 +219,16 @@ export default async function Page({ params }: { params: PageParams }) {
     activities,
     kpi,
     estimate,
-    // expect,
+    expect,
     approve,
     goal,
   } = p;
-
+  const mainResponsibleName =
+    activities.find((a) => a.owner && a.owner.trim())?.owner ?? "";
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <nav className="mb-4 text-xs text-gray-500">
-        <Link href="/user/projects/my-project" className="hover:underline">
+        <Link href="/organizer/projects/my-project" className="hover:underline">
           โปรเจ็กต์ของคุณ
         </Link>
         <span className="mx-1">/</span>
@@ -118,10 +244,11 @@ export default async function Page({ params }: { params: PageParams }) {
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-600">
             <StatusBadge status={p.status} />
-            {generalInfo?.owner ? (
+            {generalInfo?.owner_user_id ? (
               <>
                 <span>
-                  เจ้าของ: <b className="text-gray-800">{generalInfo.owner}</b>
+                  เจ้าของ:{" "}
+                  <b className="text-gray-800">{mainResponsibleName}</b>
                 </span>
                 <span className="text-gray-400">•</span>
               </>
@@ -131,13 +258,13 @@ export default async function Page({ params }: { params: PageParams }) {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/user/projects/edit/${p.id}`}
+            href={`/organizer/projects/edit/${p.id}`}
             className="rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
           >
             แก้ไข
           </Link>
           <Link
-            href={`/user/projects/approval/${p.id}`}
+            href={`/organizer/projects/approval/${p.id}`}
             className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             ส่งอนุมัติ
@@ -160,14 +287,8 @@ export default async function Page({ params }: { params: PageParams }) {
       <Section title="ข้อมูลพื้นฐาน">
         <Grid2>
           <Field label="ประเภทโครงการ" value={generalInfo?.type || "—"} />
-          <Field
-            label="หน่วยงานที่รับผิดชอบ"
-            value={generalInfo?.department || "—"}
-          />
-          <Field
-            label="ผู้รับผิดชอบโครงการ"
-            value={generalInfo?.owner || "—"}
-          />
+          <Field label="หน่วยงานที่รับผิดชอบ" value={"หน่วยงานความมั่นคง"} />
+          <Field label="ผู้รับผิดชอบโครงการ" value={"นาย ศรันท์"} />
         </Grid2>
       </Section>
 
@@ -229,15 +350,42 @@ export default async function Page({ params }: { params: PageParams }) {
       {/* Estimate */}
       <Section title="การติดตามและประเมินผล">
         <Grid2>
-          <Field label="วิธีการประเมินผล" value={estimate?.method || "—"} />
-          <Field label="ผู้รับผิดชอบ" value={estimate?.evaluator || "—"} />
-          <Field label="ระยะเวลา" value={estimate?.period || "—"} />
+          <Field
+            label="วิธีการ / ประเภทการประเมินผล"
+            value={estimate?.estimateType || "—"}
+          />
+          <Field
+            label="ผู้รับผิดชอบการประเมิน"
+            value={estimate?.evaluator || "—"}
+          />
+          <Field
+            label="ระยะเวลา"
+            value={
+              estimate?.startDate || estimate?.endDate
+                ? `${dateOrDash(estimate?.startDate)} - ${dateOrDash(
+                    estimate?.endDate
+                  )}`
+                : "—"
+            }
+          />
         </Grid2>
       </Section>
 
       {/* Expect */}
       <Section title="ผลที่คาดว่าจะได้รับ">
-        <RichOrDash text={"ได้ความรู้"} />
+        {expect?.results?.length ? (
+          <ul className="list-disc pl-5 text-sm text-gray-800">
+            {expect.results
+              .filter((r) => r.description?.trim())
+              .map((r, idx) => (
+                <li key={idx} className="whitespace-pre-line">
+                  {r.description}
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <span>—</span>
+        )}
       </Section>
 
       {/* Budget */}
@@ -312,7 +460,13 @@ export default async function Page({ params }: { params: PageParams }) {
                   <tr key={a.id}>
                     <Td className="px-3 py-2 text-center">{a.id}</Td>
                     <Td className="px-3 py-2">{a.activity || "—"}</Td>
-                    <Td className="px-3 py-2">{a.period || "—"}</Td>
+                    <Td className="px-3 py-2">
+                      {a.startDate || a.endDate
+                        ? `${dateOrDash(a.startDate)} - ${dateOrDash(
+                            a.endDate
+                          )}`
+                        : "—"}
+                    </Td>
                     <Td className="px-3 py-2">{a.owner || "—"}</Td>
                   </tr>
                 ))}
@@ -396,29 +550,28 @@ function RichOrDash({ text }: { text?: string }) {
 }
 
 function BudgetSources({ sources }: { sources: BudgetTableValue["sources"] }) {
-  if (!sources) return <span>—</span>;
-  const chips: string[] = [];
-  if (sources.school) chips.push("งบสถานศึกษา");
-  if (sources.revenue) chips.push("เงินรายได้");
-  if (sources.external) {
-    chips.push(
-      sources.externalAgency?.trim()
+  if (!sources || !sources.source) return <span>—</span>;
+
+  let label = "";
+  switch (sources.source) {
+    case "school":
+      label = "งบสถานศึกษา";
+      break;
+    case "revenue":
+      label = "เงินรายได้";
+      break;
+    case "external":
+      label = sources.externalAgency?.trim()
         ? `ภายนอก (${sources.externalAgency.trim()})`
-        : "ภายนอก"
-    );
+        : "ภายนอก";
+      break;
+    default:
+      label = sources.source; // กันเคสอื่น ๆ ที่ backend ส่งมา
   }
-  return chips.length ? (
-    <div className="flex flex-wrap gap-1">
-      {chips.map((c) => (
-        <span
-          key={c}
-          className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-[11px]"
-        >
-          {c}
-        </span>
-      ))}
-    </div>
-  ) : (
-    <span>—</span>
+
+  return (
+    <span className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-[11px]">
+      {label}
+    </span>
   );
 }

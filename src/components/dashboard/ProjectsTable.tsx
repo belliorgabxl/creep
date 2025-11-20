@@ -85,7 +85,7 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
           <span className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
             {rows.length} โครงการ
           </span>
-          <Link href="/user/projects" className="text-xs text-gray-600 hover:text-indigo-700 hover:underline">
+          <Link href="/organizer/projects" className="text-xs text-gray-600 hover:text-indigo-700 hover:underline">
             ทั้งหมด
           </Link>
         </div>
@@ -107,50 +107,67 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
                 ].map((h, i) => (
                   <th
                     key={i}
-                    className={`px-3 py-2 font-semibold ${
-                      h === "งบประมาณ" ? "text-right" : ""
-                    }`}
+                    className={`px-3 py-2 font-semibold ${h === "งบประมาณ" ? "text-right" : ""}`}
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
+
             <tbody>
-              {currentProjects.map((p, i) => (
-                <tr key={p.id ?? i} className="border-t border-gray-200 hover:bg-gray-50">
-                  <td className="px-3 py-2 font-medium text-gray-900">{p.code}</td>
-                  <td className="px-3 py-2 font-medium text-gray-900">{p.name}</td>
-                  <td className="px-3 py-2">
-                    <span className="inline-flex items-center rounded-md border border-gray-200 px-2 py-0.5 text-[11px] font-medium text-gray-700">
-                      {p.dept}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-gray-600">{p.type}</td>
-                  <td className="px-3 py-2 text-left font-semibold text-gray-700">{formatMoney(p.budget)}</td>
-                  <td className="px-3 py-2 text-center text-gray-700">{p.period}</td>
+              {currentProjects.length > 0 ? (
+                currentProjects.map((p, i) => (
+                  <tr key={p.id ?? i} className="border-t border-gray-200 hover:bg-gray-50">
+                    <td className="px-3 py-2 font-medium text-gray-900">{p.code}</td>
+                    <td className="px-3 py-2 font-medium text-gray-900">{p.name}</td>
+                    <td className="px-3 py-2">
+                      <span className="inline-flex items-center rounded-md border border-gray-200 px-2 py-0.5 text-[11px] font-medium text-gray-700">
+                        {p.dept}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-gray-600">{p.type}</td>
+                    <td className="px-3 py-2 text-left font-semibold text-gray-700">{formatMoney(p.budget)}</td>
+                    <td className="px-3 py-2 text-center text-gray-700">{p.period}</td>
 
-                  
-                  <td className="px-3 py-2">
-                    <div className="flex items-center justify-center gap-1">
-                      <button className="h-8 w-8 rounded-md hover:bg-blue-600/10 hover:text-blue-700" title="ดู">
-                        <Eye className="mx-auto h-4 w-4" />
-                      </button>
-                      <button className="h-8 w-8 rounded-md hover:bg-blue-600/10 hover:text-blue-700" title="แก้ไข">
-                        <Edit className="mx-auto h-4 w-4" />
-                      </button>
-                      <button className="h-8 w-8 rounded-md hover:bg-red-600/10 hover:text-red-700" title="ลบ">
-                        <FileX className="mx-auto h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {currentProjects.length === 0 && (
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-center gap-1">
+                        <button className="h-8 w-8 rounded-md hover:bg-blue-600/10 hover:text-blue-700" title="ดู">
+                          <Eye className="mx-auto h-4 w-4" />
+                        </button>
+                        <button className="h-8 w-8 rounded-md hover:bg-blue-600/10 hover:text-blue-700" title="แก้ไข">
+                          <Edit className="mx-auto h-4 w-4" />
+                        </button>
+                        <button className="h-8 w-8 rounded-md hover:bg-red-600/10 hover:text-red-700" title="ลบ">
+                          <FileX className="mx-auto h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan={7} className="px-3 py-8 text-center text-xs text-gray-500">
-                    ยังไม่มีข้อมูลโครงการ
+                  <td colSpan={7} className="px-3 py-10 text-center text-sm text-gray-500">
+                    <div className="space-y-2">
+                      <p className="text-base font-medium text-gray-700">ยังไม่มีข้อมูลโครงการ ณ ตอนนี้</p>
+                      <p className="text-xs text-gray-500">คุณสามารถเพิ่มโครงการใหม่หรือดูรายการทั้งหมดได้จากหน้าจัดการโครงการ</p>
+
+                      <div className="mt-3 flex items-center justify-center gap-2">
+                        <Link
+                          href="/projects/new"
+                          className="inline-flex items-center gap-2 rounded-md border border-indigo-600 bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-700"
+                        >
+                          สร้างโครงการใหม่
+                        </Link>
+
+                        <Link
+                          href="/organizer/projects"
+                          className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                        >
+                          ดูทั้งหมด
+                        </Link>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -158,26 +175,29 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination / Footer */}
         <div className="mt-6 flex items-center justify-between">
           <p className="text-xs font-medium text-gray-600">
             แสดง {rows.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, rows.length)} จาก {rows.length} รายการ
           </p>
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || rows.length === 0}
               className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs shadow-sm hover:bg-gray-50 disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" />
               ก่อนหน้า
             </button>
+
             <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700">
               หน้า {currentPage} / {totalPages}
             </span>
+
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || rows.length === 0}
               className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs shadow-sm hover:bg-gray-50 disabled:opacity-50"
             >
               ถัดไป

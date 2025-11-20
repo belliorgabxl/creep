@@ -3,8 +3,6 @@ import React, { useMemo, useState } from "react";
 import { BadgeCreateFormProject } from "../Helper";
 import { ActivitiesRow } from "@/dto/projectDto";
 
-
-
 type Props = {
   value?: ActivitiesRow[];
   onChange?: (rows: ActivitiesRow[]) => void;
@@ -21,8 +19,23 @@ export default function ActivitiesTable({
   hideRemove = false,
 }: Props) {
   const [internal, setInternal] = useState<ActivitiesRow[]>(
-    defaultRows ?? [{ id: 1, activity: "", period: "", owner: "" }]
+    defaultRows ?? [
+      { id: 1, activity: "", startDate: "", endDate: "", owner: "" },
+    ]
   );
+
+  const addRow = () => {
+    setRows([
+      ...rows,
+      {
+        id: rows.length + 1,
+        activity: "",
+        startDate: "",
+        endDate: "",
+        owner: "",
+      },
+    ]);
+  };
 
   const controlled = value !== undefined;
   const rows = controlled ? (value as ActivitiesRow[]) : internal;
@@ -30,13 +43,6 @@ export default function ActivitiesTable({
   const setRows = (next: ActivitiesRow[]) => {
     if (!controlled) setInternal(next);
     onChange?.(next);
-  };
-
-  const addRow = () => {
-    setRows([
-      ...rows,
-      { id: rows.length + 1, activity: "", period: "", owner: "" },
-    ]);
   };
 
   const removeRow = (id: number) => {
@@ -99,13 +105,25 @@ export default function ActivitiesTable({
                   />
                 </td>
                 <td className="border border-gray-300 px-3 py-2">
-                  <input
-                    type="text"
-                    value={row.period}
-                    onChange={(e) => updateRow(index, "period", e.target.value)}
-                    placeholder="เช่น 1 ต.ค. 68 - 15 ต.ค. 68"
-                    className="w-full focus:outline-none"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={row.startDate}
+                      onChange={(e) =>
+                        updateRow(index, "startDate", e.target.value)
+                      }
+                      className="w-full focus:outline-none"
+                    />
+                    <span className="text-xs text-gray-500">ถึง</span>
+                    <input
+                      type="date"
+                      value={row.endDate}
+                      onChange={(e) =>
+                        updateRow(index, "endDate", e.target.value)
+                      }
+                      className="w-full focus:outline-none"
+                    />
+                  </div>
                 </td>
                 <td className="border border-gray-300 px-3 py-2">
                   <input

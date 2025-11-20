@@ -5,7 +5,6 @@ export function parseTTL(ttl: string): number {
 
   const value = parseInt(match[1], 10);
   const unit = match[2];
-
   switch (unit) {
     case "s": return value;
     case "m": return value * 60;
@@ -14,3 +13,9 @@ export function parseTTL(ttl: string): number {
     default: throw new Error("Invalid TTL unit");
   }
 }
+export const generateSixDigitCode = () => {
+  return Math.floor(Math.random() * 1000000)
+    .toString()
+    .padStart(6, "0");
+};
+

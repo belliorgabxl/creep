@@ -1,5 +1,4 @@
 "use server";
-
 type ApiOk<T> = { success: true; data: T } | (T extends any[] ? T : never);
 type ApiErr = { success: false; message?: string };
 

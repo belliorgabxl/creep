@@ -5,12 +5,12 @@ import { StrategyQaSection } from "@/components/dashboard/StrategyQaSection"
 import QuarterCalendar from "@/components/dashboard/QuarterCalendar"
 import { ProjectsTable } from "@/components/dashboard/ProjectsTable"
 import { ApprovalQueue } from "@/components/dashboard/ApprovalQueue"
-import { FooterToolbar } from "@/components/dashboard/FooterToolbar"
 import {
     MOCK_APPROVALS,
 } from "@/app/mock"
 import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetApprovalItemsFromApi,GetCalendarEventsFromApi } from "@/api/dashboard/route"
-import { GetApprovalItems,GetStrategicPlanRespond,GetProjectsByOrgRespond,GetQaIndicatorsRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
+import { GetApprovalItems,GetProjectsByOrgRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
+import { GetStrategicPlanRespond,GetQaIndicatorsRespond } from "@/dto/qaDto"
 import { GetProjectsByOrgFromApi } from "@/api/dashboard/route"
 
 export default function UserDashboardPage() {

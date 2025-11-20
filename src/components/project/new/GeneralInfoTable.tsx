@@ -1,7 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { BadgeCreateFormProject } from "../Helper";
-import { GeneralInfoParams } from "@/dto/projectDto";
+import { Department, GeneralInfoParams } from "@/dto/projectDto";
+import { fetchDepartments } from "@/api/department/route";
+import { User } from "@/dto/userDto";
+import { GetAllUsers } from "@/api/users/route";
 
 type Props = {
   value?: GeneralInfoParams;
@@ -11,12 +14,46 @@ type Props = {
 export default function GeneralInfoTable({ value, onChange }: Props) {
   const [name, setName] = useState(value?.name ?? "");
   const [type, setType] = useState(value?.type ?? "");
-  const [department, setDepartment] = useState(value?.department ?? "");
-  const [owner, setOwner] = useState(value?.owner ?? "");
+  const [department_id, setDepartment] = useState(value?.department_id ?? "");
+  const [owner_user_id, setOwner] = useState(value?.owner_user_id ?? "");
+
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    onChange({ name, type, department, owner });
-  }, [name, type, department, owner, onChange]);
+    const loadDepartments = async () => {
+      try {
+        const items = await fetchDepartments();
+        setDepartments(items);
+      } catch (err) {
+        console.error("load departments failed", err);
+      }
+    };
+
+    loadDepartments();
+  }, []);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const items = await GetAllUsers();
+        setUsers(items);
+      } catch (err) {
+        console.error("Load users failed:", err);
+      }
+    };
+
+    loadUsers();
+  }, []);
+
+  useEffect(() => {
+    onChange({
+      name,
+      type,
+      department_id: department_id,
+      owner_user_id: owner_user_id,
+    });
+  }, [name, type, department_id, owner_user_id, onChange]);
 
   return (
     <div className="space-y-4">
@@ -35,37 +72,57 @@ export default function GeneralInfoTable({ value, onChange }: Props) {
           />
         </div>
         <div className="lg:flex grid gap-3 items-center">
-          <label className="text-sm text-gray-700 min-w-[180px]">ประเภทโครงการ</label>
+          <label className="text-sm text-gray-700 min-w-[180px]">
+            ประเภทโครงการ
+          </label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
             className="px-4 py-1 border rounded-lg border-gray-300 w-full"
           >
             <option value="">เลือกประเภท</option>
-            <option value="แผนงานประจำ">แผนงานประจำ</option>
-            <option value="โครงการพิเศษ / พัฒนา">โครงการพิเศษ / พัฒนา</option>
+            <option value="project">ทั่วไป</option>
+            <option value="regular_work">แผนงานประจำ</option>
+
+            <option value="special_project">โครงการพิเศษ / พัฒนา</option>
           </select>
         </div>
+
         <div className="lg:flex grid gap-3 items-center">
           <label className="text-sm text-gray-700 min-w-[180px]">
             หน่วยงาน / แผนกที่รับผิดชอบ
           </label>
-          <input
-            value={department}
+          <select
+            value={department_id}
             onChange={(e) => setDepartment(e.target.value)}
             className="px-4 py-1 border rounded-lg border-gray-300 w-full"
-            placeholder="เช่น แผนกบริหารธุรกิจ"
-          />
+          >
+            <option value="">เลือกหน่วยงาน / แผนก</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="lg:flex grid gap-3 items-center">
-          <label className="text-sm text-gray-700 min-w-[180px]">ผู้รับผิดชอบโครงการ</label>
-          <input
-            value={owner}
+          <label className="text-sm text-gray-700 min-w-[180px]">
+            ผู้รับผิดชอบโครงการ
+          </label>
+
+          <select
+            value={owner_user_id}
             onChange={(e) => setOwner(e.target.value)}
             className="px-4 py-1 border rounded-lg border-gray-300 w-full"
-            placeholder="เช่น นายสมชาย ใจดี"
-          />
+          >
+            <option value="">เลือกผู้รับผิดชอบ</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.full_name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>

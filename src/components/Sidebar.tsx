@@ -24,6 +24,7 @@ type ServerUser = {
   department_id?: string | null;
 } | null;
 
+
 const normalizePath = (p: string) => {
   if (!p) return "";
   try {

@@ -15,6 +15,7 @@ type ServerUser = {
   department_id?: string | null
 } | null
 
+
 export default function TopBar({ serverUser }: { serverUser: ServerUser }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
