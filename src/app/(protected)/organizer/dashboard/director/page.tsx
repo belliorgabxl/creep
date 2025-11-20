@@ -8,14 +8,23 @@ import { ApprovalQueue } from "@/components/dashboard/ApprovalQueue"
 import {
     MOCK_APPROVALS,
 } from "@/app/mock"
-import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetApprovalItemsFromApi,GetCalendarEventsFromApi } from "@/api/dashboard/route"
+// <-- เปลี่ยน import: ใช้ GetQaIndicatorsByYearFromApi
+import {
+  GetStrategicPlansFromApi,
+  GetCalendarEventsFromApi,
+  GetProjectsByOrgFromApi,
+} from "@/api/dashboard/route"
 import { GetApprovalItems,GetProjectsByOrgRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
-import { GetStrategicPlanRespond,GetQaIndicatorsRespond } from "@/dto/qaDto"
-import { GetProjectsByOrgFromApi } from "@/api/dashboard/route"
+import { GetStrategicPlanRespond,GetQaIndicatorsRespond, GetQaIndicatorsByYearAllRespond } from "@/dto/qaDto"
+import { GetQaIndicatorsByYearAllFromApi, GetQaIndicatorsByYearFromApi } from "@/api/qa/route"
 
 export default function UserDashboardPage() {
+    // คำนวณปีปัจจุบัน (ค.ศ.) และปีพ.ศ. ที่จะแสดง
+    const currentGregorianYear = new Date().getFullYear(); // ex: 2025
+    const currentBuddhistYear = String(currentGregorianYear + 543); // ex: 2568
+
     const [filters, setFilters] = useState({
-        year: "2568",
+        year: currentBuddhistYear, // แสดงเป็น พ.ศ.
         department: "all",
         projectType: "all",
         status: "all",
@@ -26,7 +35,7 @@ export default function UserDashboardPage() {
 
     const [calendar_events_data, set_calendar_events_data] = useState<GetCalenderEventRespond[]>([]);
     const [approval_items, set_approval_items] = useState<GetApprovalItems[]>([]);
-    const [qa_indicators_data, set_qa_indicators_data] = useState<GetQaIndicatorsRespond[]>([]);
+    const [qa_indicators_data, set_qa_indicators_data] = useState<GetQaIndicatorsByYearAllRespond[]>([]);
     const [strategic_plans_data, set_strategic_plans_data] = useState<GetStrategicPlanRespond[]>([]);
     const [projects_data, set_projects_data] = useState<GetProjectsByOrgRespond[]>([]);
 
@@ -50,27 +59,19 @@ export default function UserDashboardPage() {
                 console.log("calendar events data:", data);
                 set_calendar_events_data(data);
             } catch (err) {
+                console.error(err);
             }
         };
         fetchCounts();
     }, []);
 
-    // useEffect(() => {
-    //     const fetchCounts = async () => {
-    //         try {
-    //             const data = await GetApprovalItemsFromApi();
-    //             set_approval_items(data);
-    //         } catch (err) {
-    //         }
-    //     };
-    //     fetchCounts();
-    // }, []);
     useEffect(() => {
         const fetchCounts = async () => {
             try {
                 const data = await GetStrategicPlansFromApi();
                 set_strategic_plans_data(data);
             } catch (err) {
+                console.error(err);
             }
         };
         fetchCounts();
@@ -81,25 +82,31 @@ export default function UserDashboardPage() {
                 const data = await GetProjectsByOrgFromApi();
                 set_projects_data(data);
             } catch (err) {
-            }
-        };
-        fetchCounts();
-    }, []);
-    useEffect(() => {
-        const fetchCounts = async () => {
-            try {
-                const data = await GetQaIndicatorsFromApi();
-                set_qa_indicators_data(data);
-            } catch (err) {
+                console.error(err);
             }
         };
         fetchCounts();
     }, []);
 
+    // <-- New: ใช้ GetQaIndicatorsByYearFromApi โดยส่งปีเป็น ค.ศ.
+    useEffect(() => {
+        const fetchQaIndicators = async () => {
+            try {
+                // เรียก API ด้วยปีค.ศ. (ไม่ใช่พ.ศ.)
+                const data = await GetQaIndicatorsByYearAllFromApi(currentGregorianYear);
+                set_qa_indicators_data(data);
+            } catch (err) {
+                console.error("Failed to fetch QA indicators by year:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchQaIndicators();
+    }, []); // รันครั้งเดียวตอน mount (ใช้ปีปัจจุบัน)
 
     const clearAllFilters = () => {
         setFilters({
-            year: "2568",
+            year: currentBuddhistYear, // reset เป็นปีปัจจุบัน (พ.ศ.)
             department: "all",
             projectType: "all",
             status: "all",

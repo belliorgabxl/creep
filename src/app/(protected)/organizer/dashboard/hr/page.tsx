@@ -2,6 +2,9 @@
 "use client";
 
 import React from "react";
+import UserTable from "@/components/dashboard/UserTable";
+import DepartmentTable from "@/components/dashboard/DepartmentTable";
+import Link from "next/link";
 
 // Single-file Page: HR KPIs + Department Table + User Table
 // Contains only: HrKpiCards, DepartmentTable, UserTable and mock data.
@@ -59,61 +62,6 @@ function HrKpiCards({ kpis }: { kpis: any }) {
   );
 }
 
-function DepartmentTable({ departments }: { departments: any[] }) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm overflow-auto">
-      <table className="min-w-full text-sm">
-        <thead className="bg-gray-50 text-left">
-          <tr>
-            <th className="p-3">รหัส</th>
-            <th className="p-3">ชื่อหน่วยงาน</th>
-            <th className="p-3">หัวหน้าหน่วยงาน</th>
-            <th className="p-3">พนักงาน</th>
-            <th className="p-3">โปรเจ็กต์</th>
-          </tr>
-        </thead>
-        <tbody>
-          {departments.map((d) => (
-            <tr key={d.code} className="border-t hover:bg-gray-50">
-              <td className="p-3 font-medium">{d.code}</td>
-              <td className="p-3">{d.name}</td>
-              <td className="p-3">{d.leader}</td>
-              <td className="p-3">{d.employees}</td>
-              <td className="p-3">{d.projects}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function UserTable({ users }: { users: any[] }) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm overflow-auto">
-      <table className="min-w-full text-sm">
-        <thead className="bg-gray-50 text-left">
-          <tr>
-            <th className="p-3">ชื่อ</th>
-            <th className="p-3">ตำแหน่ง</th>
-            <th className="p-3">แผนก</th>
-            <th className="p-3">สถานะ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u, i) => (
-            <tr key={i} className="border-t hover:bg-gray-50">
-              <td className="p-3 font-medium">{u.name}</td>
-              <td className="p-3">{u.title}</td>
-              <td className="p-3">{u.department}</td>
-              <td className={`p-3 font-medium ${u.status === 'On leave' ? 'text-yellow-600' : u.status === 'Active' ? 'text-green-600' : 'text-gray-500'}`}>{u.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 // -------------------- Page --------------------
 export default function UserDashboardPage() {
@@ -124,22 +72,42 @@ export default function UserDashboardPage() {
           <h1 className="text-2xl font-semibold">HR Dashboard</h1>
           <div className="text-sm text-gray-500">ปีงบประมาณ {MOCK.year}</div>
         </div>
-        <div className="text-sm text-gray-400">Updated: 2025-11-18</div>
       </header>
 
       <HrKpiCards kpis={MOCK.kpis} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <h2 className="text-lg font-medium mb-3">หน่วยงาน</h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-medium">หน่วยงาน</h2>
+            <Link
+              href="/organizer/department"
+                className="inline-flex items-center rounded-lg  border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+              aria-label="ดูหน่วยงานทั้งหมด"
+            >
+              ทั้งหมด
+            </Link>
+          </div>
+
           <DepartmentTable departments={MOCK.departments} />
         </div>
 
         <div>
-          <h2 className="text-lg font-medium mb-3">พนักงาน</h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-medium">พนักงาน</h2>
+            <Link
+              href="/organizer/users"
+              className="inline-flex items-center rounded-lg  border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+              aria-label="ดูพนักงานทั้งหมด"
+            >
+              ทั้งหมด
+            </Link>
+          </div>
+
           <UserTable users={MOCK.users} />
         </div>
       </div>
+
     </div>
   );
 }

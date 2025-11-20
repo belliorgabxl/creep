@@ -88,8 +88,6 @@ export default function ManageUsersPage() {
 
       <UsersTable
         users={filtered}
-        org={ORG}
-        onToggleIsActive={toggleIsActive}
         onEdit={(u) => setEditing(u)}
         onDetails={(u) => setDetailsUser(u)}
       />
@@ -121,7 +119,6 @@ export default function ManageUsersPage() {
 
       <UserDetailsModal open={!!detailsUser} user={detailsUser} onClose={() => setDetailsUser(null)} statusLabel={statusLabel} />
 
-      <footer className="text-xs text-gray-400">Mock implementation — ปรับเชื่อม API / เปลี่ยนคำศัพท์ได้ตามต้องการ</footer>
     </div>
   );
 }

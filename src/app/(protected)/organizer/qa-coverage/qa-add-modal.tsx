@@ -1,17 +1,17 @@
-// components/AddQAModal.tsx
+// File: components/qa-coverage/AddQAModal.tsx
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { CreateQaFromApi } from "@/api/qa/route";
 import type { QaRequest } from "@/dto/qaDto";
+import { useToast } from "@/components/ToastProvider"; // keep your import path
 
 type AddQAModalProps = {
   onClose: () => void;
-  // ให้รับ partial ของ QACoverage (but require code/name)
   onAdd: (newQA: { code: string; name: string; year?: number; projects?: number; gaps?: boolean }) => void;
   year: string | number;
-  // organizationId ถูกตัดออก — แบ็คเอนด์จะอ่านจากคุกกี้
+  onSuccess?: () => void;
 };
 
 function beToCe(yearBe?: number | string | null): number | null {
@@ -21,7 +21,9 @@ function beToCe(yearBe?: number | string | null): number | null {
   return n - 543;
 }
 
-export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
+export default function AddQAModal({ onClose, onAdd, year, onSuccess }: AddQAModalProps) {
+  const toast = useToast();
+
   const currentBe = useMemo(() => {
     const now = new Date();
     return now.getFullYear() + 543;
@@ -35,27 +37,41 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
     return arr;
   }, [currentBe]);
 
-  // initial form factory so we can reset easily
+  // initial form: prefer provided year prop, otherwise default to current BE
   const initialForm = useMemo(
     () => ({
       code: "",
       name: "",
       description: "",
-      year: typeof year === "string" ? (parseInt(year || "0") || undefined) : (year as number | undefined),
+      year:
+        typeof year === "string"
+          ? parseInt(year || "") || currentBe
+          : (typeof year === "number" && !Number.isNaN(year) ? (year as number) : currentBe),
     }),
-    [year]
+    [year, currentBe]
   );
 
-  const [formData, setFormData] = useState<{ code: string; name: string; description: string; year?: number }>(initialForm);
+  const [formData, setFormData] = useState<{ code: string; name: string; description: string; year?: number }>(
+    initialForm
+  );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // per-field errors
+  const [errors, setErrors] = useState<{
+    code?: string | null;
+    name?: string | null;
+    description?: string | null;
+    year?: string | null;
+  }>({});
 
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const closingRef = useRef(false); // prevent double close while async
+  const closingRef = useRef(false);
 
   const resetForm = useCallback(() => {
     setFormData(initialForm);
-    setError(null);
+    setSubmitError(null);
+    setErrors({});
     setLoading(false);
   }, [initialForm]);
 
@@ -64,13 +80,11 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
     closingRef.current = true;
     resetForm();
     onClose();
-    // allow future opens to work
     setTimeout(() => {
       closingRef.current = false;
     }, 0);
   }, [onClose, resetForm]);
 
-  // close when click outside modal (anywhere outside modalRef)
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
       const el = modalRef.current;
@@ -95,73 +109,86 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
     };
   }, [handleClose]);
 
-  const validate = (): string | null => {
-    if (!formData.code || formData.code.trim() === "") return "กรุณากรอกรหัสตัวบ่งชี้";
-    if (!formData.name || formData.name.trim() === "") return "กรุณากรอกชื่อตัวบ่งชี้";
-    if (!formData.description || formData.description.trim() === "") return "กรุณากรอกคำอธิบาย";
-    if (!formData.year) return "กรุณาเลือกปีงบประมาณ";
-    return null;
+  const validate = (): boolean => {
+    const next: typeof errors = {};
+    if (!formData.code || formData.code.trim() === "") next.code = "กรุณากรอกรหัสตัวบ่งชี้";
+    if (!formData.name || formData.name.trim() === "") next.name = "กรุณากรอกชื่อตัวบ่งชี้";
+    if (!formData.description || formData.description.trim() === "") next.description = "กรุณากรอกคำอธิบาย";
+    if (!formData.year) next.year = "กรุณาเลือกปีงบประมาณ (พ.ศ.)";
+    setErrors(next);
+    // return true when no errors
+    return Object.keys(next).length === 0;
   };
 
   const handleSubmit = async () => {
-    setError(null);
-    const v = validate();
-    if (v) {
-      setError(v);
+    setSubmitError(null);
+    setErrors({});
+    const ok = validate();
+    if (!ok) {
+      toast.push("error", "ข้อมูลไม่ครบ", "กรุณาตรวจสอบช่องที่แจ้งข้อผิดพลาด");
       return;
     }
 
-    // แปลง พ.ศ. -> ค.ศ.
     const yearCe = beToCe(formData.year as number);
     if (yearCe === null) {
-      setError("ปีไม่ถูกต้อง");
+      setErrors((s) => ({ ...s, year: "ปีไม่ถูกต้อง" }));
+      toast.push("error", "ปีไม่ถูกต้อง", "กรุณาเลือกปีงบประมาณเป็น พ.ศ. ที่ถูกต้อง");
       return;
     }
 
     const payload: QaRequest = {
       code: formData.code.trim(),
       description: formData.description.trim(),
-      display_order: 1, // ตั้งเป็น 1 เสมอ
+      display_order: 1,
       name: formData.name.trim(),
-      organization_id: "", // backend จะอ่านจาก cookie
+      organization_id: "",
       year: yearCe,
     };
 
     try {
       setLoading(true);
-      const ok = await CreateQaFromApi(payload);
+      const okApi = await CreateQaFromApi(payload);
       setLoading(false);
-      if (!ok) {
-        setError("สร้างตัวบ่งชี้ไม่สำเร็จ (API คืนค่าไม่สำเร็จหรือไม่มี token)");
+      if (!okApi) {
+        setSubmitError("สร้างตัวบ่งชี้ไม่สำเร็จ (API คืนค่าไม่สำเร็จหรือไม่มี token)");
+        toast.push("error", "สร้างล้มเหลว", "API คืนค่าไม่สำเร็จหรือไม่มี token");
         return;
       }
 
-      // เรียก onAdd เพื่อให้ parent อัปเดต UI (projects default 0)
+      // optimistic parent update
       onAdd({
         code: payload.code,
         name: payload.name,
-        year: formData.year, // เก็บเป็น พ.ศ. เพื่อแสดงใน UI
+        year: formData.year,
         projects: 0,
         gaps: true,
       });
 
-      // รีเซ็ตและปิด
+      // show success toast
+      toast.push("success", "สร้างตัวบ่งชี้สำเร็จ", `${payload.code} — ${payload.name}`);
+
+      // allow parent to refresh authoritative data
+      try {
+        if (onSuccess) await onSuccess();
+      } catch (e) {
+        // ignore parent errors
+      }
+
       resetForm();
       onClose();
     } catch (err: any) {
       console.error("CreateQaFromApi error:", err);
       setLoading(false);
-      setError(err?.message ?? "เกิดข้อผิดพลาดขณะสร้างตัวบ่งชี้");
+      setSubmitError(err?.message ?? "เกิดข้อผิดพลาดขณะสร้างตัวบ่งชี้");
+      toast.push("error", "เกิดข้อผิดพลาด", err?.message ?? "สร้างตัวบ่งชี้ล้มเหลว");
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      {/* NOTE: backdrop still present but outside clicks are handled globally via pointerdown */}
       <div
         ref={modalRef}
         className="w-full max-w-md rounded-2xl bg-white shadow-xl"
-        // prevent clicks inside modal from propagating to document pointerdown handler in some browsers
         onPointerDown={(e) => {
           e.stopPropagation();
         }}
@@ -178,51 +205,102 @@ export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
         </div>
 
         <div className="p-6 space-y-4">
-          {error ? <div className="text-sm text-rose-600">{error}</div> : null}
+          {/* global submit error */}
+          {submitError ? <div className="text-sm text-rose-600">{submitError}</div> : null}
 
+          {/* code field */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">รหัสตัวบ่งชี้</label>
+            <label className="flex items-center justify-between">
+              <span className="block text-sm font-medium text-slate-700 mb-1.5">รหัสตัวบ่งชี้</span>
+              {errors.code ? (
+                <span className="text-xs text-rose-600 ml-2" id="error-code">
+                  {errors.code}
+                </span>
+              ) : null}
+            </label>
             <input
               type="text"
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
               placeholder="เช่น QA-006"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                errors.code ? "border-rose-300 focus:ring-rose-100" : "border-slate-300 focus:ring-indigo-100"
+              }`}
               disabled={loading}
+              aria-invalid={errors.code ? "true" : "false"}
+              aria-describedby={errors.code ? "error-code" : undefined}
             />
           </div>
 
+          {/* name field */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">ชื่อตัวบ่งชี้</label>
+            <label className="flex items-center justify-between">
+              <span className="block text-sm font-medium text-slate-700 mb-1.5">ชื่อตัวบ่งชี้</span>
+              {errors.name ? (
+                <span className="text-xs text-rose-600 ml-2" id="error-name">
+                  {errors.name}
+                </span>
+              ) : null}
+            </label>
             <textarea
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="ระบุชื่อตัวบ่งชี้"
               rows={2}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                errors.name ? "border-rose-300 focus:ring-rose-100" : "border-slate-300 focus:ring-indigo-100"
+              }`}
               disabled={loading}
+              aria-invalid={errors.name ? "true" : "false"}
+              aria-describedby={errors.name ? "error-name" : undefined}
             />
           </div>
 
+          {/* description field */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">คำอธิบาย</label>
+            <label className="flex items-center justify-between">
+              <span className="block text-sm font-medium text-slate-700 mb-1.5">คำอธิบาย</span>
+              {errors.description ? (
+                <span className="text-xs text-rose-600 ml-2" id="error-description">
+                  {errors.description}
+                </span>
+              ) : null}
+            </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="คำอธิบายสั้น ๆ"
               rows={3}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                errors.description ? "border-rose-300 focus:ring-rose-100" : "border-slate-300 focus:ring-indigo-100"
+              }`}
               disabled={loading}
+              aria-invalid={errors.description ? "true" : "false"}
+              aria-describedby={errors.description ? "error-description" : undefined}
             />
           </div>
 
+          {/* year (พ.ศ.) dropdown */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">ปีงบประมาณ (พ.ศ.)</label>
+            <label className="flex items-center justify-between">
+              <span className="block text-sm font-medium text-slate-700 mb-1.5">ปีงบประมาณ (พ.ศ.)</span>
+              {errors.year ? (
+                <span className="text-xs text-rose-600 ml-2" id="error-year">
+                  {errors.year}
+                </span>
+              ) : null}
+            </label>
             <select
               value={formData.year ?? ""}
-              onChange={(e) => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value) : undefined })}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              onChange={(e) =>
+                setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value) : undefined })
+              }
+              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                errors.year ? "border-rose-300 focus:ring-rose-100" : "border-slate-300 focus:ring-indigo-100"
+              }`}
               disabled={loading}
+              aria-invalid={errors.year ? "true" : "false"}
+              aria-describedby={errors.year ? "error-year" : undefined}
             >
               <option value="">-- เลือกปีงบประมาณ (พ.ศ.) --</option>
               {yearOptions.map((y) => (

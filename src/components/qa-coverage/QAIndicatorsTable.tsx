@@ -1,3 +1,4 @@
+// File: components/qa-coverage/QAIndicatorsTable.tsx
 "use client";
 
 import React from "react";
@@ -5,31 +6,18 @@ import type { GetQaIndicatorsByYearRespond } from "@/dto/qaDto";
 import { Eye, Trash2 } from "lucide-react";
 
 type Props = {
-  qaIndicatorsData: GetQaIndicatorsByYearRespond[]; // จาก API
+  qaIndicatorsData: GetQaIndicatorsByYearRespond[];
   onView: (id: string | null, indOrCount?: any) => void;
-  onDelete?: (id: string | null, ind?: any) => void; // optional delete handler
+  onDelete?: (id: string | null, ind?: any) => void;
+  currentPage?: number;
+  onPrev?: () => void;
+  onNext?: () => void;
+  disableNext?: boolean;
 };
 
-/**
- * หาฟิลด์ตัวเลขจำนวนโครงการจาก object ที่หลากหลายรูปแบบ
- */
 function extractCountFromApi(item: any): number | null {
   if (!item || typeof item !== "object") return null;
-  const keysToTry = [
-    "count_projects",
-    "count_project",
-    "projects",
-    "projectCount",
-    "project_count",
-    "project_total",
-    "project_count_total",
-    "count",
-    "total",
-    "value",
-    "amount",
-    "project",
-  ];
-
+  const keysToTry = ["project_count", "count_projects", "projects", "count", "total", "value"];
   for (const k of keysToTry) {
     if (k in item) {
       const v = item[k];
@@ -37,16 +25,12 @@ function extractCountFromApi(item: any): number | null {
       if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) return Number(v);
     }
   }
-
-  // nested stats
   if (item.stats && typeof item.stats === "object") {
     return extractCountFromApi(item.stats);
   }
-
   return null;
 }
 
-// Inline style for 2-line clamp (multiline ellipsis) without needing Tailwind plugin
 const twoLineClamp: React.CSSProperties = {
   display: "-webkit-box",
   WebkitLineClamp: 2,
@@ -54,29 +38,20 @@ const twoLineClamp: React.CSSProperties = {
   overflow: "hidden",
 };
 
-export default function QAIndicatorsTable({ qaIndicatorsData = [], onView, onDelete }: Props) {
-  const colPercents = {
-    code: "22.222%",
-    name: "33.333%",
-    year: "11.111%",
-    projects: "22.222%",
-    actions: "11.111%",
-  };
-
+export default function QAIndicatorsTable({
+  qaIndicatorsData = [],
+  onView,
+  onDelete,
+  currentPage = 1,
+  onPrev,
+  onNext,
+  disableNext = false,
+}: Props) {
   const isEmpty = !Array.isArray(qaIndicatorsData) || qaIndicatorsData.length === 0;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
-      {/* desktop */}
       <table className="min-w-full table-auto hidden md:table">
-        <colgroup>
-          <col style={{ width: colPercents.code }} />
-          <col style={{ width: colPercents.name }} />
-          <col style={{ width: colPercents.year }} />
-          <col style={{ width: colPercents.projects }} />
-          <col style={{ width: colPercents.actions }} />
-        </colgroup>
-
         <thead className="bg-slate-50">
           <tr className="text-xs text-slate-500">
             <th className="px-4 py-3 text-center">โค้ด</th>
@@ -101,33 +76,26 @@ export default function QAIndicatorsTable({ qaIndicatorsData = [], onView, onDel
 
               return (
                 <tr key={ind.id} className="hover:bg-slate-50">
-                  {/* code: fixed-ish, single-line truncate */}
                   <td className="px-4 py-4 text-sm text-slate-700 text-center align-middle">
                     <div className="mx-auto max-w-full overflow-hidden text-ellipsis whitespace-nowrap" title={ind.code}>
                       {ind.code}
                     </div>
                   </td>
 
-                  {/* name: flexible column, clamp to 2 lines */}
                   <td className="px-4 py-4 text-sm text-slate-700 text-center align-middle">
-                    <div style={twoLineClamp} className="max-w-full" title={ind.name}>
-                      {ind.name}
+                    <div style={twoLineClamp} className="max-w-full" title={ind.name ?? ind.description}>
+                      {ind.name ?? ind.description}
                     </div>
                   </td>
 
-                  {/* year: fixed small width */}
                   <td className="px-4 py-4 text-sm text-slate-500 text-center align-middle">
                     <div className="mx-auto overflow-hidden text-ellipsis whitespace-nowrap">{ind.year ?? "-"}</div>
                   </td>
 
-                  {/* projects: right-aligned */}
                   <td className="px-4 py-4 text-sm text-slate-700 text-center align-middle">
-                    <div className="mx-auto overflow-hidden text-ellipsis whitespace-nowrap">
-                      {projects.toLocaleString()}
-                    </div>
+                    <div className="mx-auto overflow-hidden text-ellipsis whitespace-nowrap">{(projects ?? 0).toLocaleString()}</div>
                   </td>
 
-                  {/* actions */}
                   <td className="px-4 py-4 text-sm text-center align-middle">
                     <div className="flex items-center justify-center gap-2">
                       <button
@@ -162,7 +130,7 @@ export default function QAIndicatorsTable({ qaIndicatorsData = [], onView, onDel
         </tbody>
       </table>
 
-      {/* mobile: group right column (projects + actions) into a fixed block ~33% width */}
+      {/* mobile view */}
       {isEmpty ? (
         <div className="p-8 md:hidden">
           <div className="text-center text-sm text-slate-500">ไม่มีตัวบ่งชี้ในปีนี้</div>
@@ -172,45 +140,35 @@ export default function QAIndicatorsTable({ qaIndicatorsData = [], onView, onDel
           {qaIndicatorsData.map((ind) => {
             const projects = extractCountFromApi(ind) ?? 0;
             const canDelete = projects === 0;
-
             return (
               <div key={ind.id} className="rounded-lg border border-slate-100 bg-white p-3 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-3 min-w-0">
-                    {/* code + name + year stacked, keep heights constrained */}
                     <div className="flex items-center justify-between mb-1">
                       <div className="text-xs text-slate-500">โค้ด</div>
                       <div className="text-xs text-slate-500">ปี</div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div
-                        className="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap mr-4"
-                        title={ind.code}
-                      >
+                      <div className="text-sm font-medium text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap mr-4" title={ind.code}>
                         {ind.code}
                       </div>
 
-                      <div className="text-sm text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap w-[56px] text-right">
-                        {ind.year ?? "-"}
-                      </div>
+                      <div className="text-sm text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap w-[56px] text-right">{ind.year ?? "-"}</div>
                     </div>
 
                     <div className="mt-2 text-xs text-slate-500">ตัวบ่งชี้</div>
                     <div className="mt-1 text-sm text-slate-700" style={{ height: 40, overflow: "hidden" }}>
-                      <div style={twoLineClamp} title={ind.name}>
-                        {ind.name}
+                      <div style={twoLineClamp} title={ind.name ?? ind.description}>
+                        {ind.name ?? ind.description}
                       </div>
                     </div>
                   </div>
 
-                  {/* right block: projects + actions (approx 33% width of card) */}
                   <div className="flex flex-col items-end justify-between ml-3 w-[33%] min-w-[110px]">
                     <div className="text-sm text-slate-500 text-right">
                       <div className="text-xs">โครงการ</div>
-                      <div className="text-sm text-slate-700 mt-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                        {projects.toLocaleString()}
-                      </div>
+                      <div className="text-sm text-slate-700 mt-1 overflow-hidden text-ellipsis whitespace-nowrap">{(projects ?? 0).toLocaleString()}</div>
                     </div>
 
                     <div className="flex items-center gap-2 mt-3">
@@ -245,6 +203,28 @@ export default function QAIndicatorsTable({ qaIndicatorsData = [], onView, onDel
           })}
         </div>
       )}
+
+      {/* simple pagination footer */}
+      <div className="flex items-center justify-between border-t border-slate-100 bg-white px-4 py-3">
+        <div className="text-xs text-slate-500">หน้า {currentPage}</div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onPrev}
+            disabled={currentPage <= 1}
+            className={`px-3 py-1 rounded-md text-sm ${currentPage <= 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"}`}
+          >
+            ก่อนหน้า
+          </button>
+
+          <button
+            onClick={onNext}
+            disabled={disableNext}
+            className={`px-3 py-1 rounded-md text-sm ${disableNext ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50"}`}
+          >
+            ถัดไป
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

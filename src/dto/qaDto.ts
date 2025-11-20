@@ -8,13 +8,31 @@ export type GetQaIndicatorsRespond = {
   organization_id: string;
   year: number;
 };
+
 export type GetQaIndicatorsByYearRespond = {
+  id: string;
+  name: string;
+  code: string;
+  display_order: number;
+  description: string;
+  organization_id: string;
+  project_count :number;
+  year: number;
+};
+
+export type GetQaIndicatorsByYearAllRespond = {
   id: string;
   name: string;
   code: string;
   count_projects: number;
   year: number;
   status: number;
+};
+
+export type GetQaIndicatorsByYearRequest = {
+  year: number;
+  page?: number;
+  limit?: number;
 };
 
 export type GetQaIndicatorsCountsByYear = {
@@ -35,6 +53,9 @@ export type GetQaIndicatorsDetailsRespond = {
   project_count: number;
   year: number;
 };
+
+
+
 
 export type GetStrategicPlanRespond = {
   id: string;
