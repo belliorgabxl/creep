@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { X } from "lucide-react";
-// import type { QACoverage } from "@/app/mock"; // <-- ใช้ชนิดจาก mock ของคุณ
+import type { QACoverage } from "@/app/mock"; // <-- ใช้ชนิดจาก mock ของคุณ
 
 type AddQAModalProps = {
   onClose: () => void;
@@ -11,6 +11,7 @@ type AddQAModalProps = {
   onAdd: (newQA: { code: string; name: string; year?: number; projects?: number; gaps?: boolean }) => void;
   year: string | number;
 };
+
 export default function AddQAModal({ onClose, onAdd, year }: AddQAModalProps) {
   const [formData, setFormData] = useState<{ code: string; name: string; year?: number }>({
     code: "",
