@@ -32,14 +32,12 @@ type SelectedQA = {
   gaps: boolean;
 };
 
-// แปลง พ.ศ. -> ค.ศ.
 function beToCe(yearBe: string | number): number | null {
   const y = Number(yearBe);
   if (Number.isNaN(y)) return null;
   return y - 543;
 }
 
-// แปลง ค.ศ. -> พ.ศ.
 function ceToBe(yearCe?: number | null): string | undefined {
   if (yearCe === undefined || yearCe === null) return undefined;
   return String(Number(yearCe) + 543);
