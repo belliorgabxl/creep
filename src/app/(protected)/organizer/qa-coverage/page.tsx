@@ -1,21 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search, CheckCircle2, AlertTriangle, Layers3, Plus, Eye } from "lucide-react";
-import {
-  MOCK_QA_COVERAGE,
-  MOCK_QA_INDICATORS,
-  type QACoverage,
-  type QAIndicator,
-} from "@/app/mock";
-
-import AddQAModal from "./qa_add_modal";
-import QADetailModal from "./qa_detail_modal";
-import CoverageRow from "./component/CoverageRow";
-import StatCard from "./component/StatCard";
-
+import { useEffect, useMemo, useState } from "react";
+import AddQAModal from "./qa-add-modal";
+import QADetailModal from "./qa-detail-modal";
 import QAHeader from "@/components/qa-coverage/QAHeader";
-import QAControls from "@/components/qa-coverage/QAControls";
 import QAIndicatorsTable from "@/components/qa-coverage/QAIndicatorsTable";
 
 import {
@@ -28,8 +16,6 @@ import type {
   GetQaIndicatorsRespond,
 } from "@/dto/qaDto";
 import { Search } from "lucide-react";
-import AddQAModal from "./qa_add_modal";
-
 
 type NewQA = {
   code: string;
