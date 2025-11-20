@@ -99,10 +99,10 @@ export type GoalParams = {
 export type ActivitiesRow = {
   id: number;
   activity: string;
-  period: string;
+  startDate: string;
+  endDate: string;
   owner: string;
 };
-
 // kpi component part
 export type KPIParams = {
   output: string;
@@ -118,19 +118,45 @@ export type ExpectParams = {
   results: ExpectItem[];
 };
 
-export interface CreateProjectPayload {
-  code?: string;
-  department_id: string;
-  description: string;
-  end_date: string;
-  location: string;
-  name: string;
-  organization_id: string;
-  owner_user_id: string;
-  plan_type: string;
-  qualitative_goal: string;
-  quantitative_goal: string;
+export type ObjectiveParams = {
+  results: {
+    description: string;
+    type?: "objective";
+  }[];
+};
+
+export interface ProjectInformationResponse {
+  project_name: string;
+  plane_type: string;
   rationale: string;
-  start_date: string;
-  updated_by: string;
+  location: string;
+  quantitative_goal: string;
+  qualitative_goal: string;
+  created_at: string;
+  updated_at: string;
+  department_name: string;
+  budget_source: string;
+  budget_amount: number;
+  budget_source_department: string;
+  budget_items: {
+    id: number;
+    budget_plan_id: string;
+    name: string;
+    amount: number;
+    remark: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  progress: {
+    id: number;
+    project_id: string;
+    start_date: string | null;
+    end_date: string | null;
+    sequence_number: number;
+    description: string;
+    responsible_name: string;
+    remarks: string;
+    updated_by: string | null;
+    updated_at: string;
+  }[];
 }

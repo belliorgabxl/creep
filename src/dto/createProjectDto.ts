@@ -1,8 +1,7 @@
-export type PlanType = "regular_work" | string; 
+
 
 export interface BudgetItem {
   amount: number;
-  budget_plan_id: string;
   name: string;
   remark?: string;
 }
@@ -19,7 +18,6 @@ export interface Budgets {
   fiscal_year: number;
   organization_id: string;
   plan_number?: string;
-  project_id?: string;
   rejected_at?: string;
   status?: string;
   submitted_at?: string;
@@ -33,14 +31,12 @@ export interface ProjectKpi {
 
 export interface ProjectObjectiveOutcome {
   description: string;
-  project_id?: string;
   type: string;
 }
 
 export interface ProjectProgress {
   description: string;
   end_date: string;
-  project_id?: string;
   remarks?: string;
   responsible_name: string;
   start_date: string;
@@ -49,7 +45,6 @@ export interface ProjectProgress {
 
 export interface ProjectQaIndicator {
   organization_id: string;
-  project_id?: string;
   qa_indicator_id: string;
 }
 
@@ -67,7 +62,7 @@ export interface CreateProjectPayload {
   name: string;
   organization_id: string;
   owner_user_id: string;
-  plan_type: PlanType; // "regular_work"
+  plan_type: string; 
   project_kpis?: ProjectKpi[];
   project_objective_and_outcomes?: ProjectObjectiveOutcome[];
   project_progress?: ProjectProgress[];
@@ -76,14 +71,19 @@ export interface CreateProjectPayload {
   qualitative_goal?: string;
   quantitative_goal?: string;
   rationale?: string;
-  regular_work_template_id?: string;
   start_date: string;
   updated_by?: string;
+  evaluation: EvaluationParams;
 }
 
-export interface CreateProjectRequest {
-  project: CreateProjectPayload;
+export type EvaluationParams = {
+  start_date: string;
+  end_date: string;
+  estimate_type: string;
+  evaluator_user_id: string;
 }
+
+export type CreateProjectRequest = CreateProjectPayload;
 
 export interface CreateProjectResponse {
   message: string;

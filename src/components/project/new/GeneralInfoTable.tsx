@@ -81,8 +81,10 @@ export default function GeneralInfoTable({ value, onChange }: Props) {
             className="px-4 py-1 border rounded-lg border-gray-300 w-full"
           >
             <option value="">เลือกประเภท</option>
-            <option value="แผนงานประจำ">แผนงานประจำ</option>
-            <option value="โครงการพิเศษ / พัฒนา">โครงการพิเศษ / พัฒนา</option>
+            <option value="project">ทั่วไป</option>
+            <option value="regular_work">แผนงานประจำ</option>
+
+            <option value="special_project">โครงการพิเศษ / พัฒนา</option>
           </select>
         </div>
 

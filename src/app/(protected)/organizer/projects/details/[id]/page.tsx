@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   formatThaiDateTime,
@@ -94,7 +93,7 @@ export default async function Page({ params }: { params: PageParams }) {
     activities,
     kpi,
     estimate,
-    // expect,
+    expect,
     approve,
     goal,
   } = p;
@@ -118,10 +117,10 @@ export default async function Page({ params }: { params: PageParams }) {
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-600">
             <StatusBadge status={p.status} />
-            {generalInfo?.owner ? (
+            {generalInfo?.owner_user_id ? (
               <>
                 <span>
-                  เจ้าของ: <b className="text-gray-800">{generalInfo.owner}</b>
+                  เจ้าของ: <b className="text-gray-800">{"นาย ศรันท์ วงคำ"}</b>
                 </span>
                 <span className="text-gray-400">•</span>
               </>
@@ -160,14 +159,8 @@ export default async function Page({ params }: { params: PageParams }) {
       <Section title="ข้อมูลพื้นฐาน">
         <Grid2>
           <Field label="ประเภทโครงการ" value={generalInfo?.type || "—"} />
-          <Field
-            label="หน่วยงานที่รับผิดชอบ"
-            value={generalInfo?.department || "—"}
-          />
-          <Field
-            label="ผู้รับผิดชอบโครงการ"
-            value={generalInfo?.owner || "—"}
-          />
+          <Field label="หน่วยงานที่รับผิดชอบ" value={"หน่วยงานความมั่นคง"} />
+          <Field label="ผู้รับผิดชอบโครงการ" value={"นาย ศรันท์"} />
         </Grid2>
       </Section>
 
@@ -229,15 +222,42 @@ export default async function Page({ params }: { params: PageParams }) {
       {/* Estimate */}
       <Section title="การติดตามและประเมินผล">
         <Grid2>
-          <Field label="วิธีการประเมินผล" value={estimate?.method || "—"} />
-          <Field label="ผู้รับผิดชอบ" value={estimate?.evaluator || "—"} />
-          <Field label="ระยะเวลา" value={estimate?.period || "—"} />
+          <Field
+            label="วิธีการ / ประเภทการประเมินผล"
+            value={estimate?.estimateType || "—"}
+          />
+          <Field
+            label="ผู้รับผิดชอบการประเมิน"
+            value={estimate?.evaluator || "—"}
+          />
+          <Field
+            label="ระยะเวลา"
+            value={
+              estimate?.startDate || estimate?.endDate
+                ? `${dateOrDash(estimate?.startDate)} - ${dateOrDash(
+                    estimate?.endDate
+                  )}`
+                : "—"
+            }
+          />
         </Grid2>
       </Section>
 
       {/* Expect */}
       <Section title="ผลที่คาดว่าจะได้รับ">
-        <RichOrDash text={"ได้ความรู้"} />
+        {expect?.results?.length ? (
+          <ul className="list-disc pl-5 text-sm text-gray-800">
+            {expect.results
+              .filter((r) => r.description?.trim())
+              .map((r, idx) => (
+                <li key={idx} className="whitespace-pre-line">
+                  {r.description}
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <span>—</span>
+        )}
       </Section>
 
       {/* Budget */}
@@ -312,7 +332,13 @@ export default async function Page({ params }: { params: PageParams }) {
                   <tr key={a.id}>
                     <Td className="px-3 py-2 text-center">{a.id}</Td>
                     <Td className="px-3 py-2">{a.activity || "—"}</Td>
-                    <Td className="px-3 py-2">{a.period || "—"}</Td>
+                    <Td className="px-3 py-2">
+                      {a.startDate || a.endDate
+                        ? `${dateOrDash(a.startDate)} - ${dateOrDash(
+                            a.endDate
+                          )}`
+                        : "—"}
+                    </Td>
                     <Td className="px-3 py-2">{a.owner || "—"}</Td>
                   </tr>
                 ))}
@@ -396,29 +422,28 @@ function RichOrDash({ text }: { text?: string }) {
 }
 
 function BudgetSources({ sources }: { sources: BudgetTableValue["sources"] }) {
-  if (!sources) return <span>—</span>;
-  const chips: string[] = [];
-  if (sources.school) chips.push("งบสถานศึกษา");
-  if (sources.revenue) chips.push("เงินรายได้");
-  if (sources.external) {
-    chips.push(
-      sources.externalAgency?.trim()
+  if (!sources || !sources.source) return <span>—</span>;
+
+  let label = "";
+  switch (sources.source) {
+    case "school":
+      label = "งบสถานศึกษา";
+      break;
+    case "revenue":
+      label = "เงินรายได้";
+      break;
+    case "external":
+      label = sources.externalAgency?.trim()
         ? `ภายนอก (${sources.externalAgency.trim()})`
-        : "ภายนอก"
-    );
+        : "ภายนอก";
+      break;
+    default:
+      label = sources.source; // กันเคสอื่น ๆ ที่ backend ส่งมา
   }
-  return chips.length ? (
-    <div className="flex flex-wrap gap-1">
-      {chips.map((c) => (
-        <span
-          key={c}
-          className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-[11px]"
-        >
-          {c}
-        </span>
-      ))}
-    </div>
-  ) : (
-    <span>—</span>
+
+  return (
+    <span className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-[11px]">
+      {label}
+    </span>
   );
 }

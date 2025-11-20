@@ -1,12 +1,10 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, Save, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Save } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import {
   ActivitiesRow,
-  ApproveParams,
   BudgetTableValue,
   DateDurationValue,
   EstimateParams,
@@ -14,13 +12,13 @@ import {
   GeneralInfoParams,
   GoalParams,
   KPIParams,
+  ObjectiveParams,
   StrategyParams,
 } from "@/dto/projectDto";
 import DateDurationSection from "@/components/project/new/DateDurationSection";
 import { BudgetTable } from "@/components/project/new/BudgetTable";
 import GeneralInfoTable from "@/components/project/new/GeneralInfoTable";
 import StrategyForm from "@/components/project/new/StrategyForm";
-// import ApproveForm from "@/components/project/new/ApproveForm";
 import { BadgeCreateFormProject } from "@/components/project/Helper";
 import GoalForm from "@/components/project/new/GoalForm";
 import ActivitiesTable from "@/components/project/new/ActivitiesTable";
@@ -28,10 +26,11 @@ import KPIForm from "@/components/project/new/KPIForm";
 import EstimateForm from "@/components/project/new/EstimateForm";
 import ExpectForm from "@/components/project/new/ExpectForm";
 import { CreateProjectPayload } from "@/dto/createProjectDto";
-import { createProject } from "@/api/project/route";
 import { AuthUser } from "@/dto/userDto";
-import { fetchCurrentUser } from "@/api/users/route";
 import { generateSixDigitCode } from "@/lib/util";
+import ObjectiveForm from "@/components/project/new/ObjectiveForm";
+import { createProject } from "@/api/project/route";
+import { toast } from "react-toastify";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
@@ -53,10 +52,31 @@ const steps = [
 export default function CreateProjectPage() {
   const [authUser, setAuthUser] = useState<AuthUser>();
   useEffect(() => {
-    fetchCurrentUser().then((item) => {
-      setAuthUser(item);
-    });
-  });
+    const loadUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error("Unauthenticated");
+        }
+
+        const data = await res.json();
+
+        if (!data.authenticated) {
+          throw new Error("Unauthenticated");
+        }
+
+        setAuthUser(data.user);
+      } catch (err) {
+        console.error("auth/me error:", err);
+        setAuthUser(undefined);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   // setup state
   const router = useRouter();
@@ -77,7 +97,14 @@ export default function CreateProjectPage() {
 
   const [location, setLocation] = useState<string>("");
 
-  const [objective, setObjective] = useState<string>("");
+  const [objective, setObjective] = useState<ObjectiveParams>({
+    results: [
+      {
+        description: "",
+        type: "objective",
+      },
+    ],
+  });
 
   // strategy part
   const [strategy, setStrategy] = useState<StrategyParams>({
@@ -104,7 +131,7 @@ export default function CreateProjectPage() {
     results: [
       {
         description: "",
-        type: "objective",
+        type: "expectation",
       },
     ],
   });
@@ -120,7 +147,7 @@ export default function CreateProjectPage() {
 
   // activity part
   const [activity, setActivity] = useState<ActivitiesRow[]>([
-    { id: 1, activity: "", period: "", owner: "" },
+    { id: 1, activity: "", startDate: "", endDate: "", owner: "" },
   ]);
   const handleActivityChange = useCallback(
     (rows: ActivitiesRow[]) => setActivity(rows),
@@ -129,9 +156,10 @@ export default function CreateProjectPage() {
 
   // expectation part
   const [estimate, setEstimate] = useState<EstimateParams>({
-    method: "",
+    estimateType: "",
     evaluator: "",
-    period: "",
+    startDate: "",
+    endDate: "",
   });
   const handleEstimateChange = useCallback((v: EstimateParams) => {
     setEstimate(v);
@@ -190,7 +218,6 @@ export default function CreateProjectPage() {
       quantitative_goal: goal.quantityGoal,
       qualitative_goal: goal.qualityGoal,
       rationale: retaional,
-      regular_work_template_id: "",
       updated_by: generalInfo.owner_user_id,
 
       budgets: budget
@@ -198,7 +225,6 @@ export default function CreateProjectPage() {
             budget_amount: budget.total,
 
             budget_items: budget.rows.map((row) => ({
-              budget_plan_id: String(row.id),
               name: row.item,
               amount: Number(row.amount),
               remark: row.note ?? "",
@@ -212,7 +238,6 @@ export default function CreateProjectPage() {
             organization_id: String(authUser?.org_id),
 
             plan_number: "",
-            project_id: "",
             status: "draft",
 
             approved_at: "",
@@ -235,19 +260,17 @@ export default function CreateProjectPage() {
           : undefined,
 
       project_objective_and_outcomes: [
-        ...(objective.trim()
-          ? [
-              {
-                description: objective.trim(),
-                type: "objective",
-              },
-            ]
-          : []),
+        ...objective.results
+          .filter((item) => item.description.trim() !== "")
+          .map((item) => ({
+            description: item.description.trim(),
+            type: "objective",
+          })),
         ...(expectation?.results
           ?.filter((item) => item.description.trim() !== "")
           .map((item) => ({
             description: item.description,
-            type: item.type ?? "outcome",
+            type: item.type ?? "expectation",
           })) ?? []),
       ],
       project_progress:
@@ -255,8 +278,8 @@ export default function CreateProjectPage() {
           ?.filter((a) => a.activity.trim() !== "")
           .map((a) => ({
             description: a.activity,
-            start_date: "",
-            end_date: "",
+            start_date: a.startDate,
+            end_date: a.endDate,
             remarks: "",
             responsible_name: a.owner,
             updated_by: generalInfo.owner_user_id,
@@ -265,6 +288,12 @@ export default function CreateProjectPage() {
       project_strategy: [],
 
       project_qa_indicators: [],
+      evaluation: {
+        start_date: estimate.startDate,
+        end_date: estimate.endDate,
+        estimate_type: estimate.estimateType,
+        evaluator_user_id: estimate.evaluator,
+      },
     };
   };
 
@@ -276,8 +305,12 @@ export default function CreateProjectPage() {
     try {
       const payload = buildCreateProjectPayload();
       const res = await createProject(payload);
+      console.log(payload);
       setSuccess(res.message ?? "สร้างโครงการสำเร็จแล้ว");
-      router.push("/organizer/projects/my-project");
+      toast.success("สร้างโปรเจ็คสำเร็จ");
+      setTimeout(() => {
+        router.push("/organizer/projects/my-project");
+      }, 1000);
     } catch (err: any) {
       console.error("createProject error:", err);
       setError(err?.message ?? "สร้างโครงการไม่สำเร็จ");
@@ -363,13 +396,15 @@ export default function CreateProjectPage() {
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
+              {/* <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
               <textarea
                 onChange={(e) => setObjective(e.target.value)}
                 value={objective}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุวัตถุประสงค์ของโครงการ..."
-              />
+              /> */}
+
+              <ObjectiveForm value={objective} onChange={setObjective} />
             </motion.div>
           )}
           {step === 4 && (
@@ -524,9 +559,6 @@ export default function CreateProjectPage() {
             <button
               onClick={() => {
                 handleSubmit();
-                setTimeout(() => {
-                  router.push("/organizer/projects/my-project");
-                }, 1000);
               }}
               className="inline-flex items-center gap-1 rounded-md border border-gray-300
                bg-green-600 hover:bg-green-700 hover:scale-[102%] duration-300 text-white px-4 py-2 text-sm   "

@@ -21,8 +21,3 @@ export interface AuthUser {
   org_id: string | null;
   department_id: string | null;
 }
-export interface AuthMeResponse {
-  authenticated: boolean;
-  message?: string;
-  user?: AuthUser;
-}

@@ -1,13 +1,12 @@
-"use server";
-
 import ApiClient from "@/lib/api-clients";
-import { cookies } from "next/headers";
+import Cookies from "js-cookie";
 import type { GetCalenderEventRespond } from "@/dto/dashboardDto";
-import { CreateProjectPayload } from "@/dto/projectDto";
 import {
+  CreateProjectPayload,
   CreateProjectRequest,
   CreateProjectResponse,
 } from "@/dto/createProjectDto";
+import { ProjectInformationResponse } from "@/dto/projectDto";
 
 type ApiResp =
   | { success: true; data: any[] }
@@ -16,7 +15,7 @@ type ApiResp =
 
 export async function getCalendarEvents(): Promise<GetCalenderEventRespond[]> {
   try {
-    const token = (await cookies()).get("api_token")?.value;
+    const token = Cookies.get("api_token");
     if (!token) {
       throw new Error("No authentication token found");
     }
@@ -51,45 +50,127 @@ export async function getCalendarEvents(): Promise<GetCalenderEventRespond[]> {
   }
 }
 
+// export const createProject = async (
+//   payload: CreateProjectPayload
+// ): Promise<CreateProjectResponse> => {
+//   try {
+//     const body: CreateProjectRequest = {
+//       project: payload,
+//     };
+
+//     const accessToken = Cookies.get("api_token");
+
+//     const res = await ApiClient.post<CreateProjectResponse>(`/projects/`, body, {
+//       headers: {
+//         accept: "application/json",
+//         "content-type": "application/json",
+//         authorization: `Bearer ${accessToken}`,
+//       },
+//       withCredentials: true,
+//     });
+
+//     if (res.status < 200 || res.status >= 300) {
+//       throw new Error(`createProject failed: ${res.status} ${res.statusText}`);
+//     }
+//     console.log(res)
+
+//     return res.data;
+//   } catch (error: any) {
+//     console.error("createProject error:", error);
+
+//     if (error.response) {
+//       throw new Error(
+//         `API Error ${error.response.status}: ${JSON.stringify(
+//           error.response.data
+//         )}`
+//       );
+//     }
+
+//     throw error;
+//   }
+// };
 export const createProject = async (
   payload: CreateProjectPayload
 ): Promise<CreateProjectResponse> => {
+  const accessToken = Cookies.get("api_token");
+
   try {
-    const body: CreateProjectRequest = {
-      project: payload,
-    };
+    const body: CreateProjectRequest = payload;
 
-    const token = (await cookies()).get("api_token")?.value;
-
-    const res = await ApiClient.post<CreateProjectResponse>(
-      `${process.env.EBUDGET_API_BASE_URL}/projects`,
-      body,
+    const res = await fetch(
+      `https://e-budget-api.usefulapps.app/api/v1/projects/`,
       {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!res.ok) {
+      let errorBody: any = null;
+      try {
+        errorBody = await res.json();
+      } catch {
+        errorBody = await res.text();
+      }
+      throw new Error(`API Error ${res.status}: ${JSON.stringify(errorBody)}`);
+    }
+
+    let data: CreateProjectResponse | null = null;
+    try {
+    
+      data = (await res.json()) as CreateProjectResponse;
+    } catch (e) {
+      console.warn("createProject: cannot parse JSON body, but request was OK", e);
+    }
+    if (!data) {
+      data = {
+        message: "Project created successfully",
+      } as CreateProjectResponse;
+    }
+    console.log(res)
+    console.log(data)
+
+    return data;
+  } catch (err: any) {
+    console.error("createProject fetch error:", err);
+    throw err;
+  }
+};
+
+export const fetchProjectInformation = async (
+  projectId: string,
+  accessToken: string
+): Promise<ProjectInformationResponse> => {
+  try {
+    const res = await ApiClient.get<ProjectInformationResponse>(
+      `projects/information`,
+      {
+        params: {
+          project_id: projectId,
+        },
         headers: {
           accept: "application/json",
-          "content-type": "application/json",
-          authorization: `Bearer ${token}`,
+          authorization: `Bearer ${accessToken}`,
         },
-        withCredentials: true,
       }
     );
 
     if (res.status < 200 || res.status >= 300) {
-      throw new Error(`createProject failed: ${res.status} ${res.statusText}`);
-    }
-
-    return res.data;
-  } catch (error: any) {
-    console.error("createProject error:", error);
-
-    if (error.response) {
+      const text = JSON.stringify(res.data);
       throw new Error(
-        `API Error ${error.response.status}: ${JSON.stringify(
-          error.response.data
-        )}`
+        `fetchProjectInformation failed: ${res.status} ${res.statusText} - ${text}`
       );
     }
 
+
+    return res.data;
+  } catch (error) {
+    console.error("fetchProjectInformation error:", error);
     throw error;
   }
 };
