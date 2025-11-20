@@ -122,18 +122,20 @@ export const createProject = async (
 
     let data: CreateProjectResponse | null = null;
     try {
-    
       data = (await res.json()) as CreateProjectResponse;
     } catch (e) {
-      console.warn("createProject: cannot parse JSON body, but request was OK", e);
+      console.warn(
+        "createProject: cannot parse JSON body, but request was OK",
+        e
+      );
     }
     if (!data) {
       data = {
         message: "Project created successfully",
       } as CreateProjectResponse;
     }
-    console.log(res)
-    console.log(data)
+    console.log(res);
+    console.log(data);
 
     return data;
   } catch (err: any) {
@@ -142,35 +144,23 @@ export const createProject = async (
   }
 };
 
+
 export const fetchProjectInformation = async (
   projectId: string,
+  accessToken: string
 ): Promise<ProjectInformationResponse> => {
-  try {
-    const accessToken = Cookies.get("api_token");
-    const res = await ApiClient.get<ProjectInformationResponse>(
-      `projects/information`,
-      {
-        params: {
-          project_id: projectId,
-        },
-        headers: {
-          accept: "application/json",
-          authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (res.status < 200 || res.status >= 300) {
-      const text = JSON.stringify(res.data);
-      throw new Error(
-        `fetchProjectInformation failed: ${res.status} ${res.statusText} - ${text}`
-      );
+  const res = await ApiClient.get<ProjectInformationResponse>(
+    "/projects/information",
+    {
+      params: {
+        project_id: projectId,
+      },
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
     }
+  );
 
-
-    return res.data;
-  } catch (error) {
-    console.error("fetchProjectInformation error:", error);
-    throw error;
-  }
+  return res.data;
 };

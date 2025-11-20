@@ -12,7 +12,6 @@ import {
 import type {
   ActivitiesRow,
   ApproveParams,
-  // BudgetRow,
   BudgetTableValue,
   DateDurationValue,
   EstimateParams,
@@ -24,6 +23,7 @@ import type {
   StrategyParams,
 } from "@/dto/projectDto";
 import { fetchProjectInformation } from "@/api/project/route";
+import { cookies } from "next/headers";
 
 type Project = {
   id: string;
@@ -46,9 +46,19 @@ type Project = {
 
 async function getProject(id: string): Promise<Project | null> {
   try {
+    const cookieStore = cookies();
+    const accessToken = (await cookieStore).get("api_token")?.value;
+
+    if (!accessToken) {
+      console.error("getProject: no api_token in server cookies");
+      return null;
+    }
+
     const apiData: ProjectInformationResponse = await fetchProjectInformation(
-      id
+      id,
+      accessToken
     );
+    console.log(apiData);
 
     const generalInfo: GeneralInfoParams = {
       name: apiData.project_name,
@@ -84,10 +94,8 @@ async function getProject(id: string): Promise<Project | null> {
     const duration: DateDurationValue = {
       startDate,
       endDate,
-      durationMonths: 0, // ตอนนี้ backend ยังไม่ได้ส่งจำนวนเดือนมา
+      durationMonths: 0,
     };
-
-    // ----- map Budget -----
     let budget: BudgetTableValue | null = null;
 
     if (apiData.budget_items && apiData.budget_items.length > 0) {
@@ -180,6 +188,8 @@ type PageParams = Promise<{ id: string }>;
 
 export default async function Page({ params }: { params: PageParams }) {
   const { id } = await params;
+  console.log("details page id:", id);
+
   const p = await getProject(id);
 
   if (!p) {
@@ -213,7 +223,8 @@ export default async function Page({ params }: { params: PageParams }) {
     approve,
     goal,
   } = p;
-  
+  const mainResponsibleName =
+    activities.find((a) => a.owner && a.owner.trim())?.owner ?? "";
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <nav className="mb-4 text-xs text-gray-500">
@@ -236,7 +247,8 @@ export default async function Page({ params }: { params: PageParams }) {
             {generalInfo?.owner_user_id ? (
               <>
                 <span>
-                  เจ้าของ: <b className="text-gray-800">{"นาย ศรันท์ วงคำ"}</b>
+                  เจ้าของ:{" "}
+                  <b className="text-gray-800">{mainResponsibleName}</b>
                 </span>
                 <span className="text-gray-400">•</span>
               </>

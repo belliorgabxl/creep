@@ -1,4 +1,5 @@
 import { Department } from "@/dto/departmentDto";
+import { ProjectInformationResponse } from "@/dto/projectDto";
 import ApiClient from "@/lib/api-clients";
 import Cookies from "js-cookie";
 
@@ -9,7 +10,7 @@ export const fetchDepartments = async (): Promise<Department[]> => {
     if (!accessToken) {
       throw new Error("No access token in cookies");
     }
-
+    console.log(accessToken)
     const res = await ApiClient.get<{
       data: Department[];
       message: string;
