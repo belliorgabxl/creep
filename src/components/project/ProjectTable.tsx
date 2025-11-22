@@ -23,14 +23,7 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
             <tr
               key={p.id}
               className="hover:bg-gray-50/60 cursor-pointer"
-              // onClick={() => go(p.id)}
               tabIndex={0}
-              // onKeyDown={(e) => {
-              //   if (e.key === "Enter" || e.key === " ") {
-              //     e.preventDefault();
-              //     // go(p.id);
-              //   }
-              // }}
             >
               <Td>
                 <Link

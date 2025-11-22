@@ -53,81 +53,110 @@ export type BudgetRow = {
 };
 
 export type FundingSources = {
-  school: boolean;
-  revenue: boolean;
-  external: boolean;
+  source:string;
   externalAgency: string;
 };
 
 // estimate component part
 export type EstimateParams = {
-  method: string;
+  estimateType: string;
   evaluator: string;
-  period: string;
+  startDate: string;
+  endDate: string;
 };
 
 // general info component part
 export type GeneralInfoParams = {
   name: string;
   type: string;
-  department: string;
-  owner: string;
+  department_id: string;
+  owner_user_id: string;
 };
 
 // strategy component part
 export type StrategyParams = {
-  schoolPlan: string;     
-  ovEcPolicy: string;  
-  qaIndicator: string;   
+  schoolPlan: string;
+  ovEcPolicy: string;
+  qaIndicator: string;
 };
 
 // approve component part
 export type ApproveParams = {
-  proposerName: string; 
-  proposerPosition: string; 
-  proposeDate: string; 
-  deptComment: string; 
+  proposerName: string;
+  proposerPosition: string;
+  proposeDate: string;
+  deptComment: string;
   directorComment: string;
 };
 
 // goal component part
 export type GoalParams = {
   quantityGoal: string;
-  qualityGoal: string;  
+  qualityGoal: string;
 };
 
 // activity component part
 export type ActivitiesRow = {
   id: number;
   activity: string;
-  period: string;
+  startDate: string;
+  endDate: string;
   owner: string;
 };
-
 // kpi component part
 export type KPIParams = {
-  output: string;   
-  outcome: string;  
+  output: string;
+  outcome: string;
 };
 
 // expect part
+export type ExpectItem = {
+  description: string;
+  type: string;
+};
 export type ExpectParams = {
-  results: string[];
+  results: ExpectItem[];
 };
 
-export interface CreateProjectPayload {
-  code: string;
-  department_id: string;
-  description: string;
-  end_date: string;    
-  location: string;
-  name: string;
-  organization_id: string;
-  owner_user_id: string;
-  plan_type: string;       
-  qualitative_goal: string;
-  quantitative_goal: string;
+export type ObjectiveParams = {
+  results: {
+    description: string;
+    type?: "objective";
+  }[];
+};
+
+export interface ProjectInformationResponse {
+  project_name: string;
+  plane_type: string;
   rationale: string;
-  start_date: string;      
-  updated_by: string;
+  location: string;
+  quantitative_goal: string;
+  qualitative_goal: string;
+  created_at: string;
+  updated_at: string;
+  department_name: string;
+  budget_source: string;
+  budget_amount: number;
+  budget_source_department: string;
+  budget_items: {
+    id: number;
+    budget_plan_id: string;
+    name: string;
+    amount: number;
+    remark: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  progress: {
+    id: number;
+    project_id: string;
+    start_date: string | null;
+    end_date: string | null;
+    sequence_number: number;
+    description: string;
+    responsible_name: string;
+    remarks: string;
+    updated_by: string | null;
+    updated_at: string;
+  }[];
 }

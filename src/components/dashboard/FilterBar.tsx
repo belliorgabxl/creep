@@ -19,7 +19,6 @@ export function FilterBar({ filters, activeFilters, onFilterChange, onClearAll }
     qaIndicator: "ตัวบ่งชี้ QA",
     strategy: "ยุทธศาสตร์",
   }
-
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
       <span className="text-sm text-gray-500">ตัวกรอง:</span>

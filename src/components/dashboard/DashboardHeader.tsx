@@ -165,7 +165,6 @@ export function DashboardHeader({ filters, onFilterChange }: DashboardHeaderProp
                     type="button"
                     className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-gray-700 hover:bg-gray-100"
                     onClick={() => {
-           
                       router.push("/user/profile");
                       setOpenProfile(false);
                     }}

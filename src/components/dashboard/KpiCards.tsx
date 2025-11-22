@@ -132,7 +132,6 @@ export function KpiCards() {
                   {kpi.title}
                 </p>
               </div>
-
               {/* กราฟเส้น */}
               <div className="mt-4 -mx-1 h-10">
                 <svg

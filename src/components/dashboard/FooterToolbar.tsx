@@ -17,7 +17,6 @@ export function FooterToolbar() {
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">ส่งออก</span>
             </button>
-
             <button className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-transparent px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
               <Share2 className="h-4 w-4" />
               <span className="hidden sm:inline">แชร์รายงาน</span>

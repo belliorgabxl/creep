@@ -13,3 +13,9 @@ export function parseTTL(ttl: string): number {
     default: throw new Error("Invalid TTL unit");
   }
 }
+export const generateSixDigitCode = () => {
+  return Math.floor(Math.random() * 1000000)
+    .toString()
+    .padStart(6, "0");
+};
+

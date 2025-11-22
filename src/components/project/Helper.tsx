@@ -8,33 +8,44 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-2 text-sm font-semibold text-gray-900">{title}</h2>
-      {children}
+    <section className="mb-8 rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="border-b border-gray-100 px-4 py-3">
+        <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+      </div>
+      <div className="px-4 py-5">{children}</div>
     </section>
   );
 }
+
 export function Grid2({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{children}</div>
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">{children}</div>
   );
 }
+
 export function Field({
   label,
   value,
   children,
 }: {
   label: string;
-  value?: React.ReactNode;
+  value?: any;
   children?: React.ReactNode;
 }) {
+  const content = children ?? (
+    <span className="text-sm font-medium text-gray-800">{value ?? "—"}</span>
+  );
+
   return (
-    <div className="text-sm">
-      <div className="text-gray-500">{label}</div>
-      <div className="mt-0.5 text-gray-900">{children ?? value ?? "—"}</div>
+    <div className="flex flex-col">
+      <span className="text-xs font-medium text-gray-500 mb-1">{label}</span>
+      <div className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-800 border border-gray-200">
+        {content}
+      </div>
     </div>
   );
 }
+
 export function EmptyRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">

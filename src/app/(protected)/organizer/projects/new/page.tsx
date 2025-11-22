@@ -1,11 +1,10 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, Save, Send } from "lucide-react";
-import { useCallback, useState } from "react";
+import { ChevronLeft, ChevronRight, Loader2, Save } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ActivitiesRow,
-  ApproveParams,
   BudgetTableValue,
   DateDurationValue,
   EstimateParams,
@@ -13,19 +12,25 @@ import {
   GeneralInfoParams,
   GoalParams,
   KPIParams,
+  ObjectiveParams,
   StrategyParams,
 } from "@/dto/projectDto";
 import DateDurationSection from "@/components/project/new/DateDurationSection";
 import { BudgetTable } from "@/components/project/new/BudgetTable";
 import GeneralInfoTable from "@/components/project/new/GeneralInfoTable";
 import StrategyForm from "@/components/project/new/StrategyForm";
-// import ApproveForm from "@/components/project/new/ApproveForm";
 import { BadgeCreateFormProject } from "@/components/project/Helper";
 import GoalForm from "@/components/project/new/GoalForm";
 import ActivitiesTable from "@/components/project/new/ActivitiesTable";
 import KPIForm from "@/components/project/new/KPIForm";
 import EstimateForm from "@/components/project/new/EstimateForm";
 import ExpectForm from "@/components/project/new/ExpectForm";
+import { CreateProjectPayload } from "@/dto/createProjectDto";
+import { AuthUser } from "@/dto/userDto";
+import { generateSixDigitCode } from "@/lib/util";
+import ObjectiveForm from "@/components/project/new/ObjectiveForm";
+import { createProject } from "@/api/project/route";
+import { toast } from "react-toastify";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
@@ -40,11 +45,39 @@ const steps = [
   "ตัวชี้วัดความสำเร็จ (KPI)",
   "การติดตามและประเมินผล",
   "ผลที่คาดว่าจะได้รับ",
-  "ข้อเสนอแนะ",
+  // "ข้อเสนอแนะ",
   // "การอนุมัติและลงนาม",
 ];
 
 export default function CreateProjectPage() {
+  const [authUser, setAuthUser] = useState<AuthUser>();
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error("Unauthenticated");
+        }
+
+        const data = await res.json();
+
+        if (!data.authenticated) {
+          throw new Error("Unauthenticated");
+        }
+
+        setAuthUser(data.user);
+      } catch (err) {
+        console.error("auth/me error:", err);
+        setAuthUser(undefined);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   // setup state
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -56,8 +89,21 @@ export default function CreateProjectPage() {
   const [generalInfo, setGeneralInfo] = useState<GeneralInfoParams>({
     name: "",
     type: "",
-    department: "",
-    owner: "",
+    department_id: "",
+    owner_user_id: "",
+  });
+
+  // location
+
+  const [location, setLocation] = useState<string>("");
+
+  const [objective, setObjective] = useState<ObjectiveParams>({
+    results: [
+      {
+        description: "",
+        type: "objective",
+      },
+    ],
   });
 
   // strategy part
@@ -70,6 +116,9 @@ export default function CreateProjectPage() {
     setStrategy(v);
   }, []);
 
+  // retional
+  const [retaional, setRetional] = useState<string>("");
+
   // duration section state
   const [dateDur, setDateDur] = useState<DateDurationValue>({
     startDate: "",
@@ -78,9 +127,14 @@ export default function CreateProjectPage() {
   });
 
   // expectation part
-const [expectation, setExpectation] = useState<ExpectParams>({
-  results: [""],
-});
+  const [expectation, setExpectation] = useState<ExpectParams>({
+    results: [
+      {
+        description: "",
+        type: "expectation",
+      },
+    ],
+  });
   const handleExpectChange = useCallback((v: ExpectParams) => {
     setExpectation(v);
   }, []);
@@ -93,7 +147,7 @@ const [expectation, setExpectation] = useState<ExpectParams>({
 
   // activity part
   const [activity, setActivity] = useState<ActivitiesRow[]>([
-    { id: 1, activity: "", period: "", owner: "" },
+    { id: 1, activity: "", startDate: "", endDate: "", owner: "" },
   ]);
   const handleActivityChange = useCallback(
     (rows: ActivitiesRow[]) => setActivity(rows),
@@ -102,9 +156,10 @@ const [expectation, setExpectation] = useState<ExpectParams>({
 
   // expectation part
   const [estimate, setEstimate] = useState<EstimateParams>({
-    method: "",
+    estimateType: "",
     evaluator: "",
-    period: "",
+    startDate: "",
+    endDate: "",
   });
   const handleEstimateChange = useCallback((v: EstimateParams) => {
     setEstimate(v);
@@ -140,9 +195,128 @@ const [expectation, setExpectation] = useState<ExpectParams>({
     setKpi(v);
   }, []);
 
-  // process part
-  const onSaveProject = () => {
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const buildCreateProjectPayload = (): CreateProjectPayload => {
+    const projectCode = generateSixDigitCode();
+
+    return {
+      name: generalInfo.name,
+      description: "",
+      department_id: generalInfo.department_id,
+      organization_id: String(authUser?.org_id) ?? "",
+      owner_user_id: generalInfo.owner_user_id,
+      plan_type: generalInfo.type,
+
+      start_date: dateDur.startDate,
+      end_date: dateDur.endDate,
+
+      location: location,
+
+      code: projectCode,
+      quantitative_goal: goal.quantityGoal,
+      qualitative_goal: goal.qualityGoal,
+      rationale: retaional,
+      updated_by: generalInfo.owner_user_id,
+
+      budgets: budget
+        ? {
+            budget_amount: budget.total,
+
+            budget_items: budget.rows.map((row) => ({
+              name: row.item,
+              amount: Number(row.amount),
+              remark: row.note ?? "",
+            })),
+
+            budget_source: budget.sources.source,
+            budget_source_department: budget.sources.externalAgency || "",
+
+            fiscal_year: new Date().getFullYear(),
+
+            organization_id: String(authUser?.org_id),
+
+            plan_number: "",
+            status: "draft",
+
+            approved_at: "",
+            closed_at: "",
+            created_at: "",
+            rejected_at: "",
+            submitted_at: "",
+            updated_at: "",
+            updated_by: generalInfo.owner_user_id,
+            current_approval_level: 0,
+          }
+        : undefined,
+
+      project_kpis:
+        kpi.output || kpi.outcome
+          ? [
+              ...(kpi.output ? [{ description: kpi.output }] : []),
+              ...(kpi.outcome ? [{ description: kpi.outcome }] : []),
+            ]
+          : undefined,
+
+      project_objective_and_outcomes: [
+        ...objective.results
+          .filter((item) => item.description.trim() !== "")
+          .map((item) => ({
+            description: item.description.trim(),
+            type: "objective",
+          })),
+        ...(expectation?.results
+          ?.filter((item) => item.description.trim() !== "")
+          .map((item) => ({
+            description: item.description,
+            type: item.type ?? "expectation",
+          })) ?? []),
+      ],
+      project_progress:
+        activity
+          ?.filter((a) => a.activity.trim() !== "")
+          .map((a) => ({
+            description: a.activity,
+            start_date: a.startDate,
+            end_date: a.endDate,
+            remarks: "",
+            responsible_name: a.owner,
+            updated_by: generalInfo.owner_user_id,
+          })) ?? undefined,
+
+      project_strategy: [],
+
+      project_qa_indicators: [],
+      evaluation: {
+        start_date: estimate.startDate,
+        end_date: estimate.endDate,
+        estimate_type: estimate.estimateType,
+        evaluator_user_id: estimate.evaluator,
+      },
+    };
+  };
+
+  const handleSubmit = async () => {
     setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const payload = buildCreateProjectPayload();
+      const res = await createProject(payload);
+      console.log(payload);
+      setSuccess(res.message ?? "สร้างโครงการสำเร็จแล้ว");
+      toast.success("สร้างโปรเจ็คสำเร็จ");
+      setTimeout(() => {
+        router.push("/organizer/projects/my-project");
+      }, 1000);
+    } catch (err: any) {
+      console.error("createProject error:", err);
+      setError(err?.message ?? "สร้างโครงการไม่สำเร็จ");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -207,6 +381,8 @@ const [expectation, setExpectation] = useState<ExpectParams>({
             >
               <BadgeCreateFormProject title="หลักการและเหตุผล" />
               <textarea
+                onChange={(e) => setRetional(e.target.value)}
+                value={retaional}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุหลักการและเหตุผล..."
               />
@@ -220,11 +396,15 @@ const [expectation, setExpectation] = useState<ExpectParams>({
               exit={{ opacity: 0, x: 40 }}
               className="space-y-4"
             >
-              <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
+              {/* <BadgeCreateFormProject title="วัตถุประสงค์ของโครงการ" />
               <textarea
+                onChange={(e) => setObjective(e.target.value)}
+                value={objective}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="ระบุวัตถุประสงค์ของโครงการ..."
-              />
+              /> */}
+
+              <ObjectiveForm value={objective} onChange={setObjective} />
             </motion.div>
           )}
           {step === 4 && (
@@ -259,6 +439,8 @@ const [expectation, setExpectation] = useState<ExpectParams>({
             >
               <BadgeCreateFormProject title="สถานที่ดำเนินงาน" />
               <textarea
+                onChange={(e) => setLocation(e.target.value)}
+                value={location}
                 className="input min-h-[120px] w-full py-1 px-4 rounded-lg border border-gray-300"
                 placeholder="สถานที่ดำเนินงาน..."
               />
@@ -326,7 +508,7 @@ const [expectation, setExpectation] = useState<ExpectParams>({
               <ExpectForm value={expectation} onChange={handleExpectChange} />
             </motion.div>
           )}
-          {step === 12 && (
+          {/* {step === 12 && (
             <motion.div
               key="step-13"
               initial={{ opacity: 0, x: -40 }}
@@ -340,7 +522,7 @@ const [expectation, setExpectation] = useState<ExpectParams>({
                 placeholder="ข้อเสนอแนะ..."
               />
             </motion.div>
-          )}
+          )} */}
           {/* {step === 13 && (
             <motion.div
               key="step-14"
@@ -376,10 +558,7 @@ const [expectation, setExpectation] = useState<ExpectParams>({
           <div className="flex gap-2">
             <button
               onClick={() => {
-                onSaveProject();
-                setTimeout(() => {
-                  router.push("/organizer/projects/my-project");
-                }, 1000);
+                handleSubmit();
               }}
               className="inline-flex items-center gap-1 rounded-md border border-gray-300
                bg-green-600 hover:bg-green-700 hover:scale-[102%] duration-300 text-white px-4 py-2 text-sm   "

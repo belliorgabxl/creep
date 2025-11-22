@@ -68,7 +68,6 @@ export default function SciFiBackgroundNormal({
             background-position: 0 -160px, 0 -160px;
           }
         }
-
         /* ====== Triangles (สีสว่างขึ้น) ====== */
         .tri {
           position: absolute;

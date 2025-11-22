@@ -1,7 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import * as React from "react";
 import { BadgeCreateFormProject } from "../Helper";
 import { EstimateParams } from "@/dto/projectDto";
+import { GetAllUsers } from "@/api/users/route";
+import { User } from "@/dto/userDto";
 
 type Props = {
   value?: EstimateParams;
@@ -9,27 +12,51 @@ type Props = {
 };
 
 export default function EstimateForm({ value, onChange }: Props) {
-  const [method, setMethod] = useState(value?.method ?? "");
-  const [evaluator, setEvaluator] = useState(value?.evaluator ?? "");
-  const [period, setPeriod] = useState(value?.period ?? "");
+  const [estimateType, setEstimateType] = React.useState(
+    value?.estimateType ?? ""
+  );
 
-  useEffect(() => {
-    onChange({ method, evaluator, period });
-  }, [method, evaluator, period, onChange]);
+  const [evaluator, setEvaluator] = React.useState(value?.evaluator ?? "");
+
+  const [startDate, setStartDate] = React.useState(value?.startDate ?? "");
+  const [endDate, setEndDate] = React.useState(value?.endDate ?? "");
+
+  const [users, setUsers] = React.useState<User[]>([]);
+
+  React.useEffect(() => {
+    onChange({
+      estimateType,
+      evaluator,
+      startDate,
+      endDate,
+    });
+  }, [estimateType, evaluator, startDate, endDate, onChange]);
+
+  React.useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const items = await GetAllUsers();
+        setUsers(items);
+      } catch (err) {
+        console.error("Load users failed:", err);
+      }
+    };
+    loadUsers();
+  }, []);
 
   return (
     <div className="space-y-4">
       <BadgeCreateFormProject title="การติดตามและประเมินผล" />
-
       <div className="grid lg:flex flex-wrap gap-4 pb-4">
         <span className="font-medium">วิธีการประเมินผล</span>
+
         <div className="grid gap-4 lg:flex">
           {["แบบสอบถาม", "สัมภาษณ์", "สังเกตพฤติกรรม", "รายงานผล"].map((m) => (
             <label key={m} className="flex items-center gap-1">
               <input
                 type="checkbox"
-                checked={method === m}
-                onChange={() => setMethod(m)}
+                checked={estimateType === m}
+                onChange={() => setEstimateType(m)}
                 className="h-4 w-4"
               />
               <span>{m}</span>
@@ -39,24 +66,39 @@ export default function EstimateForm({ value, onChange }: Props) {
       </div>
       <div className="lg:flex grid gap-4 pb-4">
         <label className="font-medium">ผู้รับผิดชอบการประเมินผล</label>
-        <input
-          type="text"
+
+        <select
           value={evaluator}
           onChange={(e) => setEvaluator(e.target.value)}
-          placeholder="ระบุชื่อผู้รับผิดชอบ"
-          className="ml-2 w-80 border-b border-gray-400 focus:outline-none"
-        />
+          className="ml-2 w-80 border-b border-gray-400 focus:outline-none bg-white"
+        >
+          <option value="">เลือกผู้รับผิดชอบ</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.full_name || u.username}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <div className="lg:flex grid gap-4">
+      <div className="grid lg:flex gap-4">
         <label className="font-medium">ระยะเวลาการประเมินผล</label>
-        <input
-          type="text"
-          value={period}
-          onChange={(e) => setPeriod(e.target.value)}
-          placeholder="เช่น พ.ย. 68 - ก.พ. 69"
-          className="ml-2 w-80 border-b border-gray-400 focus:outline-none"
-        />
+
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border-b border-gray-400 focus:outline-none"
+          />
+          <span>-</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border-b border-gray-400 focus:outline-none"
+          />
+        </div>
       </div>
     </div>
   );

@@ -66,7 +66,6 @@ export function ApprovalQueue({ approvals }: ApprovalQueueProps) {
                   </div>
                 </div>
               </div>
-
               <button className="inline-flex items-center gap-2 rounded-md bg-gray-700 px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-gray-800">
                 <Eye className="h-4 w-4" />
                 ตรวจสอบ

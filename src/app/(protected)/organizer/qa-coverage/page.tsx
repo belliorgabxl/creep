@@ -15,18 +15,30 @@ import {
 import type { GetQaIndicatorsByYearRespond } from "@/dto/qaDto";
 import { ToastProvider, useToast } from "@/components/ToastProvider";
 
+type NewQA = {
+  code: string;
+  name: string;
+  year?: number;
+  projects?: number;
+  gaps?: boolean;
+};
+
+type SelectedQA = {
+  code: string;
+  name: string;
+  projects: number;
+  gaps: boolean;
+};
+
 function beToCe(yearBe: string | number): number | null {
   const y = Number(yearBe);
   if (Number.isNaN(y)) return null;
   return y - 543;
 }
 
-export default function QACoveragePageWrapper() {
-  return (
-    <ToastProvider>
-      <QACoveragePage />
-    </ToastProvider>
-  );
+function ceToBe(yearCe?: number | null): string | undefined {
+  if (yearCe === undefined || yearCe === null) return undefined;
+  return String(Number(yearCe) + 543);
 }
 
 function QACoveragePage() {

@@ -150,10 +150,31 @@ export async function GetQaIndicatorsCountsByYearFromApi(): Promise<GetQaIndicat
     }
 }
 export async function GetQaIndicatorsDetailByIdApi(id: string): Promise<GetQaIndicatorsRespond[]> {
-    const token = Cookies.get("api_token");
-    if (!token) {
-        console.warn("No token found in cookies.");
-        return [];
+  const token = Cookies.get("api_token");
+  if (!token) {
+    console.warn("No token found in cookies.");
+    return [];
+  }
+
+  
+  try {
+    const response = await ApiClient.get<{
+      responseCode?: string;
+      responseMessage?: string;
+      data?: GetQaIndicatorsRespond | GetQaIndicatorsRespond[];
+    }>(`/qa-indicators/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    const body = response?.data;
+
+    if (!body) return [];
+
+    if (Array.isArray(body)) {
+      return body as GetQaIndicatorsRespond[];
     }
 
     try {

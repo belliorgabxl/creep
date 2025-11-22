@@ -13,7 +13,6 @@ export type CalendarEventModel = {
   department?: string;
   status?: string;
 };
-
 // ====== สีและข้อความสำหรับวันเริ่ม/สิ้นสุด ======
 const EVENT_TYPE = {
   start: { label: "วันเริ่มโครงการ", chip: "bg-green-100 text-green-700", dot: "bg-green-600" },

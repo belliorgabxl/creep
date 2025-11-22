@@ -174,7 +174,6 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
             </tbody>
           </table>
         </div>
-
         {/* Pagination / Footer */}
         <div className="mt-6 flex items-center justify-between">
           <p className="text-xs font-medium text-gray-600">
