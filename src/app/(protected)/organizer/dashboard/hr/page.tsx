@@ -45,12 +45,12 @@ function HrKpiCards({ kpis }: { kpis: any }) {
         <div className="mt-1 text-sm text-gray-400">รวมพนักงานทั้งหมดในองค์กร</div>
       </div>
 
-      {/* Card: Quota Remaining */}
+      {/* Card: Quota Remaining
       <div className="p-4 bg-white  rounded-lg shadow-sm">
         <div className="text-xs text-gray-500">โควตาพนักงานคงเหลือ</div>
         <div className="mt-2 text-2xl font-semibold text-indigo-600">{kpis.quotaRemaining}</div>
         <div className="mt-1 text-sm text-gray-400">ตำแหน่งที่เปิดรับ/โควต้ายังว่าง</div>
-      </div>
+      </div> */}
 
       {/* Card: Departments */}
       <div className="p-4 bg-white rounded-lg shadow-sm">

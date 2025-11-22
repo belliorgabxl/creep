@@ -53,6 +53,16 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
 
   // เมนูที่แสดงผลตามบทบาท
   const visibleItems = useMemo(() => {
+    // Admin: เมนูเฉพาะสำหรับผู้ดูแลระบบ
+    if (roleKey === "admin") {
+      return [
+        { id: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+        { id: "manage-org", href: "/admin/manage-org", icon: Building2, label: "จัดการองค์กร" },
+        { id: "manage-user", href: "/admin/manage-user", icon: Users, label: "จัดการผู้ใช้" },
+        { id: "settings", href: "/admin/settings", icon: Settings, label: "ตั้งค่า" },
+      ];
+    }
+
     // HR: dashboard (ถ้ามี) + department + setup
     if (roleKey === "hr") {
       return (
