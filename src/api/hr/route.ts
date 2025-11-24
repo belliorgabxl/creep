@@ -1,43 +1,33 @@
 import ApiClient from "@/lib/api-clients";
-import type {GetUserRespond } from "@/dto/user";
+import type {GetUserRespond } from "@/dto/userDto";
 import Cookies from "js-cookie";
 
-export async function GetUserByOrgFromApi(): Promise<GetUserRespond[]> {
-    const token = Cookies.get("api_token");
-    if (!token) {
-        console.warn("No token found in cookies.");
-        return [];
-    }
-    try {
-        const response = await ApiClient.get<{
-            responseCode?: string;
-            responseMessage?: string;
-            data?: GetUserRespond | GetUserRespond[];
-        }>(`users/organization`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-            },
-        });
+export type UserListPage = { items: GetUserRespond[]; total: number; page?: number; limit?: number };
 
-        const body = response?.data;
-        if (!body) return [];
+export async function GetUserByOrgFromApi(page: number = 1, limit: number = 10): Promise<UserListPage> {
+  const token = Cookies.get("api_token");
+  if (!token) return { items: [], total: 0 };
 
-        if (Array.isArray(body)) {
-            return body as GetUserRespond[];
-        }
-        if (Array.isArray(body?.data)) {
-            return body.data as GetUserRespond[];
-        }
-        if (body?.data && typeof body.data === "object") {
-            return [body.data] as GetUserRespond[];
-        }
-        return [];
-    } catch (err) {
-        console.error("Error fetching QA indicators:", err);
-        return [];
-    }
+  try {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) }).toString();
+    const response = await ApiClient.get(`/users/organization?${params}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    });
+
+    const body = response?.data ?? {};
+    const items: GetUserRespond[] = Array.isArray(body.data) ? body.data : Array.isArray(body.items) ? body.items : [];
+    const total =
+      (body.pagination && Number.isFinite(body.pagination.total) && Number(body.pagination.total)) ??
+      (typeof body.total === "number" ? body.total : items.length);
+
+    return { items, total: Number(total || 0), page: body.pagination?.page ?? page, limit: body.pagination?.limit ?? limit };
+  } catch (err) {
+    console.error("GetUserByOrgFromApi error", err);
+    return { items: [], total: 0 };
+  }
 }
+
+
 
 export async function GetUserByIdFromApi(id: string): Promise<GetUserRespond[]> {
     const token = Cookies.get("api_token");

@@ -33,13 +33,13 @@ export default function AdminManageUserPage() {
   const [addOpen, setAddOpen] = useState(false);
 
   // load users from API on mount (placeholder)
-  useEffect(() => {
+ useEffect(() => {
     let mounted = true;
     async function load() {
       setLoading(true);
       setError(null);
       try {
-        const resp = await GetUserByOrgFromApi();
+        const resp = await GetUserByOrgFromApi(5, 10);
         if (!mounted) return;
 
         const mapped = (resp || []).map((u: GetUserRespond) => ({
@@ -53,6 +53,9 @@ export default function AdminManageUserPage() {
         }));
 
         setUsers(mapped);
+
+        // if received less than limit => last page
+        // setIsLastPage(mapped.length < 10);
       } catch (err: any) {
         console.error("Failed to load users:", err);
         if (mounted) setError(err?.message ?? "Failed to load users");
@@ -65,7 +68,7 @@ export default function AdminManageUserPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [5]);
 
   const handleAdd = (u: any) => {
     const newUser = { id: uid("EMP"), ...u, isActive: u.status !== "Inactive", createdAt: new Date().toISOString().slice(0, 10) };

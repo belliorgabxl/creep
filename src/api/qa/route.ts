@@ -156,7 +156,6 @@ export async function GetQaIndicatorsDetailByIdApi(id: string): Promise<GetQaInd
     return [];
   }
 
-  
   try {
     const response = await ApiClient.get<{
       responseCode?: string;
@@ -169,55 +168,33 @@ export async function GetQaIndicatorsDetailByIdApi(id: string): Promise<GetQaInd
       },
     });
 
+    // response?.data คือ body ที่กลับมาจาก axios (ชื่อ body อาจสับสนกับ data.field)
     const body = response?.data;
-
     if (!body) return [];
 
-    if (Array.isArray(body)) {
-      return body as GetQaIndicatorsRespond[];
+    // บาง API จะห่อข้อมูลไว้ใน body.data บางครั้ง body เองอาจเป็นข้อมูล
+    const payload = (body as any).data ?? body;
+
+    // กรณี array
+    if (Array.isArray(payload)) {
+      return payload as GetQaIndicatorsRespond[];
     }
 
-    try {
-        const response = await ApiClient.get<{
-            responseCode?: string;
-            responseMessage?: string;
-            data?: GetQaIndicatorsRespond | GetQaIndicatorsRespond[];
-        }>(`/qa-indicators/${id}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-            },
-        });
-
-        const body = response?.data;
-
-        if (!body) return [];
-
-        if (Array.isArray(body)) {
-            return body as GetQaIndicatorsRespond[];
-        }
-
-        if (body?.data) {
-            if (Array.isArray(body.data)) {
-                return body.data as GetQaIndicatorsRespond[];
-            }
-            if (typeof body.data === "object" && body.data !== null) {
-                return [body.data as GetQaIndicatorsRespond];
-            }
-        }
-
-        if (typeof body === "object" && body !== null) {
-            if ("id" in body && typeof (body as any).id === "string") {
-                console.log("body is single object with id -> returning [body]");
-                return [body as unknown as GetQaIndicatorsRespond];
-            }
-        }
-
-        return [];
-    } catch (err) {
-        console.error("Error fetching QA indicators details:", err);
-        return [];
+    // กรณี object เดียว
+    if (payload && typeof payload === "object") {
+      // ถ้า object มีฟิลด์ id (หรือโครงสร้างที่คาดไว้) ให้คืนเป็น array 1 รายการ
+      if ("id" in payload && typeof (payload as any).id === "string") {
+        return [payload as GetQaIndicatorsRespond];
+      }
+      // ถ้าไม่แน่ใจโครงสร้าง แต่เป็น object ให้ลองคืนเป็น single-item array ก็ยังดีกว่า []
+      return [payload as GetQaIndicatorsRespond];
     }
+
+    return [];
+  } catch (err) {
+    console.error("Error fetching QA indicators details:", err);
+    return [];
+  }
 }
 
 

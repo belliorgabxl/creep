@@ -41,7 +41,7 @@ function ceToBe(yearCe?: number | null): string | undefined {
   return String(Number(yearCe) + 543);
 }
 
-function QACoveragePage() {
+export default function  QACoveragePage() {
   const years = [2566, 2567, 2568, 2569];
   const [year, setYear] = useState<number>(2568);
 
