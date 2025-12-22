@@ -9,8 +9,13 @@ const prompt = Prompt({
   variable: "--font-prompt",
 });
 export const metadata: Metadata = {
-  title: "E-Budget",
-  description: "E-Budget App",
+  title: "E-Budget Workspace",
+  description:
+    "Enterprise workspace for project planning, budgeting, documentation, and organizational workflows.",
+  icons: {
+    icon: "/icon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -20,12 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={` ${prompt.className} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={` ${prompt.className} antialiased`}>{children}</body>
     </html>
   );
 }
-
