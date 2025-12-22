@@ -18,4 +18,3 @@ export const generateSixDigitCode = () => {
     .toString()
     .padStart(6, "0");
 };
-

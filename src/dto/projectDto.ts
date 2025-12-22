@@ -160,3 +160,17 @@ export interface ProjectInformationResponse {
     updated_at: string;
   }[];
 }
+
+export type EditFormState = {
+  id: string;
+  generalInfo: GeneralInfoParams;
+  goal: GoalParams;
+  duration: DateDurationValue;
+  strategy: StrategyParams;
+  kpi: KPIParams;
+  estimate: EstimateParams;
+  expect: ExpectParams;
+  budget: BudgetTableValue | null;
+  activities: ActivitiesRow[];
+  approve: ApproveParams;
+};
