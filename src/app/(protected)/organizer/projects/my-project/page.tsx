@@ -41,30 +41,7 @@ export default function Page() {
   }, []);
 
   return (
-    <main className="mx-auto grid lg:px-18 md:px-10 sm:px-5 px-4 py-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">
-            โปรเจ็คทั้งหมด
-          </h1>
-          <p className="text-sm text-gray-600">
-            แสดงเฉพาะโปรเจ็กต์ที่คุณเป็นเจ้าของหรือผู้รับผิดชอบ
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/organizer/projects/new"
-            className="inline-flex items-center duration-400 gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[102%] px-3.5 py-2 text-sm font-medium text-white hover:bg-black"
-          >
-            <div className="p-0.5 border-2 border-white rounded-full">
-              <Plus className="h-4 w-4 text-white " />
-            </div>
-            เพิ่มโปรเจ็คใหม่
-          </Link>
-        </div>
-      </div>
-
+    <main className="w-full grid place-items-center lg:px-18 md:px-10 sm:px-5 px-1 py-6">
       {fetchDataLoader ? (
         <LoadData />
       ) : (
@@ -72,10 +49,35 @@ export default function Page() {
           {!hasProjects ? (
             <EmptyState />
           ) : (
-            <>
+            <div className="">
+              <div className="w-full mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    โปรเจ็คทั้งหมด
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    แสดงเฉพาะโปรเจ็กต์ที่คุณเป็นเจ้าของหรือผู้รับผิดชอบ
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/organizer/projects/new"
+                    className="inline-flex items-center duration-400 gap-2
+                     rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[102%] px-3.5 py-2 
+                     text-sm font-medium text-white hover:bg-black"
+                  >
+                    <div className="p-0.5 border-2 border-white rounded-full">
+                      <Plus className="h-4 w-4 text-white " />
+                    </div>
+                    เพิ่มโปรเจ็คใหม่
+                  </Link>
+                </div>
+              </div>
+
               <section className="relative mb-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600  to-sky-200 px-6 py-2 text-white shadow-md shadow-indigo-300/30">
+                  <div className="relative w-fit lg:px-10  overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600  to-sky-200 px-6 py-2 text-white shadow-md shadow-indigo-300/30">
                     <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
                     <div className="absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-white/10 blur-3xl" />
 
@@ -110,7 +112,7 @@ export default function Page() {
                 </div>
               </section>
 
-              <section className="relative -mx-4 sm:mx-0 overflow-x-auto ">
+              <section className=" relative sm:mx-0 overflow-x-auto ">
                 <div className="w-full overflow-y-auto rounded  bg-white">
                   <table className="table-auto min-w-[1100px] text-sm">
                     <thead className="bg-blue-200  text-gray-700">
@@ -184,7 +186,7 @@ export default function Page() {
                   </table>
                 </div>
               </section>
-            </>
+            </div>
           )}
         </>
       )}
