@@ -21,11 +21,11 @@ export function ExportPDFDocument({ id }: DownloadProps) {
       onClick={() => {
         exportPDF();
       }}
-      className="flex items-center justify-center gap-4 rounded-md
+      className="flex items-center justify-center lg:gap-3 gap-1 rounded-md
   border border-gray-300 px-4 py-1 bg-slate-100 cursor-pointer text-xs text-black hover:bg-slate-200"
     >
       <Download className="w-4 h-4 text-gray-800" />
-      ดาวน์โหลดเอกสาร
+      <p className="line-clamp-1">ดาวน์โหลดเอกสาร</p>
     </button>
   );
 }

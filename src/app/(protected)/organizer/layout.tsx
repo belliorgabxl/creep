@@ -57,7 +57,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <Sidebar serverUser={serverUser} />
       </div>
 
-      <main className="pt-[var(--app-header-h)] md:pl-16 px-4 py-6">
+      <main className="pt-[var(--app-header-h)] md:pl-16 lg:px-4 py-6">
         {children}
       </main>
     </div>

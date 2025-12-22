@@ -1,18 +1,25 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Save, LogOut, Upload, PencilLine, X, KeyRound } from "lucide-react";
+import {
+  Save,
+  LogOut,
+  Upload,
+  PencilLine,
+  X,
+  KeyRound,
+  Loader2,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const USE_MOCK_API = true;
 
-
 type ProfilePayload = {
   name: string;
   email: string;
   phone: string;
-  position: string; 
+  position: string;
   avatarUrl?: string | null;
 };
 
@@ -131,7 +138,7 @@ export default function AccountSettingsPage() {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
-        position: form.position, 
+        position: form.position,
         avatarUrl,
       };
 
@@ -140,7 +147,6 @@ export default function AccountSettingsPage() {
 
       alert("อัปเดตข้อมูลสำเร็จ ✅");
       setEditing(false);
-
     } catch (err: any) {
       setError(err?.message ?? "เกิดข้อผิดพลาดระหว่างบันทึกข้อมูล");
     } finally {
@@ -156,14 +162,22 @@ export default function AccountSettingsPage() {
     setEditing(false);
   };
 
-  const handleLogout = () => {
-    document.cookie = "mock_uid=; Path=/; Max-Age=0;";
-    document.cookie = "mock_role=; Path=/; Max-Age=0;";
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    try {
+      fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      setLoading(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.log("logout api error : ", err);
+    }
   };
 
   const goChangePassword = () => {
-    router.push("/change-password");
+    router.push("/organizer/setup/change-password");
   };
 
   return (
@@ -177,7 +191,6 @@ export default function AccountSettingsPage() {
             จัดการข้อมูลส่วนตัวและการเข้าสู่ระบบของคุณ
           </p>
         </div>
-
 
         {!editing ? (
           <button
@@ -204,7 +217,6 @@ export default function AccountSettingsPage() {
         onSubmit={handleSubmit}
         className="rounded-xl border border-gray-200 bg-white p-6 shadow-xl space-y-6"
       >
-        
         <div className="flex flex-col items-center justify-center gap-3">
           <div className="relative h-24 w-24">
             <Image
@@ -335,14 +347,19 @@ export default function AccountSettingsPage() {
             <KeyRound className="h-4 w-4" />
             เปลี่ยนรหัสผ่าน
           </button>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="inline-flex items-center gap-1 rounded-md border text-white bg-red-500 px-4 py-2 text-sm font-medium  hover:bg-red-600"
-          >
-            <LogOut className="h-4 w-4" /> ออกจากระบบ
-          </button>
+          {loading ? (
+            <button className="inline-flex items-center gap-1 rounded-md border text-white bg-red-500 px-4 py-2 text-sm font-medium  hover:bg-red-600">
+              <Loader2 className="h-4 w-4 animate-spin" /> ออกจากระบบ
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1 rounded-md border text-white bg-red-500 px-4 py-2 text-sm font-medium  hover:bg-red-600"
+            >
+              <LogOut className="h-4 w-4" /> ออกจากระบบ
+            </button>
+          )}
 
           {editing && (
             <button

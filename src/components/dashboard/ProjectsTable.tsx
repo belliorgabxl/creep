@@ -74,7 +74,7 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
   const currentProjects = rows.slice(startIndex, endIndex)
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div className="rounded-lg border  border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">รายการโครงการทั้งหมด</h3>

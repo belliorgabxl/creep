@@ -226,7 +226,7 @@ export default async function Page({ params }: { params: PageParams }) {
   const mainResponsibleName =
     activities.find((a) => a.owner && a.owner.trim())?.owner ?? "";
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <main className="lg:mx-10 lg:pl-16 px-4 py-8">
       <nav className="mb-4 text-xs text-gray-500">
         <Link href="/organizer/projects/my-project" className="hover:underline">
           โปรเจ็กต์ของคุณ
@@ -256,22 +256,24 @@ export default async function Page({ params }: { params: PageParams }) {
         <div className="flex items-center gap-2">
           <Link
             href={`/organizer/projects/edit/${p.id}`}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             แก้ไข
           </Link>
           <Link
             href={`/organizer/projects/approval/${p.id}`}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             ส่งอนุมัติ
           </Link>
         </div>
       </div>
 
-      <section className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <section className="mb-8 rounded-md border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">ความคืบหน้า</span>
+          <span className="text-sm font-medium text-green-600">
+            ความคืบหน้า
+          </span>
           <span className="text-sm font-semibold text-gray-900 tabular-nums">
             {p.progress}%
           </span>
