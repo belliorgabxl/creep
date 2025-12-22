@@ -75,11 +75,11 @@ export default function Page() {
             <>
               <section className="relative mb-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600  to-sky-200 px-6 py-4 text-white shadow-md shadow-indigo-300/30">
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600  to-sky-200 px-6 py-2 text-white shadow-md shadow-indigo-300/30">
                     <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
                     <div className="absolute -left-8 bottom-0 h-36 w-36 rounded-full bg-white/10 blur-3xl" />
 
-                    <div className="relative flex items-center gap-4">
+                    <div className="relative flex items-center lg:gap-8 gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-xl shadow-inner shadow-black/10">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -97,12 +97,12 @@ export default function Page() {
                         </svg>
                       </div>
 
-                      <div className="flex flex-col">
-                        <span className="text-sm uppercase tracking-wide text-white font-medium">
-                          โปรเจ็คทั้งหมด
-                        </span>
-                        <span className="text-3xl font-extrabold tracking-tight drop-shadow">
+                      <div className="flex gap-4 items-center">
+                        <span className="text-2xl font-extrabold tracking-tight drop-shadow">
                           {projects.length}
+                        </span>
+                        <span className="text-xl uppercase tracking-wide text-white font-medium">
+                          โปรเจ็ค
                         </span>
                       </div>
                     </div>
