@@ -174,3 +174,14 @@ export type EditFormState = {
   activities: ActivitiesRow[];
   approve: ApproveParams;
 };
+
+
+export type DateError =
+  | "MISSING_START"
+  | "MISSING_END"
+  | "INVALID_START"
+  | "INVALID_END"
+  | "START_AFTER_END"
+  | "START_EQUALS_END";
+
+ export type ValidationIssue = { field: string; message: string };

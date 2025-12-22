@@ -172,10 +172,8 @@ export default function SciFiBackgroundNormal({
         /* ====== Content ====== */
         .content {
           position: relative;
-          z-index: 2;
-          padding: 10px;
-          max-width: 1200px;
-          margin: 0 auto;
+          z-index: 0;
+          margin: 0 ;
         }
 
         /* ====== Responsive ====== */

@@ -118,9 +118,7 @@ export default function Page() {
                         <Th className="w-15 text-center">No.</Th>
                         <Th className="w-100">ชื่อโครงการ</Th>
                         <Th className="w-50 whitespace-nowrap">รหัสโครงการ</Th>
-                        <Th className="w-20 whitespace-nowrap">
-                          หน่วยงาน
-                        </Th>
+                        <Th className="w-20 whitespace-nowrap">หน่วยงาน</Th>
                         <Th className="w-50 whitespace-nowrap">ระยะเวลา</Th>
                         <Th className="w-45 whitespace-nowrap">สถานที่</Th>
                         <Th className="w-50">ไฟล์</Th>
@@ -130,7 +128,10 @@ export default function Page() {
 
                     <tbody className="divide-y divide-gray-100">
                       {projects.map((p, idx) => (
-                        <tr key={p.id} className={`${idx%2 != 0 ? 'bg-slate-100':''}`}>
+                        <tr
+                          key={p.id}
+                          className={`${idx % 2 != 0 ? "bg-slate-100" : ""}`}
+                        >
                           <Td className="text-center">{idx + 1}</Td>
                           <Td>
                             <div className="flex flex-col py-1.5">
@@ -145,7 +146,9 @@ export default function Page() {
                             </div>
                           </Td>
 
-                          <Td className="text-gray-700 text-center py-1.5">{p.code || "—"}</Td>
+                          <Td className="text-gray-700 text-start pl-3 py-1.5">
+                            {p.code || "—"}
+                          </Td>
 
                           <Td className="text-gray-700 text-xs py-1.5">
                             {p.department_id
@@ -158,7 +161,7 @@ export default function Page() {
                           </Td>
 
                           <Td className="text-green-700 text-center py-1.5">
-                            {p.location || "—"}
+                            {p.location ? p.location.slice(0, 30) : "—"}
                           </Td>
 
                           <Td className="text-gray-700 py-3 flex justify-center items-center">
