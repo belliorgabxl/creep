@@ -164,18 +164,17 @@ export default function AccountSettingsPage() {
 
   const handleLogout = async () => {
     try {
-      fetch("/api/auth/logout", {
-        method: "POST",
-      });
       setLoading(true);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (!res.ok) throw new Error(`Logout failed: HTTP ${res.status}`);
+
+      window.location.href = "/login";
     } catch (err) {
-      console.log("logout api error : ", err);
+      console.log("logout api error:", err);
+      setLoading(false);
     }
   };
-
   const goChangePassword = () => {
     router.push("/organizer/setup/change-password");
   };
@@ -347,20 +346,19 @@ export default function AccountSettingsPage() {
             <KeyRound className="h-4 w-4" />
             เปลี่ยนรหัสผ่าน
           </button>
-          {loading ? (
-            <button className="inline-flex items-center gap-1 rounded-md border text-white bg-red-500 px-4 py-2 text-sm font-medium  hover:bg-red-600">
-              <Loader2 className="h-4 w-4 animate-spin" /> ออกจากระบบ
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1 rounded-md border text-white bg-red-500 px-4 py-2 text-sm font-medium  hover:bg-red-600"
-            >
-              <LogOut className="h-4 w-4" /> ออกจากระบบ
-            </button>
-          )}
-
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loading}
+            className="inline-flex items-center gap-1 rounded-md border text-white bg-red-500 px-4 py-2 text-sm font-medium hover:bg-red-600 disabled:opacity-60"
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
+            ออกจากระบบ
+          </button>
           {editing && (
             <button
               type="submit"

@@ -1,12 +1,10 @@
-// src/app/api/auth/logout/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  const redirectUrl = new URL("/login", req.url);
-  const res = NextResponse.redirect(redirectUrl, 303);
+export async function POST() {
+  const res = NextResponse.json({ success: true }, { status: 200 });
 
-  res.cookies.set("auth_token", "", { maxAge: 0, path: "/" });
-  res.cookies.set("api_token", "", { maxAge: 0, path: "/" });
+  res.cookies.set("auth_token", "", { httpOnly: true, maxAge: 0, path: "/" });
+  res.cookies.set("api_token", "", { httpOnly: false, maxAge: 0, path: "/" });
 
   return res;
 }

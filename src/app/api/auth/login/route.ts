@@ -9,8 +9,8 @@ function pickSafeMessage(data: any) {
 }
 
 async function loginExternal(username: string, password: string) {
-  const baseURL = process.env.NEST_API_URL || process.env.API_BASE_URL || "";
-  if (!baseURL) throw new Error("Missing NEST_API_URL (or API_BASE_URL)");
+  const baseURL = process.env.API_BASE_URL;
+  if (!baseURL) throw new Error("Missing API_BASE_URL");
 
   let res: Response;
   try {
