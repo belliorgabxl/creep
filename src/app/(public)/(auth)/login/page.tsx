@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { pickHomeByRole } from "@/lib/rbac";
+import Image from "next/image";
 
 type Me = {
   id: string;
@@ -19,7 +20,6 @@ type Me = {
 function safeInternalRedirect(path?: string | null): string | null {
   if (!path) return null;
   try {
-
     if (!path.startsWith("/")) return null;
 
     if (path.startsWith("//")) return null;
@@ -33,7 +33,10 @@ function safeInternalRedirect(path?: string | null): string | null {
 
 async function fetchMe(): Promise<Me | null> {
   try {
-    const r = await fetch("/api/auth/me", { method: "GET", credentials: "include" });
+    const r = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+    });
     if (!r.ok) return null;
     const data = await r.json();
     const me = (data?.data ?? data) as Me | undefined;
@@ -69,23 +72,22 @@ function LoginInner() {
           setUsername(p.username);
           setRemember(true);
         }
-      } catch { }
+      } catch {}
     }
   }, []);
 
-useEffect(() => {
-  (async () => {
-    const me = await fetchMe();
-    if (me?.role) {
-      router.replace(pickHomeByRole(me.role));
-    }
-  })();
-}, [router]);
+  useEffect(() => {
+    (async () => {
+      const me = await fetchMe();
+      if (me?.role) {
+        router.replace(pickHomeByRole(me.role));
+      }
+    })();
+  }, [router]);
 
   function onKeyEvent(e: React.KeyboardEvent<HTMLInputElement>) {
     if ("getModifierState" in e) setCapsOn(e.getModifierState("CapsLock"));
   }
-
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -119,7 +121,6 @@ useEffect(() => {
     }
   }
 
-
   const canSubmit = useMemo(
     () => !!username.trim() && !!password.trim() && !isLoading,
     [username, password, isLoading]
@@ -128,25 +129,44 @@ useEffect(() => {
   return (
     <div className="min-h-[100dvh] w-full">
       <SciFiBackgroundNormal>
-        <div className="min-h-[100dvh] grid place-items-center px-4">
+        <div className="min-h-[100dvh] z-10 grid place-items-center px-4">
           <div className="w-full max-w-md">
-            <div className="relative rounded-3xl border border-white/20 bg-white/70 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+            <div className="relative rounded-3xl bg-white backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
               <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-slate-900/5"></div>
 
               <div className="p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 rounded-full flex items-center justify-center border-2 border-indigo-600">
+                <div className="flex justify-center items-center gap-3 mb-6">
+                  {/* <div className="p-2 rounded-full flex items-center justify-center border-2 border-indigo-600">
                     <HandCoins className="text-indigo-600 w-6 h-6 " />
-                  </div>
+                  </div> */}
+                  <Image
+                    className="h-20 w-20"
+                    src="/ebudget-icon.png"
+                    width={200}
+                    height={200}
+                    alt="ebudget-icon"
+                  />
                   <div>
-                    <h1 className="text-xl font-semibold tracking-tight text-slate-900">E-Budget</h1>
-                    <p className="text-sm text-slate-600">ลงชื่อเข้าใช้ด้วยบัญชีของคุณ</p>
+                    <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+                      E-Budget
+                    </h1>
+                    <p className="text-sm text-slate-600">
+                      ลงชื่อเข้าใช้ด้วยบัญชีของคุณ
+                    </p>
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="grid gap-4" noValidate autoComplete="off">
+                <form
+                  onSubmit={handleSubmit}
+                  className="grid gap-4"
+                  noValidate
+                  autoComplete="off"
+                >
                   <div>
-                    <label htmlFor="username" className="block text-sm font-medium text-slate-700">
+                    <label
+                      htmlFor="username"
+                      className="block text-sm font-medium text-slate-700"
+                    >
                       ชื่อผู้ใช้
                     </label>
                     <input
@@ -154,7 +174,8 @@ useEffect(() => {
                       name="username"
                       type="text"
                       inputMode="text"
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-900  outline-none transition
+                       focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
                       placeholder="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -166,7 +187,10 @@ useEffect(() => {
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-slate-700"
+                    >
                       รหัสผ่าน
                     </label>
                     <div className="mt-2 relative">
@@ -174,7 +198,9 @@ useEffect(() => {
                         id="password"
                         name="password"
                         type={showPassword ? "text" : "password"}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-20 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
+                        className="w-full rounded-xl border border-slate-200
+                         bg-slate-50  px-4 py-2.5 pr-20 text-slate-900  outline-none transition
+                          focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
                         placeholder="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -194,7 +220,9 @@ useEffect(() => {
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
                           className="rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 focus:outline-none"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
                           disabled={isLoading}
                         >
                           {showPassword ? "ซ่อน" : "แสดง"}
@@ -202,8 +230,11 @@ useEffect(() => {
                       </div>
                     </div>
 
-                    <div className="mt-2">
-                      <Link href="/forgot-password" className="text-xs text-slate-600 hover:text-slate-800">
+                    <div className="mt-4 w-full flex justify-end">
+                      <Link
+                        href="/forgot-password"
+                        className="text-xs text-slate-600 hover:text-red-600"
+                      >
                         ลืมรหัสผ่าน?
                       </Link>
                     </div>
@@ -231,9 +262,10 @@ useEffect(() => {
                   <button
                     type="submit"
                     disabled={!canSubmit}
-                    className="group relative inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-900 to-indigo-800 px-4 text-sm font-medium text-white shadow transition active:scale-[0.99] disabled:opacity-80 disabled:cursor-not-allowed"
+                    className="group relative inline-flex h-11 items-center justify-center rounded-xl bg-indigo-700
+                     px-4 text-sm font-medium enabled:hover:bg-indigo-900
+                     text-white shadow transition active:scale-[0.99] disabled:opacity-80 "
                   >
-                    <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 opacity-0 transition group-hover:opacity-100" />
                     <span className="relative">
                       {isLoading ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
                     </span>
@@ -242,7 +274,8 @@ useEffect(() => {
 
                 <div className="mt-6 border-t border-slate-200 pt-4">
                   <p className="text-xs leading-relaxed text-slate-500">
-                    การเข้าถึงระบบนี้สงวนไว้สำหรับพนักงานที่ได้รับอนุญาตเท่านั้น การใช้งานทั้งหมดอาจถูกตรวจสอบและบันทึกตามนโยบายความปลอดภัยขององค์กร
+                    การเข้าถึงระบบนี้สงวนไว้สำหรับพนักงานที่ได้รับอนุญาตเท่านั้น
+                    การใช้งานทั้งหมดอาจถูกตรวจสอบและบันทึกตามนโยบายความปลอดภัยขององค์กร
                   </p>
                 </div>
               </div>
