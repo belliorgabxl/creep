@@ -178,7 +178,8 @@ export default function Page() {
                               <div className="flex  flex-col items-center gap-1">
                                 <Link
                                   href={`/organizer/projects/details/${p.id}`}
-                                  className="inline-flex items-center rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-800 hover:bg-gray-50"
+                                  className="inline-flex items-center rounded-md border text-white
+                                   bg-slate-400 border-gray-300 px-2 py-1 text-xs  hover:bg-gray-600"
                                 >
                                   ดูรายละเอียด
                                 </Link>
