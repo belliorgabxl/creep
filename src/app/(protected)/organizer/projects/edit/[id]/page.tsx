@@ -1,5 +1,5 @@
+import { fetchProjectInformationServer } from "@/api/project.server";
 import EditProjectClient from "@/components/project/EditProjectClient";
-
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -7,5 +7,6 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  return <EditProjectClient id={id} />;
+  const project = await fetchProjectInformationServer(id);
+  return <EditProjectClient id={id} initialData={project} />;
 }

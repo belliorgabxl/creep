@@ -30,9 +30,9 @@ import { CreateProjectPayload } from "@/dto/createProjectDto";
 import { AuthUser } from "@/dto/userDto";
 import { generateSixDigitCode } from "@/lib/util";
 import ObjectiveForm from "@/components/project/new/ObjectiveForm";
-import { createProject } from "@/api/projects";
 import { toast } from "react-toastify";
 import { validateStep } from "@/lib/helper";
+import { createProject } from "@/api/project.client";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
@@ -336,13 +336,11 @@ export default function CreateProjectPage() {
       toast.success("สร้างโปรเจ็คสำเร็จ");
       setTimeout(() => {
         router.push("/success-screen");
-      }, 1000);
+      }, 500);
     } catch (err: any) {
       console.error("createProject error:", err);
       setError(err?.message ?? "สร้างโครงการไม่สำเร็จ");
-      setTimeout(() => {
-        router.push("/failed-screen");
-      }, 1000);
+      router.push("/failed-screen");
     } finally {
       setIsLoading(false);
     }

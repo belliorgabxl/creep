@@ -22,8 +22,8 @@ import type {
   ProjectInformationResponse,
   StrategyParams,
 } from "@/dto/projectDto";
-import { fetchProjectInformation } from "@/api/projects";
 import { cookies } from "next/headers";
+import { fetchProjectInformationServer } from "@/api/project.server";
 
 type Project = {
   id: string;
@@ -54,7 +54,7 @@ async function getProject(id: string): Promise<Project | null> {
       return null;
     }
 
-    const apiData: ProjectInformationResponse = await fetchProjectInformation(
+    const apiData: ProjectInformationResponse = await fetchProjectInformationServer(
       id
     );
 

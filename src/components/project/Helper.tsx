@@ -185,7 +185,7 @@ export function SectionCard({
 }) {
   return (
     <section className="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold text-gray-800">{title}</h2>
+      <h2 className="mb-4 text-sm font-semibold text-blue-700">{title}</h2>
       {children}
     </section>
   );
@@ -200,8 +200,9 @@ export function FieldBlock({
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-gray-700">{label}</label>
+      <label className="text-sm font-medium text-gray-700">{label}</label>
       {children}
     </div>
   );
 }
+

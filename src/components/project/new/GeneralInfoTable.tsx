@@ -98,7 +98,7 @@ export default function GeneralInfoTable({ value, onChange }: Props) {
             className="px-4 py-1 border rounded-lg border-gray-300 w-full"
           >
             <option value="">เลือกหน่วยงาน / แผนก</option>
-            {departments.map((d) => (
+            {departments?.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
               </option>

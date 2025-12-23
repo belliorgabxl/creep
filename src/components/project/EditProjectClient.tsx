@@ -5,109 +5,25 @@ import type {
   ActivitiesRow,
   BudgetTableValue,
   EditFormState,
+  ProjectInformationResponse,
 } from "@/dto/projectDto";
 import { FieldBlock, SectionCard } from "./Helper";
-import { mapFormToPayload } from "@/lib/helper";
+import { mapApiToForm, mapFormToPayload } from "@/lib/helper";
 
-export default function EditProjectClient({ id }: { id: string }) {
+export default function EditProjectClient({
+  id,
+  initialData,
+}: {
+  id: string;
+  initialData: ProjectInformationResponse;
+}) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [form, setForm] = useState<EditFormState | null>({
-    id: "",
-
-    generalInfo: {
-      name: "",
-      type: "",
-      department_id: "",
-      owner_user_id: "",
-    },
-
-    goal: {
-      quantityGoal: "",
-      qualityGoal: "",
-    },
-
-    duration: {
-      startDate: "",
-      endDate: "",
-      durationMonths: 0,
-    },
-
-    strategy: {
-      schoolPlan: "",
-      ovEcPolicy: "",
-      qaIndicator: "",
-    },
-
-    kpi: {
-      output: "",
-      outcome: "",
-    },
-
-    estimate: {
-      estimateType: "",
-      evaluator: "",
-      startDate: "",
-      endDate: "",
-    },
-
-    expect: {
-      results: [],
-    },
-
-    budget: {
-      rows: [],
-      total: 0,
-      sources: {
-        source: "",
-        externalAgency: "",
-      },
-    },
-
-    activities: [],
-
-    approve: {
-      proposerName: "",
-      proposerPosition: "",
-      proposeDate: "",
-      deptComment: "",
-      directorComment: "",
-    },
-  });
-
-  // useEffect(() => {
-  //   const load = async () => {
-  //     try {
-  //       setLoading(true);
-  //       setError(null);
-
-  //       const res = await fetch(`/api/project/${id}`, {
-  //         method: "GET",
-  //         credentials: "include",
-  //       });
-
-  //       if (!res.ok) {
-  //         throw new Error("ไม่สามารถโหลดข้อมูลโครงการได้");
-  //       }
-
-  //       const apiData: ProjectInformationResponse = await res.json();
-
-  //       const formState = mapApiToForm(apiData);
-  //       setForm(formState);
-  //     } catch (err: any) {
-  //       console.error("load project error:", err);
-  //       setError(
-  //         err?.message || "ไม่สามารถโหลดข้อมูลโครงการได้ กรุณาลองใหม่อีกครั้ง"
-  //       );
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   load();
-  // }, [id]);
+  const [form, setForm] = useState<EditFormState>(() =>
+    mapApiToForm(initialData)
+  );
 
   const updateSectionField = <
     K extends keyof EditFormState,
@@ -344,7 +260,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             <FieldBlock label="ชื่อโครงการ">
               <input
                 type="text"
-                className="form-input"
+                className="w-full border border-gray-300 py-1 px-4 rounded-md"
                 value={form.generalInfo.name || ""}
                 onChange={(e) =>
                   updateSectionField("generalInfo", "name", e.target.value)
@@ -354,7 +270,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             <FieldBlock label="ประเภทโครงการ">
               <input
                 type="text"
-                className="form-input"
+                className="w-full border border-gray-300 py-1 px-4 rounded-md"
                 value={form.generalInfo.type || ""}
                 onChange={(e) =>
                   updateSectionField("generalInfo", "type", e.target.value)
@@ -366,13 +282,13 @@ export default function EditProjectClient({ id }: { id: string }) {
                 type="text"
                 className="form-input"
                 value={form.generalInfo.department_id || ""}
-                // onChange={(e) =>
-                //   updateSectionField(
-                //     "generalInfo",
-                //     "department",
-                //     e.target.value
-                //   )
-                // }
+                onChange={(e) =>
+                  updateSectionField(
+                    "generalInfo",
+                    "department_id",
+                    e.target.value
+                  )
+                }
               />
             </FieldBlock>
           </div>
@@ -381,9 +297,8 @@ export default function EditProjectClient({ id }: { id: string }) {
         <SectionCard title="เป้าหมายของโครงการ">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FieldBlock label="เชิงปริมาณ">
-              <textarea
-                className="form-textarea"
-                rows={3}
+              <input
+                className="w-full border border-gray-300 py-1 px-4 rounded-md"
                 value={form.goal.quantityGoal || ""}
                 onChange={(e) =>
                   updateSectionField("goal", "quantityGoal", e.target.value)
@@ -391,9 +306,8 @@ export default function EditProjectClient({ id }: { id: string }) {
               />
             </FieldBlock>
             <FieldBlock label="เชิงคุณภาพ">
-              <textarea
-                className="form-textarea"
-                rows={3}
+              <input
+                className="w-full border border-gray-300 py-1 px-4 rounded-md"
                 value={form.goal.qualityGoal || ""}
                 onChange={(e) =>
                   updateSectionField("goal", "qualityGoal", e.target.value)
@@ -441,6 +355,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             </FieldBlock>
           </div>
         </SectionCard>
+
         <SectionCard title="ความสอดคล้องเชิงยุทธศาสตร์">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FieldBlock label="แผนยุทธศาสตร์ของสถานศึกษา">
@@ -475,6 +390,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             </FieldBlock>
           </div>
         </SectionCard>
+
         <SectionCard title="ตัวชี้วัดความสำเร็จ (KPIs)">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FieldBlock label="ผลผลิต (Output)">
@@ -570,6 +486,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             />
           </FieldBlock>
         </SectionCard>
+
         <SectionCard title="งบประมาณ">
           {form.budget ? (
             <div className="space-y-4">
@@ -738,6 +655,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             </p>
           )}
         </SectionCard>
+
         <SectionCard title="ขั้นตอนการดำเนินงานกิจกรรม">
           <div className="overflow-x-auto rounded border border-gray-200">
             <table className="min-w-full text-sm">
@@ -830,6 +748,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             </table>
           </div>
         </SectionCard>
+
         <SectionCard title="การอนุมัติและลงนาม">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FieldBlock label="ผู้เสนอ">
