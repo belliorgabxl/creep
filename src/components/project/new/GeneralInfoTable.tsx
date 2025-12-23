@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { BadgeCreateFormProject } from "../Helper";
 import { Department, GeneralInfoParams } from "@/dto/projectDto";
-import { fetchDepartments } from "@/api/department/route";
+import { fetchDepartments } from "@/api/department";
 import { User } from "@/dto/userDto";
-import { GetAllUsers } from "@/api/users/route";
+import { GetAllUsers } from "@/api/users";
 
 type Props = {
   value?: GeneralInfoParams;

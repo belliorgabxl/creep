@@ -8,10 +8,10 @@ import { ApprovalQueue } from "@/components/dashboard/ApprovalQueue"
 import {
     MOCK_APPROVALS,
 } from "@/app/mock"
-import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetApprovalItemsFromApi,GetCalendarEventsFromApi } from "@/api/dashboard/route"
+import { GetQaIndicatorsFromApi,GetStrategicPlansFromApi,GetCalendarEventsFromApi } from "@/api/dashboard"
 import { GetApprovalItems,GetProjectsByOrgRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
 import { GetStrategicPlanRespond,GetQaIndicatorsRespond } from "@/dto/qaDto"
-import { GetProjectsByOrgFromApi } from "@/api/dashboard/route"
+import { GetProjectsByOrgFromApi } from "@/api/dashboard"
 
 export default function UserDashboardPage() {
     const [filters, setFilters] = useState({

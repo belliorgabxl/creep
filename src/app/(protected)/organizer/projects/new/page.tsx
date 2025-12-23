@@ -30,7 +30,7 @@ import { CreateProjectPayload } from "@/dto/createProjectDto";
 import { AuthUser } from "@/dto/userDto";
 import { generateSixDigitCode } from "@/lib/util";
 import ObjectiveForm from "@/components/project/new/ObjectiveForm";
-import { createProject } from "@/api/project/route";
+import { createProject } from "@/api/projects";
 import { toast } from "react-toastify";
 import { validateStep } from "@/lib/helper";
 
@@ -85,9 +85,7 @@ export default function CreateProjectPage() {
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
 
   const showValidationToast = (issues: ValidationIssue[]) => {
-
     issues.forEach((i) => toast.error(i.message));
-
   };
   const handleNext = () => {
     const issues = validateStep(step, {

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
 import { pickHomeByRole, roleIdToKey } from "@/lib/rbac";
-import ApiClient from "@/lib/api-clients";
 
 type LoginBody = { username: string; password: string; remember?: boolean };
 
@@ -10,46 +9,55 @@ function pickSafeMessage(data: any) {
 }
 
 async function loginExternal(username: string, password: string) {
-  const baseURL = process.env.API_BASE_URL || "";
-  if (!baseURL) {
-    throw new Error("Missing API_BASE_URL");
+  const baseURL = process.env.NEST_API_URL || process.env.API_BASE_URL || "";
+  if (!baseURL) throw new Error("Missing NEST_API_URL (or API_BASE_URL)");
+
+  let res: Response;
+  try {
+    res = await fetch(`${baseURL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+      cache: "no-store",
+    });
+  } catch (err: any) {
+    const e = new Error("External login failed");
+    (e as any).status = 502;
+    throw e;
   }
 
-  try {
-    const res = await ApiClient.post(
-      "/auth/login",
-      { username, password },
-      {
-        baseURL,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        timeout: 10_000,
-        withCredentials: false,
-      }
-    );
-    const data: any = res?.data ?? {};
+  if (!res.ok) {
+    let payload: any = null;
+    try {
+      payload = await res.json();
+    } catch {
+      payload = { message: await res.text().catch(() => "") };
+    }
 
-    const token: string | undefined =
-      data?.token || data?.access_token || data?.jwt || data?.data?.token;
-    if (!token) throw new Error("No token returned from external API");
+    const safe = pickSafeMessage(payload) || "External login failed";
 
-    return { token, raw: data };
-  } catch (err: any) {
-
-    const safe = pickSafeMessage(err?.response?.data) || "External login failed";
-    
-    const status = err?.response?.status;
-    if (status === 401 || status === 403) {
+    if (res.status === 401 || res.status === 403) {
       const e = new Error("Invalid username or password");
       (e as any).status = 401;
       throw e;
     }
+
     const e = new Error(safe);
-    (e as any).status = status || 502;
+    (e as any).status = res.status || 502;
     throw e;
   }
+
+  const data: any = await res.json().catch(() => ({}));
+
+  const token: string | undefined =
+    data?.token || data?.access_token || data?.jwt || data?.data?.token;
+
+  if (!token) throw new Error("No token returned from external API");
+
+  return { token, raw: data };
 }
 
 export async function POST(req: Request) {
@@ -100,12 +108,8 @@ export async function POST(req: Request) {
       department_id: claims.department_id || claims.dept_id || undefined,
     };
 
-    const seconds = (n: number) => n;
-    const minutes = (n: number) => n * 60;
     const hours = (n: number) => n * 3600;
-    const days = (n: number) => n * 86400;
-
-    const expiretoken = remember ? hours(1) : hours(1);
+    const expiretoken = remember ? hours(24 * 7) : hours(1);
 
     const ourJwt = await signUserToken(userForOurJwt, expiretoken);
 
@@ -126,7 +130,7 @@ export async function POST(req: Request) {
     });
 
     res.cookies.set("api_token", externalToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",

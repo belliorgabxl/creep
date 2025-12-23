@@ -9,7 +9,7 @@ import QAIndicatorsTable from "@/components/qa-coverage/QAIndicatorsTable";
 import {
   GetQaIndicatorsByYearFromApi,
   GetQaIndicatorsCountsByYearFromApi
-} from "@/api/qa/route";
+} from "@/api/qa";
 import type {
   GetQaIndicatorsByYearRespond,
   GetQaIndicatorsCountsByYear,

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { X, Edit2, Save } from "lucide-react";
-import { GetQaIndicatorsDetailByIdApi } from "@/api/qa/route";
+import { GetQaIndicatorsDetailByIdApi } from "@/api/qa";
 import type { GetQaIndicatorsRespond } from "@/dto/qaDto";
 
 type QADetailModalProps = {

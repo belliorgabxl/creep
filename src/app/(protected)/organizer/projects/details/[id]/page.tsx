@@ -22,7 +22,7 @@ import type {
   ProjectInformationResponse,
   StrategyParams,
 } from "@/dto/projectDto";
-import { fetchProjectInformation } from "@/api/project/route";
+import { fetchProjectInformation } from "@/api/projects";
 import { cookies } from "next/headers";
 
 type Project = {
@@ -55,10 +55,8 @@ async function getProject(id: string): Promise<Project | null> {
     }
 
     const apiData: ProjectInformationResponse = await fetchProjectInformation(
-      id,
-      accessToken
+      id
     );
-    console.log(apiData);
 
     const generalInfo: GeneralInfoParams = {
       name: apiData.project_name,
@@ -188,8 +186,6 @@ type PageParams = Promise<{ id: string }>;
 
 export default async function Page({ params }: { params: PageParams }) {
   const { id } = await params;
-  console.log("details page id:", id);
-
   const p = await getProject(id);
 
   if (!p) {

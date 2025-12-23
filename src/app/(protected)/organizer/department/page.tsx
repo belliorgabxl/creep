@@ -1,26 +1,21 @@
-
 import { DepartmentTable } from "@/components/department/DepartmentTable";
 import { Department } from "@/dto/projectDto";
 import { mockDepartments } from "@/resource/mock-data";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { clientFetch } from "@/lib/client-api";
 
-async function getDepartments(): Promise<Department[]> {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/departments`,
-      {
-        cache: "no-store",
-        headers: { accept: "application/json" },
-      }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = (await res.json()) as { data?: Department[] } | Department[];
-    const list = Array.isArray(data) ? data : data.data ?? [];
-    return list.length ? list : mockDepartments;
-  } catch {
+ async function getDepartments(): Promise<Department[]> {
+  const r = await clientFetch<Department[]>("/api/departments", {
+    cache: "no-store",
+  });
+
+  if (!r.success) {
+    console.error("getDepartments error:", r.message);
     return mockDepartments;
   }
+
+  return r.data?.length ? r.data : mockDepartments;
 }
 
 export default async function DepartmentPage() {
@@ -43,7 +38,7 @@ export default async function DepartmentPage() {
            font-medium text-white hover:from-blue-700 hover:to-blue-700"
         >
           <div className="border border-white rounded-full  p-1">
-            <Plus className="text-white h-4 w-4"/>
+            <Plus className="text-white h-4 w-4" />
           </div>
           สร้างหน่วยงาน
         </Link>

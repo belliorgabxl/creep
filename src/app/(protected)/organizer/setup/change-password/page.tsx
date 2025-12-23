@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChangePassword } from "@/api/users/route";
+import { ChangePassword } from "@/api/users";
 
 type FormState = {
   currentPassword: string;

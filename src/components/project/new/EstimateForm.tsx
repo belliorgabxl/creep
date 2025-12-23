@@ -3,7 +3,7 @@
 import * as React from "react";
 import { BadgeCreateFormProject } from "../Helper";
 import { EstimateParams } from "@/dto/projectDto";
-import { GetAllUsers } from "@/api/users/route";
+import { GetAllUsers } from "@/api/users";
 import { User } from "@/dto/userDto";
 
 type Props = {
