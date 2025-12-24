@@ -1,14 +1,12 @@
-"use client"
-import { useState  , useEffect } from 'react'
-import React from 'react'
+import { fetchProjectInformationServer } from "@/api/project.server";
+import EditProjectClient from "@/components/project/EditProjectClient";
 
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
-export default function page() {
-  useEffect(()=>{
-    console.log("edit project page")
-  },[])
-
-  return (
-    <div>page</div>
-  )
+export default async function Page({ params }: PageProps) {
+  const { id } = await params;
+  const project = await fetchProjectInformationServer(id);
+  return <EditProjectClient id={id} initialData={project} />;
 }

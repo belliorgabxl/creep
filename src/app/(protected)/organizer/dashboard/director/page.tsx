@@ -8,15 +8,21 @@ import { ApprovalQueue } from "@/components/dashboard/ApprovalQueue"
 import {
     MOCK_APPROVALS,
 } from "@/app/mock"
-// <-- เปลี่ยน import: ใช้ GetQaIndicatorsByYearFromApi
-import {
-  GetStrategicPlansFromApi,
-  GetCalendarEventsFromApi,
-  GetProjectsByOrgFromApi,
-} from "@/api/dashboard/route"
+// // <-- เปลี่ยน import: ใช้ GetQaIndicatorsByYearFromApi
+// import {
+//   GetStrategicPlansFromApi,
+//   GetCalendarEventsFromApi,
+//   GetProjectsByOrgFromApi,
+// } from "@/api/dashboard/route"
+// import { GetApprovalItems,GetProjectsByOrgRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
+// import { GetStrategicPlanRespond,GetQaIndicatorsRespond, GetQaIndicatorsByYearAllRespond } from "@/dto/qaDto"
+// import { GetQaIndicatorsByYearAllFromApi, GetQaIndicatorsByYearFromApi } from "@/api/qa/route"
+
+
+import { GetStrategicPlansFromApi,GetCalendarEventsFromApi, GetProjectsByOrgFromApi } from "@/api/dashboard"
 import { GetApprovalItems,GetProjectsByOrgRespond,GetCalenderEventRespond } from "@/dto/dashboardDto"
-import { GetStrategicPlanRespond,GetQaIndicatorsRespond, GetQaIndicatorsByYearAllRespond } from "@/dto/qaDto"
-import { GetQaIndicatorsByYearAllFromApi, GetQaIndicatorsByYearFromApi } from "@/api/qa/route"
+import { GetStrategicPlanRespond,GetQaIndicatorsRespond,GetQaIndicatorsByYearAllRespond } from "@/dto/qaDto"
+import { GetQaIndicatorsByYearAllFromApi } from "@/api/qa/route"
 
 export default function UserDashboardPage() {
     // คำนวณปีปัจจุบัน (ค.ศ.) และปีพ.ศ. ที่จะแสดง
@@ -117,9 +123,9 @@ export default function UserDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen text-gray-900">
-            <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-                <div className="container mx-auto px-4">
+        <div className="min-h-screen w-full  text-gray-900">
+            <div className="sticky w-full px-0 mx-0 top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+                <div className=" lg:mx-10 mx-0 px-1 lg:px-4">
                     <div className="flex h-14 items-center justify-between">
                         <h1 className="text-lg font-semibold tracking-tight">Dashboard (director)</h1>
                         <div className="text-xs text-gray-500">
@@ -127,7 +133,7 @@ export default function UserDashboardPage() {
                         </div>
                     </div>
                 </div>
-                <main className="container mx-auto space-y-6 px-4 py-6">
+                <main className=" lg:mx-10 w-full  space-y-6 px-0 lg:px-4 py-6">
                     <ProjectsTable filters={filters} projects={projects_data} />
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <div className="lg:col-span-2">

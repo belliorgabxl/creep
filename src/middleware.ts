@@ -1,15 +1,17 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 import { pickHomeByRole } from "@/lib/rbac";
 
-const PUBLIC_PREFIXES = ["/", "/login", "/forgot-password"];
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const PUBLIC_EXACT = new Set(["/", "/login", "/forgot-password", "/403"]);
+const PUBLIC_PREFIXES: string[] = [];
+
+const secret = process.env.JWT_SECRET;
+if (!secret) throw new Error("Missing JWT_SECRET");
+const JWT_SECRET = new TextEncoder().encode(secret);
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
+  if (PUBLIC_EXACT.has(pathname)) return true;
+  return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p + "/"));
 }
 
 function pathStarts(pathname: string, base: string) {
@@ -21,13 +23,15 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth_token")?.value ?? null;
 
   if (isPublicPath(pathname)) {
-    if (token) {
+    if (pathname !== "/403" && token) {
       try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
-        const homeUrl = new URL(pickHomeByRole(payload.role as string), request.url);
-        return NextResponse.redirect(homeUrl);
-      } catch {
-      }
+        const role = typeof payload.role === "string" ? payload.role : "";
+        if (role) {
+          const homeUrl = new URL(pickHomeByRole(role), request.url);
+          return NextResponse.redirect(homeUrl);
+        }
+      } catch {}
     }
     return NextResponse.next();
   }
@@ -65,17 +69,30 @@ export async function middleware(request: NextRequest) {
       return res;
     }
   }
-  const role = (payload.role as string) || "department_user";
+
+  const role = payload.role;
+  if (!role) {
+    const res = NextResponse.redirect(new URL("/login", request.url));
+    res.cookies.delete("auth_token");
+    res.cookies.delete("api_token");
+    return res;
+  }
 
   const forbid = () => NextResponse.redirect(new URL("/403", request.url));
 
-  if (pathStarts(pathname, "/organizer/dashboard/user") && role !== "department_user") {
+  if (
+    pathStarts(pathname, "/organizer/dashboard/user") &&
+    role !== "department_user"
+  ) {
     return forbid();
   }
   if (pathStarts(pathname, "/organizer/dashboard/hr") && role !== "hr") {
     return forbid();
   }
-  if (pathStarts(pathname, "/organizer/dashboard/director") && role !== "director") {
+  if (
+    pathStarts(pathname, "/organizer/dashboard/director") &&
+    role !== "director"
+  ) {
     return forbid();
   }
 
@@ -107,6 +124,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)|api/auth).*)",
+    "/((?!_next|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)|api).*)",
   ],
 };

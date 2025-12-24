@@ -1,4 +1,4 @@
-import { Project, TdProps } from "@/dto/projectDto";
+import {  Project, TdProps } from "@/dto/projectDto";
 
 export function Section({
   title,
@@ -8,9 +8,9 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mb-8 rounded-xl border border-gray-200 bg-white shadow-sm">
+    <section className="mb-4 rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="border-b border-gray-100 px-4 py-3">
-        <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-base font-semibold text-blue-700">{title}</h2>
       </div>
       <div className="px-4 py-5">{children}</div>
     </section>
@@ -175,3 +175,34 @@ export function Stat({ title, value }: { title: string; value: number }) {
     </div>
   );
 }
+
+export function SectionCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 className="mb-4 text-sm font-semibold text-blue-700">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+export function FieldBlock({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-medium text-gray-700">{label}</label>
+      {children}
+    </div>
+  );
+}
+

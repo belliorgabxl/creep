@@ -81,7 +81,7 @@ export default function SciFiBackgroundNormal({
           );
           clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
           filter: blur(0.5px);
-          z-index: 1;
+          z-index: 0;
         }
 
         .triA {
@@ -172,10 +172,8 @@ export default function SciFiBackgroundNormal({
         /* ====== Content ====== */
         .content {
           position: relative;
-          z-index: 2;
-          padding: 10px;
-          max-width: 1200px;
-          margin: 0 auto;
+          z-index: 0;
+          margin: 0 ;
         }
 
         /* ====== Responsive ====== */

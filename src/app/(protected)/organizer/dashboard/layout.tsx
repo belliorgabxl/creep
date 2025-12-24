@@ -20,7 +20,7 @@ export default function UserSectionLayout({ children }: { children: React.ReactN
           "px-4 py-6",                    
         ].join(" ")}
       >
-        <div className="mx-auto w-full max-w-screen-xl">
+        <div className="mx-auto w-full ">
           {children}
         </div>
       </main>

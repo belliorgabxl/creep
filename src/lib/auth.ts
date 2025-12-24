@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 export interface UserPayload {
   sub: string;
   username: string;
-  role?: string;      
+  role?: string;
   role_id?: number;
   name?: string;
   org_id?: string;
@@ -12,9 +12,14 @@ export interface UserPayload {
   exp?: number;
 }
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const secret = process.env.JWT_SECRET;
+if (!secret) throw new Error("Missing JWT_SECRET");
+const JWT_SECRET = new TextEncoder().encode(secret);
 
-export async function signUserToken(user: Omit<UserPayload, "iat" | "exp">, ttlSec: number) {
+export async function signUserToken(
+  user: Omit<UserPayload, "iat" | "exp">,
+  ttlSec: number
+) {
   const now = Math.floor(Date.now() / 1000);
   return await new SignJWT({ ...user, iat: now, exp: now + ttlSec })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })

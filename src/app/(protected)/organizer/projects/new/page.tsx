@@ -14,6 +14,7 @@ import {
   KPIParams,
   ObjectiveParams,
   StrategyParams,
+  ValidationIssue,
 } from "@/dto/projectDto";
 import DateDurationSection from "@/components/project/new/DateDurationSection";
 import { BudgetTable } from "@/components/project/new/BudgetTable";
@@ -29,8 +30,9 @@ import { CreateProjectPayload } from "@/dto/createProjectDto";
 import { AuthUser } from "@/dto/userDto";
 import { generateSixDigitCode } from "@/lib/util";
 import ObjectiveForm from "@/components/project/new/ObjectiveForm";
-import { createProject } from "@/api/project/route";
 import { toast } from "react-toastify";
+import { validateStep } from "@/lib/helper";
+import { createProject } from "@/api/project.client";
 
 const steps = [
   "ข้อมูลพื้นฐาน",
@@ -45,8 +47,6 @@ const steps = [
   "ตัวชี้วัดความสำเร็จ (KPI)",
   "การติดตามและประเมินผล",
   "ผลที่คาดว่าจะได้รับ",
-  // "ข้อเสนอแนะ",
-  // "การอนุมัติและลงนาม",
 ];
 
 export default function CreateProjectPage() {
@@ -83,6 +83,33 @@ export default function CreateProjectPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(0);
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
+
+  const showValidationToast = (issues: ValidationIssue[]) => {
+    issues.forEach((i) => toast.error(i.message));
+  };
+  const handleNext = () => {
+    const issues = validateStep(step, {
+      generalInfo,
+      strategy,
+      retaional,
+      objective,
+      goal,
+      dateDur,
+      location,
+      budget,
+      activity,
+      kpi,
+      estimate,
+      expectation,
+    });
+
+    if (issues.length > 0) {
+      showValidationToast(issues);
+      return;
+    }
+
+    next();
+  };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
   // general info part
@@ -301,7 +328,6 @@ export default function CreateProjectPage() {
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-
     try {
       const payload = buildCreateProjectPayload();
       const res = await createProject(payload);
@@ -309,11 +335,12 @@ export default function CreateProjectPage() {
       setSuccess(res.message ?? "สร้างโครงการสำเร็จแล้ว");
       toast.success("สร้างโปรเจ็คสำเร็จ");
       setTimeout(() => {
-        router.push("/organizer/projects/my-project");
-      }, 1000);
+        router.push("/success-screen");
+      }, 500);
     } catch (err: any) {
       console.error("createProject error:", err);
       setError(err?.message ?? "สร้างโครงการไม่สำเร็จ");
+      router.push("/failed-screen");
     } finally {
       setIsLoading(false);
     }
@@ -549,7 +576,7 @@ export default function CreateProjectPage() {
 
         {step < steps.length - 1 ? (
           <button
-            onClick={next}
+            onClick={handleNext}
             className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             ถัดไป <ChevronRight className="h-4 w-4" />

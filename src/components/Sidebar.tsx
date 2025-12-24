@@ -45,13 +45,12 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
   const roleLabel = serverUser?.role_label ?? "ผู้ใช้";
   const roleKey = (serverUser?.role_key ?? "department_user").toLowerCase();
 
-  // path ภาพรวมตามบทบาท (ถ้าได้ "/login" จะถือว่าไม่มี "ภาพรวม")
   const roleHome = useMemo(() => {
     const t = pickHomeByRole(roleKey);
     return t && t !== "/login" ? t : null;
   }, [roleKey]);
 
-  // เมนูที่แสดงผลตามบทบาท
+
   const visibleItems = useMemo(() => {
     // Admin: เมนูเฉพาะสำหรับผู้ดูแลระบบ
     if (roleKey === "admin") {
@@ -92,7 +91,6 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
       );
     }
 
-    // บทบาทอื่น: ไม่มี "หน่วยงาน"
     return (
       [
         roleHome
@@ -127,7 +125,6 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
       "
       aria-label="Sidebar"
     >
-      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 min-h-[73px]">
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white">
           <span className="text-sm font-semibold">{initials}</span>
@@ -138,7 +135,6 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-4">
         <div className="space-y-1">
           {visibleItems.map(({ id, href, icon: Icon, label }) => {
@@ -168,9 +164,8 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
         </div>
       </nav>
 
-      {/* Logout: ใช้ form POST เพื่อลด JS fetch ที่ไม่จำเป็น */}
       <div className="px-2 py-3">
-        <form action="/api/auth/logout" method="post">
+        {/* <form action="/api/auth/logout" method="post">
           <button
             type="submit"
             className="
@@ -185,7 +180,7 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
               ออกจากระบบ
             </span>
           </button>
-        </form>
+        </form> */}
       </div>
     </aside>
   );

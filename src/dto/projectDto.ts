@@ -160,3 +160,28 @@ export interface ProjectInformationResponse {
     updated_at: string;
   }[];
 }
+
+export type EditFormState = {
+  id: string;
+  generalInfo: GeneralInfoParams;
+  goal: GoalParams;
+  duration: DateDurationValue;
+  strategy: StrategyParams;
+  kpi: KPIParams;
+  estimate: EstimateParams;
+  expect: ExpectParams;
+  budget: BudgetTableValue | null;
+  activities: ActivitiesRow[];
+  approve: ApproveParams;
+};
+
+
+export type DateError =
+  | "MISSING_START"
+  | "MISSING_END"
+  | "INVALID_START"
+  | "INVALID_END"
+  | "START_AFTER_END"
+  | "START_EQUALS_END";
+
+ export type ValidationIssue = { field: string; message: string };

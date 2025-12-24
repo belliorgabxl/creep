@@ -53,7 +53,7 @@ export default function StrategyForm({ value, onChange }: Props) {
             className="w-full flex items-center justify-between px-4 py-3 text-left"
           >
             <span className="text-xs lg:text-sm text-gray-800">
-              สอดคล้องกับแผนยุทธศาสตร์ของสถานศึกษา
+              สอดคล้องกับแผนยุทธศาสตร์ของสถานศึกษา (ไม่บังคับ)
             </span>
             <span
               className={
@@ -90,7 +90,7 @@ export default function StrategyForm({ value, onChange }: Props) {
             <span className="text-xs lg:text-sm text-gray-800">
               สอดคล้องกับนโยบาย / ยุทธศาสตร์ของสำนักงาน
               <br className="lg:hidden block" />
-              คณะกรรมการการอาชีวศึกษา (สอศ.)
+              คณะกรรมการการอาชีวศึกษา (สอศ.) (ไม่บังคับ)
             </span>
             <span
               className={
@@ -126,7 +126,7 @@ export default function StrategyForm({ value, onChange }: Props) {
           >
             <span className="text-xs lg:text-sm text-gray-800">
               สอดคล้องกับตัวชี้วัดงานประกันคุณภาพภายใน
-              <br className="lg:hidden block" /> (ระบุมาตรฐานและตัวบ่งชี้)
+              <br className="lg:hidden block" /> (ระบุมาตรฐานและตัวบ่งชี้) (ไม่บังคับ)
             </span>
             <span
               className={
