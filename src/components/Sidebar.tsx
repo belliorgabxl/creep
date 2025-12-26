@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { pickHomeByRole, ROLE_MAP } from "@/lib/rbac";
-import { canSeeMenuHandler, MENU, RoleKey } from "@/lib/menu-handler";
+import { canSeeMenuHandler, MENU, RoleKey } from "@/lib/sidemenu-handler";
 
 type ServerUser = {
   id?: string | null;
@@ -48,7 +48,6 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
     return t && t !== "/login" ? t : null;
   }, [roleKey]);
 
-  
   const visibleItems = useMemo(() => {
     return MENU.map((item) => {
       const href =

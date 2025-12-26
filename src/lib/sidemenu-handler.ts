@@ -4,6 +4,7 @@ import {
   Settings,
   TrendingUp,
   ClipboardList,
+  FileCheck,
 } from "lucide-react";
 
 export type RoleKey =
@@ -29,14 +30,7 @@ export const MENU: MenuItem[] = [
     href: (roleHome) => roleHome,
     icon: LayoutDashboard,
     label: "ภาพรวม",
-    allow: [
-      "hr",
-      "department_user",
-      "department_head",
-      "planning",
-      "director",
-      "admin",
-    ],
+    allow: ["department_user", "department_head", "planning", "director"],
   },
   {
     id: "department",
@@ -50,27 +44,35 @@ export const MENU: MenuItem[] = [
     href: "/organizer/projects/my-project",
     icon: ClipboardList,
     label: "โครงการ",
-    allow: [
-      "department_user",
-      "department_head",
-      "planning",
-      "director",
-      "admin",
-    ],
+    allow: ["department_user", "department_head", "planning", "director"],
   },
   {
     id: "reports",
     href: "/organizer/reports",
     icon: TrendingUp,
     label: "รายงาน",
-    allow: ["planning", "director", "admin"],
+    allow: ["planning", "director", "department_user", "department_head", "hr"],
+  },
+  {
+    id: "approve",
+    href: "/organizer/approve",
+    icon: FileCheck,
+    label: "การอนุมัติ",
+    allow: ["hr", "planning", "director", "department_head"],
   },
   {
     id: "setup",
     href: "/organizer/setup",
     icon: Settings,
     label: "ตั้งค่า",
-    allow: ["hr", "admin"],
+    allow: [
+      "hr",
+      "admin",
+      "planning",
+      "director",
+      "department_user",
+      "department_head",
+    ],
   },
 ];
 export const canSeeMenuHandler = (role: RoleKey, item: MenuItem) => {

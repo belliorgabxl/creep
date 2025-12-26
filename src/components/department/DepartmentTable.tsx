@@ -82,7 +82,6 @@ function TD(
   );
 }
 
-// ----- Small UI atoms -----
 function CodeBadge({ children }: React.PropsWithChildren) {
   return (
     <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
@@ -98,7 +97,6 @@ function Muted({ children }: React.PropsWithChildren) {
 const formatTH = (iso?: string) =>
   iso ? new Date(iso).toLocaleDateString("th-TH") : "—";
 
-// ----- Department Table (reusable) -----
 export function DepartmentTable({ data }: { data: Department[] }) {
   return (
     <Table>
@@ -112,14 +110,14 @@ export function DepartmentTable({ data }: { data: Department[] }) {
         <TH align="right">การกระทำ</TH>
       </THead>
       <TBody>
-        {data.length === 0 ? (
+        {data?.length === 0 ? (
           <TR>
             <TD align="center" className="py-8" colSpan={7}>
               <Muted>ยังไม่มีหน่วยงาน</Muted>
             </TD>
           </TR>
         ) : (
-          data.map((d) => (
+          data?.map((d) => (
             <TR key={d.id}>
               <TD>{d.code ? <CodeBadge>{d.code}</CodeBadge> : <Muted>—</Muted>}</TD>
               <TD>

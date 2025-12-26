@@ -1,21 +1,18 @@
 import { DepartmentTable } from "@/components/department/DepartmentTable";
 import { Department } from "@/dto/projectDto";
-import { mockDepartments } from "@/resource/mock-data";
+import { nestGet } from "@/lib/server-api";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { clientFetch } from "@/lib/client-api";
 
- async function getDepartments(): Promise<Department[]> {
-  const r = await clientFetch<Department[]>("/api/departments", {
-    cache: "no-store",
-  });
+async function getDepartments(): Promise<Department[]> {
+  const r = await nestGet<{ data: Department[] }>("/departments");
 
   if (!r.success) {
     console.error("getDepartments error:", r.message);
-    return mockDepartments;
+    return [];
   }
 
-  return r.data?.length ? r.data : mockDepartments;
+  return Array.isArray(r.data?.data) ? r.data.data : [];
 }
 
 export default async function DepartmentPage() {
