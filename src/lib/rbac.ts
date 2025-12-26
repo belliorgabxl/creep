@@ -1,4 +1,3 @@
-// lib/roles.ts
 export type RoleKey =
   | "department_user"
   | "department_head"

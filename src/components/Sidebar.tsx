@@ -1,18 +1,10 @@
-// components/Sidebar.tsx
 "use client";
 
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Building2,
-  Settings,
-  TrendingUp,
-  ClipboardList,
-  LogOut,
-} from "lucide-react";
-import { pickHomeByRole } from "@/lib/rbac";
+import { pickHomeByRole, ROLE_MAP } from "@/lib/rbac";
+import { canSeeMenuHandler, MENU, RoleKey } from "@/lib/menu-handler";
 
 type ServerUser = {
   id?: string | null;
@@ -24,12 +16,13 @@ type ServerUser = {
   department_id?: string | null;
 } | null;
 
-
 const normalizePath = (p: string) => {
   if (!p) return "";
   try {
     const base =
-      typeof window !== "undefined" ? window.location.origin : "http://localhost";
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost";
     const url = new URL(p, base);
     return url.pathname.replace(/\/+$/g, "");
   } catch {
@@ -42,58 +35,42 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
 
   const displayName = serverUser?.name ?? serverUser?.username ?? "Guest";
   const roleLabel = serverUser?.role_label ?? "ผู้ใช้";
-  const roleKey = (serverUser?.role_key ?? "department_user").toLowerCase();
+
+  const isRoleKey = (v: any): v is RoleKey =>
+    typeof v === "string" && Object.values(ROLE_MAP).some((x) => x.key === v);
+
+  const roleKey: RoleKey = isRoleKey(serverUser?.role_key)
+    ? serverUser!.role_key
+    : "department_user";
 
   const roleHome = useMemo(() => {
     const t = pickHomeByRole(roleKey);
     return t && t !== "/login" ? t : null;
   }, [roleKey]);
 
-
+  
   const visibleItems = useMemo(() => {
+    return MENU.map((item) => {
+      const href =
+        typeof item.href === "function" ? item.href(roleHome) : item.href;
 
-    if (roleKey === "hr") {
-      return (
-        [
-          roleHome
-            ? {
-                id: "dashboard",
-                href: roleHome,
-                icon: LayoutDashboard,
-                label: "ภาพรวม",
-              }
-            : null,
-          {
-            id: "department",
-            href: "/organizer/department",
-            icon: Building2,
-            label: "หน่วยงาน",
-          },
-          { id: "setup", href: "/organizer/setup", icon: Settings, label: "ตั้งค่า" },
-        ].filter(Boolean) as Array<{ id: string; href: string; icon: any; label: string }>
-      );
-    }
+      if (!href) return null;
 
-    return (
-      [
-        roleHome
-          ? {
-              id: "dashboard",
-              href: roleHome,
-              icon: LayoutDashboard,
-              label: "ภาพรวม",
-            }
-          : null,
-        {
-          id: "projects",
-          href: "/organizer/projects/my-project",
-          icon: ClipboardList,
-          label: "โครงการ",
-        },
-        { id: "reports", href: "/organizer/reports", icon: TrendingUp, label: "รายงาน" },
-        { id: "setup", href: "/organizer/setup", icon: Settings, label: "ตั้งค่า" },
-      ].filter(Boolean) as Array<{ id: string; href: string; icon: any; label: string }>
-    );
+      return { ...item, href };
+    })
+      .filter(
+        (
+          x
+        ): x is {
+          id: string;
+          href: string;
+          icon: any;
+          label: string;
+          allow?: RoleKey[];
+          deny?: RoleKey[];
+        } => !!x
+      )
+      .filter((item) => canSeeMenuHandler(roleKey, item));
   }, [roleKey, roleHome]);
 
   const initials = (displayName || "U").slice(0, 2).toUpperCase();
@@ -113,7 +90,9 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
           <span className="text-sm font-semibold">{initials}</span>
         </div>
         <div className="overflow-hidden opacity-0 transition-all duration-300 group-hover:opacity-100 whitespace-nowrap">
-          <div className="text-sm font-semibold text-gray-900">{displayName}</div>
+          <div className="text-sm font-semibold text-gray-900">
+            {displayName}
+          </div>
           <div className="text-xs text-gray-500">{roleLabel}</div>
         </div>
       </div>
@@ -137,7 +116,11 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
                 }`}
                 title={label}
               >
-                <Icon className={`h-5 w-5 flex-shrink-0 ${active ? "text-blue-600" : ""}`} />
+                <Icon
+                  className={`h-5 w-5 flex-shrink-0 ${
+                    active ? "text-blue-600" : ""
+                  }`}
+                />
                 <span className="overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">
                   {label}
                 </span>
@@ -146,25 +129,7 @@ export default function Sidebar({ serverUser }: { serverUser: ServerUser }) {
           })}
         </div>
       </nav>
-
-      <div className="px-2 py-3">
-        {/* <form action="/api/auth/logout" method="post">
-          <button
-            type="submit"
-            className="
-              flex w-full items-center gap-3 rounded-lg px-3 py-2.5
-              text-red-600 transition-all duration-200
-              hover:bg-red-50 hover:text-red-700
-            "
-            title="ออกจากระบบ"
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            <span className="overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:opacity-100">
-              ออกจากระบบ
-            </span>
-          </button>
-        </form> */}
-      </div>
+      <div className="px-2 py-3"></div>
     </aside>
   );
 }
