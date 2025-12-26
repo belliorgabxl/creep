@@ -39,6 +39,8 @@ export function ProjectsTable({ projects = [] }: ProjectsTableProps) {
 
   // map API project -> table row (memoized)
   const rows = useMemo(() => {
+    if (!Array.isArray(projects)) return [];
+    
     return projects.map((p) => {
       const deptName =
         (p as any).department?.name ??

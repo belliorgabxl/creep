@@ -3,9 +3,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import type { GetUserRespond } from "@/dto/userDto";
-import { GetRoleFromApi } from "@/api/role/route";
-import { fetchDepartments } from "@/api/department/route";
-import { UpdateUserFromApi } from "@/api/users/route";
+import { GetRoleFromApi } from "@/api/role.client";
+import { fetchDepartments } from "@/api/department";
+import { UpdateUserFromApi } from "@/api/users.client";
 import { useToast } from "@/components/ToastProvider";
 import type { RoleRespond } from "@/dto/roleDto";
 import type { Department } from "@/dto/departmentDto";

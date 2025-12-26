@@ -101,6 +101,7 @@ interface UsersTableProps {
   onPageChange?: (newPage: number) => void;
   disableNext?: boolean;
   totalItems?: number;
+  totalPages?: number;
   showIndex?: boolean;
   loading?: boolean;
   skeletonRows?: number;
@@ -116,6 +117,7 @@ export default function UsersTable({
   onPageChange,
   disableNext = false,
   totalItems,
+  totalPages: propTotalPages,
   showIndex = false,
   loading = false,
   skeletonRows = 6,
@@ -140,7 +142,10 @@ export default function UsersTable({
   );
 
   const computedTotalItems = typeof totalItems === "number" ? totalItems : rows.length;
-  const totalPages = Math.max(1, Math.ceil(computedTotalItems / itemsPerPage));
+  // ใช้ totalPages จาก API ถ้ามี ไม่งั้นคำนวณเอง
+  const totalPages = typeof propTotalPages === "number" && propTotalPages > 0
+    ? propTotalPages
+    : Math.max(1, Math.ceil(computedTotalItems / itemsPerPage));
 
   const currentRows = isControlled
     ? rows

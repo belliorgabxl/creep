@@ -7,3 +7,8 @@ export async function fetchDepartments(): Promise<Department[]> {
   const body = r.data as any;
   return Array.isArray(body) ? body : (body?.data ?? []);
 }
+
+export async function GetDepartmentsDetailByIdFromApi(id: string): Promise<Department[]> {
+  const r = await clientFetch<Department[]>(`/api/department/detail/${encodeURIComponent(id)}`, { cache: "no-store" });
+  return r.success ? (r.data ?? []) : [];
+}

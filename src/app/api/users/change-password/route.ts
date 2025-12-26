@@ -25,9 +25,11 @@ export async function PUT(req: Request) {
     );
   }
 
+  const incomingAuth = req.headers.get("authorization") ?? undefined;
+
   const r = await nestFetch<{ message: string }>("/users/me/password", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: incomingAuth ? { Authorization: incomingAuth, "Content-Type": "application/json", Accept: "application/json" } : { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(body),
   });
 

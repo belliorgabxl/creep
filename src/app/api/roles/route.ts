@@ -1,12 +1,9 @@
-// src/app/api/department/route.ts
 import { NextResponse } from "next/server";
 import { nestGet } from "@/lib/server-api";
-import type { Department } from "@/dto/departmentDto";
+import type { RoleRespond } from "@/dto/roleDto";
 
 export async function GET() {
-  const r = await nestGet<{ data?: Department | Department[] }>(
-    "/departments"
-  );
+  const r = await nestGet<{ data?: RoleRespond | RoleRespond[] }>("/roles");
 
   if (!r.success) {
     return NextResponse.json(

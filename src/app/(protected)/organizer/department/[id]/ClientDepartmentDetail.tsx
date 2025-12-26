@@ -2,8 +2,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { GetDepartmentsDetailByIdApi } from "@/api/department/route"; // ปรับ path ตามโปรเจค
-import type { Department } from "@/dto/projectDto"; // ปรับ path dto ตามโปรเจค
+import { GetDepartmentsDetailByIdFromApi } from "@/api/department"; // client-side wrapper that calls /api/department/detail/:id
+import type { Department } from "@/dto/departmentDto";
 import Link from "next/link";
 
 /* UI helpers (CodeBadge, Muted, StatCard, DetailItem) — ยกมาจากไฟล์เดิม */
@@ -59,7 +59,7 @@ export default function ClientDepartmentDetail({ id }: Props) {
       setLoading(true);
       setError(null);
       try {
-        const list = await GetDepartmentsDetailByIdApi(id);
+        const list = await GetDepartmentsDetailByIdFromApi(id);
         const item = Array.isArray(list) && list.length > 0 ? list[0] : null;
         if (!mounted) return;
         setDep(item);
@@ -122,8 +122,8 @@ export default function ClientDepartmentDetail({ id }: Props) {
       </div>
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="จำนวนพนักงาน" value={dep.employees ?? "—"} />
-        <StatCard label="จำนวนโปรเจ็กต์" value={dep.projectsCount ?? "—"} />
+        <StatCard label="จำนวนพนักงาน" value={dep.user_count ?? "—"} />
+        <StatCard label="จำนวนโปรเจ็กต์" value={dep.project_count ?? "—"} />
         <StatCard label="อัปเดตล่าสุด" value={formatTH((dep as any).updatedAt)} />
       </section>
 
@@ -132,8 +132,8 @@ export default function ClientDepartmentDetail({ id }: Props) {
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <DetailItem label="รหัส"><CodeBadge>{dep.code}</CodeBadge></DetailItem>
           <DetailItem label="ชื่อหน่วยงาน">{dep.name}</DetailItem>
-          <DetailItem label="จำนวนพนักงาน">{dep.employees != null ? <span className="tabular-nums text-gray-900">{dep.employees}</span> : <Muted>—</Muted>}</DetailItem>
-          <DetailItem label="จำนวนโปรเจ็กต์">{dep.projectsCount != null ? <span className="tabular-nums text-gray-900">{dep.projectsCount}</span> : <Muted>—</Muted>}</DetailItem>
+          <DetailItem label="จำนวนพนักงาน">{dep.user_count != null ? <span className="tabular-nums text-gray-900">{dep.user_count}</span> : <Muted>—</Muted>}</DetailItem>
+          <DetailItem label="จำนวนโปรเจ็กต์">{dep.project_count != null ? <span className="tabular-nums text-gray-900">{dep.project_count}</span> : <Muted>—</Muted>}</DetailItem>
           <DetailItem label="อัปเดตล่าสุด">{formatTH((dep as any).updatedAt)}</DetailItem>
         </dl>
       </section>

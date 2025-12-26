@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
-import { CreateUserFromApi } from "@/api/users/route";
-import { GetRoleFromApi } from "@/api/role/route";
-import { fetchDepartments } from "@/api/department/route";
+import { CreateUserFromApi } from "@/api/users.client";
+import { GetRoleFromApi } from "@/api/role.client";
+import { fetchDepartments } from "@/api/department";
 import type { CreateUserRequest } from "@/dto/userDto";
 import type { RoleRespond } from "@/dto/roleDto";
 import type { Department } from "@/dto/departmentDto";

@@ -52,7 +52,7 @@ export default function UserDashboardPage() {
 
     return (
         <div className="min-h-screen text-gray-900">
-            <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+            <div className="sticky top-0 z-20 border-b">
                 <div className="container mx-auto px-4">
                     <div className="flex h-14 items-center justify-between">
                         <h1 className="text-lg font-semibold tracking-tight">Dashboard (Admin)</h1>

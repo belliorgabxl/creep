@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { DepartmentTable } from "@/components/department/DepartmentTable";
-import { fetchDepartments } from "@/api/department/route";
+import { fetchDepartments } from "@/api/department";
 import { Department } from "@/dto/departmentDto";
 
 export default function ClientDepartmentList() {

@@ -57,7 +57,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <Sidebar serverUser={serverUser} />
       </div>
 
-      <main className=" md:pl-16 lg:px-4">
+      <main className="">
         {children}
       </main>
     </div>

@@ -2,8 +2,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import UsersTable from "@/components/user/UserTable";
-import { GetUserByOrgFromApi, GetUserByIdFromApi } from "@/api/hr/route";
-import type { GetUserRespond } from "@/dto/user";
+import { GetUserByOrgFromApi, GetUserByIdFromApi } from "@/api/users";
+import type { GetUserRespond } from "@/dto/userDto";
 
 // -------------------- Mock / Org --------------------
 const ORG = { id: "ORG-ADMIN", name: "ระบบผู้ดูแล" };
@@ -42,7 +42,7 @@ export default function AdminManageUserPage() {
         const resp = await GetUserByOrgFromApi(5, 10);
         if (!mounted) return;
 
-        const mapped = (resp || []).map((u: GetUserRespond) => ({
+        const mapped = (resp?.items || []).map((u: GetUserRespond) => ({
           id: u.id,
           name: u.full_name || `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
           title: u.position ?? "-",
