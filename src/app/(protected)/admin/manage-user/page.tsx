@@ -24,7 +24,9 @@ export default function AdminManageUserPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<any | null>(null);
-  const [detailsUserData, setDetailsUserData] = useState<GetUserRespond | null>(null);
+  const [detailsUserData, setDetailsUserData] = useState<GetUserRespond | null>(
+    null
+  );
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
@@ -33,7 +35,7 @@ export default function AdminManageUserPage() {
   const [addOpen, setAddOpen] = useState(false);
 
   // load users from API on mount (placeholder)
- useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     async function load() {
       setLoading(true);
@@ -44,7 +46,8 @@ export default function AdminManageUserPage() {
 
         const mapped = (resp?.items || []).map((u: GetUserRespond) => ({
           id: u.id,
-          name: u.full_name || `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
+          name:
+            u.full_name || `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
           title: u.position ?? "-",
           department: u.department_id ?? "-",
           status: "Active",
@@ -71,22 +74,30 @@ export default function AdminManageUserPage() {
   }, [5]);
 
   const handleAdd = (u: any) => {
-    const newUser = { id: uid("EMP"), ...u, isActive: u.status !== "Inactive", createdAt: new Date().toISOString().slice(0, 10) };
+    const newUser = {
+      id: uid("EMP"),
+      ...u,
+      isActive: u.status !== "Inactive",
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
     setUsers((prev) => [newUser, ...prev]);
     setAddOpen(false);
   };
 
   const handleSaveEdit = () => {
     if (!editing) return;
-    setUsers((prev) => prev.map((x) => (x.id === editing.id ? { ...editing } : x)));
+    setUsers((prev) =>
+      prev.map((x) => (x.id === editing.id ? { ...editing } : x))
+    );
     setEditing(null);
   };
 
   const toggleIsActive = (id: string) => {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, isActive: !u.isActive } : u)));
+    setUsers((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, isActive: !u.isActive } : u))
+    );
   };
 
-  // fetch details for a single user and open modal
   const fetchUserDetails = async (id?: string | number | null) => {
     if (!id) return;
     const idStr = String(id);
@@ -95,7 +106,7 @@ export default function AdminManageUserPage() {
     setDetailsUserData(null);
     try {
       const resp = await GetUserByIdFromApi(idStr);
-      const user = resp && resp.length > 0 ? resp[0] : null;
+      const user = resp ?? null;
       setDetailsUserData(user);
     } catch (err: any) {
       console.error("Failed to load user details:", err);
@@ -120,8 +131,17 @@ export default function AdminManageUserPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={() => setAddOpen(true)} className="px-3 py-2 bg-indigo-600 text-white rounded text-sm shadow-sm">เพิ่มผู้ใช้</button>
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="border p-2 rounded text-sm">
+          <button
+            onClick={() => setAddOpen(true)}
+            className="px-3 py-2 bg-indigo-600 text-white rounded text-sm shadow-sm"
+          >
+            เพิ่มผู้ใช้
+          </button>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border p-2 rounded text-sm"
+          >
             <option value="all">ทั้งหมด</option>
             <option value="active">ใช้งาน</option>
             <option value="inactive">ระงับการใช้งาน</option>
@@ -130,9 +150,13 @@ export default function AdminManageUserPage() {
       </header>
 
       {loading ? (
-        <div className="bg-white p-6 rounded-lg shadow-sm text-center text-gray-600">กำลังโหลดรายชื่อผู้ใช้งาน...</div>
+        <div className="bg-white p-6 rounded-lg shadow-sm text-center text-gray-600">
+          กำลังโหลดรายชื่อผู้ใช้งาน...
+        </div>
       ) : error ? (
-        <div className="bg-white p-6 rounded-lg shadow-sm text-center text-red-600">เกิดข้อผิดพลาด: {error}</div>
+        <div className="bg-white p-6 rounded-lg shadow-sm text-center text-red-600">
+          เกิดข้อผิดพลาด: {error}
+        </div>
       ) : (
         <UsersTable
           users={filtered}
@@ -151,18 +175,52 @@ export default function AdminManageUserPage() {
           <div className="w-full md:w-1/2 bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-lg font-semibold mb-3">แก้ไขผู้ใช้</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} className="border p-2 rounded text-sm" />
-              <input value={editing.title} onChange={(e) => setEditing({ ...editing, title: e.target.value })} className="border p-2 rounded text-sm" />
-              <input value={editing.department} onChange={(e) => setEditing({ ...editing, department: e.target.value })} className="border p-2 rounded text-sm" />
-              <select value={editing.status} onChange={(e) => setEditing({ ...editing, status: e.target.value })} className="border p-2 rounded text-sm">
+              <input
+                value={editing.name}
+                onChange={(e) =>
+                  setEditing({ ...editing, name: e.target.value })
+                }
+                className="border p-2 rounded text-sm"
+              />
+              <input
+                value={editing.title}
+                onChange={(e) =>
+                  setEditing({ ...editing, title: e.target.value })
+                }
+                className="border p-2 rounded text-sm"
+              />
+              <input
+                value={editing.department}
+                onChange={(e) =>
+                  setEditing({ ...editing, department: e.target.value })
+                }
+                className="border p-2 rounded text-sm"
+              />
+              <select
+                value={editing.status}
+                onChange={(e) =>
+                  setEditing({ ...editing, status: e.target.value })
+                }
+                className="border p-2 rounded text-sm"
+              >
                 <option>Active</option>
                 <option>On leave</option>
               </select>
             </div>
 
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setEditing(null)} className="px-3 py-2 border rounded">ยกเลิก</button>
-              <button onClick={handleSaveEdit} className="px-3 py-2 bg-indigo-600 text-white rounded">บันทึก</button>
+              <button
+                onClick={() => setEditing(null)}
+                className="px-3 py-2 border rounded"
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="px-3 py-2 bg-indigo-600 text-white rounded"
+              >
+                บันทึก
+              </button>
             </div>
           </div>
         </div>
@@ -179,12 +237,17 @@ export default function AdminManageUserPage() {
       )}
 
       {/* User details modal */}
-      { (detailsUserData || detailsLoading) && (
+      {(detailsUserData || detailsLoading) && (
         <div className="fixed inset-0 flex items-end md:items-center justify-center p-4">
           <div className="w-full md:w-1/2 bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-start justify-between">
               <h3 className="text-lg font-semibold">รายละเอียดผู้ใช้</h3>
-              <button onClick={() => setDetailsUserData(null)} className="text-sm text-gray-500">ปิด</button>
+              <button
+                onClick={() => setDetailsUserData(null)}
+                className="text-sm text-gray-500"
+              >
+                ปิด
+              </button>
             </div>
             <div className="mt-4">
               {detailsLoading ? (
@@ -193,10 +256,18 @@ export default function AdminManageUserPage() {
                 <div className="text-red-600">{detailsError}</div>
               ) : detailsUserData ? (
                 <div className="space-y-2 text-sm text-gray-700">
-                  <div><strong>ชื่อ:</strong> {detailsUserData.full_name}</div>
-                  <div><strong>ตำแหน่ง:</strong> {detailsUserData.position}</div>
-                  <div><strong>อีเมล:</strong> {detailsUserData.email}</div>
-                  <div><strong>สถานะ:</strong> {statusLabel(detailsUserData)}</div>
+                  <div>
+                    <strong>ชื่อ:</strong> {detailsUserData.full_name}
+                  </div>
+                  <div>
+                    <strong>ตำแหน่ง:</strong> {detailsUserData.position}
+                  </div>
+                  <div>
+                    <strong>อีเมล:</strong> {detailsUserData.email}
+                  </div>
+                  <div>
+                    <strong>สถานะ:</strong> {statusLabel(detailsUserData)}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -207,7 +278,13 @@ export default function AdminManageUserPage() {
   );
 }
 
-function AddUserForm({ onAdd, onCancel }: { onAdd: (u: any) => void; onCancel: () => void }) {
+function AddUserForm({
+  onAdd,
+  onCancel,
+}: {
+  onAdd: (u: any) => void;
+  onCancel: () => void;
+}) {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [department, setDepartment] = useState("");
@@ -216,18 +293,44 @@ function AddUserForm({ onAdd, onCancel }: { onAdd: (u: any) => void; onCancel: (
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input placeholder="ชื่อ" value={name} onChange={(e) => setName(e.target.value)} className="border p-2 rounded text-sm" />
-        <input placeholder="ตำแหน่ง" value={title} onChange={(e) => setTitle(e.target.value)} className="border p-2 rounded text-sm" />
-        <input placeholder="แผนก" value={department} onChange={(e) => setDepartment(e.target.value)} className="border p-2 rounded text-sm" />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border p-2 rounded text-sm">
+        <input
+          placeholder="ชื่อ"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border p-2 rounded text-sm"
+        />
+        <input
+          placeholder="ตำแหน่ง"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-2 rounded text-sm"
+        />
+        <input
+          placeholder="แผนก"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          className="border p-2 rounded text-sm"
+        />
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="border p-2 rounded text-sm"
+        >
           <option>Active</option>
           <option>On leave</option>
         </select>
       </div>
 
       <div className="mt-4 flex justify-end gap-2">
-        <button onClick={onCancel} className="px-3 py-2 border rounded">ยกเลิก</button>
-        <button onClick={() => onAdd({ name, title, department, status })} className="px-3 py-2 bg-green-600 text-white rounded">เพิ่ม</button>
+        <button onClick={onCancel} className="px-3 py-2 border rounded">
+          ยกเลิก
+        </button>
+        <button
+          onClick={() => onAdd({ name, title, department, status })}
+          className="px-3 py-2 bg-green-600 text-white rounded"
+        >
+          เพิ่ม
+        </button>
       </div>
     </div>
   );

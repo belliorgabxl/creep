@@ -2,8 +2,7 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
-import { Eye } from "lucide-react";
-import { Department } from "@/dto/departmentDto";
+import { Department } from "@/dto/projectDto";
 
 // ----- UI primitives (Table components) -----
 function Table({
@@ -79,7 +78,6 @@ function TD(
   );
 }
 
-// ----- Small UI atoms -----
 function CodeBadge({ children }: React.PropsWithChildren) {
   return (
     <span className="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
@@ -94,166 +92,57 @@ function Muted({ children }: React.PropsWithChildren) {
 
 const formatTH = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("th-TH") : "—");
 
-// ----- Department Table (reusable) -----
-// รองรับ controlled pagination และ showIndex เช่นเดียวกับ UsersTable
-export function DepartmentTable({
-  data = [],
-  itemsPerPage = 10,
-  currentPage,
-  onPageChange,
-  totalItems,
-  disableNext = false,
-  showIndex = false,
-  // new callbacks for actions
-  onToggleActive,
-  onDetails,
-}: {
-  data?: Department[];
-  itemsPerPage?: number;
-  currentPage?: number;
-  onPageChange?: (p: number) => void;
-  totalItems?: number;
-  disableNext?: boolean;
-  showIndex?: boolean;
-  onToggleActive?: (id: string) => void;
-  onDetails?: (d: Department) => void;
-}) {
-  const isControlled = typeof onPageChange === "function" || typeof currentPage === "number";
-  const internalPage = 1;
-  const page = isControlled ? (currentPage ?? 1) : internalPage;
-
-  const rows = useMemo(() => (data || []).map((d) => d), [data]);
-
-  const computedTotalItems = typeof totalItems === "number" ? totalItems : rows.length;
-  const totalPages = Math.max(1, Math.ceil(computedTotalItems / itemsPerPage));
-
-  // controlled mode -> assume parent sends page items; else slice locally
-  const currentRows = isControlled ? rows : rows.slice((page - 1) * itemsPerPage, (page - 1) * itemsPerPage + itemsPerPage);
-  const startIndex = (page - 1) * itemsPerPage;
-
-  const goPage = (newPage: number) => {
-    if (newPage < 1) newPage = 1;
-    if (newPage > totalPages) newPage = totalPages;
-    if (isControlled) {
-      onPageChange?.(newPage);
-    } else {
-      // local mode not implemented fully (we keep simple; parent should use controlled mode for server pagination)
-    }
-  };
-
+export function DepartmentTable({ data }: { data: Department[] }) {
   return (
-    <div>
-      <Table>
-        <THead>
-          {showIndex && <TH className="w-1/12 text-center">#</TH>}
-          <TH className="w-2/12" align="center">รหัส</TH>
-          <TH className="w-3/12">ชื่อหน่วยงาน</TH>
-          <TH className="w-2/12" align="center">
-            จำนวนพนักงาน
-          </TH>
-          <TH className="w-2/12" align="center">
-            จำนวนโปรเจ็กต์
-          </TH>
-          <TH className="w-1/12" align="center">
-            สถานะใช้งาน
-          </TH>
-          <TH className="w-1/12" align="center">
-            จัดการ
-          </TH>
-        </THead>
-
-        <TBody>
-          {currentRows.length === 0 ? (
-            <TR>
-              <TD align="center" className="py-8" colSpan={showIndex ? 7 : 6}>
-                <Muted>ยังไม่มีหน่วยงาน</Muted>
+    <Table>
+      <THead>
+        <TH>รหัส</TH>
+        <TH>ชื่อหน่วยงาน</TH>
+        <TH>หัวหน้าหน่วยงาน</TH>
+        <TH align="right">พนักงาน</TH>
+        <TH align="right">โปรเจ็กต์</TH>
+        <TH>อัปเดตล่าสุด</TH>
+        <TH align="right">การกระทำ</TH>
+      </THead>
+      <TBody>
+        {data?.length === 0 ? (
+          <TR>
+            <TD align="center" className="py-8" colSpan={7}>
+              <Muted>ยังไม่มีหน่วยงาน</Muted>
+            </TD>
+          </TR>
+        ) : (
+          data?.map((d) => (
+            <TR key={d.id}>
+              <TD>{d.code ? <CodeBadge>{d.code}</CodeBadge> : <Muted>—</Muted>}</TD>
+              <TD>
+                <Link
+                  href={`/user/department/${d.id}`}
+                  className="font-medium text-gray-900 hover:underline underline-offset-2"
+                >
+                  {d.name}
+                </Link>
+              </TD>
+              <TD>{d.head ?? <Muted>—</Muted>}</TD>
+              <TD align="right" className="tabular-nums">
+                {d.employees ?? <Muted>—</Muted>}
+              </TD>
+              <TD align="right" className="tabular-nums">
+                {d.projectsCount != null ? d.projectsCount : <Muted>—</Muted>}
+              </TD>
+              <TD>{formatTH(d.updatedAt)}</TD>
+              <TD align="right">
+                <Link
+                  href={`/user/department/${d.id}`}
+                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  ดูรายละเอียด
+                </Link>
               </TD>
             </TR>
-          ) : (
-            currentRows.map((d, idx) => (
-              <TR key={d.id}>
-                {showIndex && <TD align="center">{startIndex + idx + 1}</TD>}
-                <TD align="center">{d.code ? <CodeBadge>{d.code}</CodeBadge> : <Muted>—</Muted>}</TD>
-                <TD>
-                  <Link href={`/user/department/${d.id}`} className="font-medium text-gray-900 hover:underline underline-offset-2">
-                    {d.name}
-                  </Link>
-                </TD>
-
-                <TD align="center" className="tabular-nums">
-                  {typeof d.user_count === "number" ? d.user_count : <Muted>—</Muted>}
-                </TD>
-
-                <TD align="center" className="tabular-nums">
-                  {typeof d.project_count === "number" ? d.project_count : <Muted>—</Muted>}
-                </TD>
-
-                <TD align="center" className="w-1/12">
-                  {/* Toggle button for active status */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleActive?.(d.id);
-                    }}
-                    aria-pressed={d.is_active}
-                    title={d.is_active ? "ปิดการใช้งาน" : "เปิดใช้งาน"}
-                    className={`relative inline-flex items-center h-6 w-12 rounded-full transition-colors focus:outline-none ${
-                      d.is_active ? "bg-green-600" : "bg-gray-300"
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${d.is_active ? "translate-x-6" : "translate-x-1"}`} />
-                    <span className="sr-only">{d.is_active ? "active" : "inactive"}</span>
-                  </button>
-                </TD>
-
-                <TD align="center" className="w-1/12">
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDetails?.(d);
-                      }}
-                      className="h-8 w-8 rounded-md hover:bg-blue-600/10 hover:text-blue-700 flex items-center justify-center"
-                      title="ดูรายละเอียด"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  </div>
-                </TD>
-              </TR>
-            ))
-          )}
-        </TBody>
-      </Table>
-
-      {/* pagination footer */}
-      <div className="mt-4 flex items-center justify-between px-2 m-4">
-        <p className="text-xs text-gray-600 mb-2">
-          แสดง {computedTotalItems === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + currentRows.length, computedTotalItems)} จาก {computedTotalItems} รายการ
-        </p>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => goPage(page - 1)}
-            disabled={page === 1 || computedTotalItems === 0}
-            className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-xs shadow-sm hover:bg-gray-50 disabled:opacity-50"
-          >
-            ก่อนหน้า
-          </button>
-
-          <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700">
-            หน้า {page} / {totalPages}
-          </span>
-
-          <button
-            onClick={() => goPage(page + 1)}
-            disabled={page === totalPages || computedTotalItems === 0 || disableNext}
-            className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-xs shadow-sm hover:bg-gray-50 disabled:opacity-50"
-          >
-            ถัดไป
-          </button>
-        </div>
-      </div>
-    </div>
+          ))
+        )}
+      </TBody>
+    </Table>
   );
 }

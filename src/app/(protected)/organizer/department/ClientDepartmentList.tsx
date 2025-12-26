@@ -35,7 +35,11 @@ export default function ClientDepartmentList() {
   }
 
   if (error) {
-    return <div className="p-6 bg-white rounded text-red-600">เกิดข้อผิดพลาด: {error}</div>;
+    return (
+      <div className="p-6 bg-white rounded text-red-600">
+        เกิดข้อผิดพลาด: {error}
+      </div>
+    );
   }
 
   return <DepartmentTable data={departments} />;

@@ -2,11 +2,23 @@
 import { NextResponse } from "next/server";
 import { nestGet } from "@/lib/server-api";
 import type { Department } from "@/dto/departmentDto";
+import { cookies } from "next/headers";
 
 export async function GET() {
-  const r = await nestGet<{ data?: Department | Department[] }>(
-    "/departments"
-  );
+  const token = (await cookies()).get("api_token")?.value;
+
+  if (!token) {
+    return NextResponse.json(
+      { success: false, message: "Missing api_token cookie" },
+      { status: 401 }
+    );
+  }
+
+  const r = await nestGet<Department[]>("/api/department", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!r.success) {
     return NextResponse.json(
@@ -15,15 +27,5 @@ export async function GET() {
     );
   }
 
-  const payload = r.data?.data;
-  const list = Array.isArray(payload)
-    ? payload
-    : payload
-    ? [payload]
-    : [];
-
-  return NextResponse.json({
-    success: true,
-    data: list,
-  });
+  return NextResponse.json({ success: true, data: r.data ?? [] });
 }

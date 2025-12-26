@@ -10,11 +10,24 @@ export async function nestFetch<T>(
   init?: RequestInit
 ): Promise<ApiResult<T>> {
   try {
-    const token = (await cookies()).get("api_token")?.value;
+    const incomingAuth =
+      (init?.headers instanceof Headers
+        ? init.headers.get("authorization")
+        : typeof init?.headers === "object" && init?.headers
+        ? (init.headers as Record<string, string>)["authorization"] ??
+          (init.headers as Record<string, string>)["Authorization"]
+        : undefined) ?? "";
+
+    const cookieToken = (await cookies()).get("api_token")?.value;
 
     const headers = new Headers(init?.headers);
     headers.set("Accept", "application/json");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
+
+    if (incomingAuth) {
+      headers.set("Authorization", incomingAuth);
+    } else if (cookieToken) {
+      headers.set("Authorization", `Bearer ${cookieToken}`);
+    }
 
     const res = await fetch(`${NEST_BASE_URL}${path}`, {
       ...init,
@@ -34,19 +47,23 @@ export async function nestFetch<T>(
   }
 }
 
-export const nestGet = <T>(path: string) =>
-  nestFetch<T>(path, { method: "GET" });
-export const nestPost = <T>(path: string, body?: any) =>
+export const nestGet = <T>(path: string, init?: RequestInit) =>
+  nestFetch<T>(path, { ...init, method: "GET" });
+
+export const nestPost = <T>(path: string, body?: any, init?: RequestInit) =>
   nestFetch<T>(path, {
+    ...init,
     method: "POST",
     body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(init?.headers as any) },
   });
+
 export const nestPut = <T>(path: string, body?: any) =>
   nestFetch<T>(path, {
     method: "PUT",
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
   });
+
 export const nestDelete = <T>(path: string) =>
   nestFetch<T>(path, { method: "DELETE" });

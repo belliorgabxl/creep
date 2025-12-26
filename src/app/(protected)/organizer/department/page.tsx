@@ -1,9 +1,25 @@
-// src/app/(protected)/organizer/department/page.tsx (server)
-import Link from "next/link";
+import { DepartmentTable } from "@/components/department/DepartmentTable";
+import { Department } from "@/dto/projectDto";
+import { nestGet } from "@/lib/server-api";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import ClientDepartmentList from "./ClientDepartmentList";
 
-export default function DepartmentPage() {
+async function getDepartments(): Promise<Department[]> {
+  const r = await nestGet<{ data: Department[] }>("/departments");
+
+  if (!r.success) {
+    console.error("getDepartments error:", r.message);
+    return [];
+  }
+
+  return Array.isArray(r.data?.data) ? r.data.data : [];
+}
+
+export default async function DepartmentPage() {
+  const departments = await getDepartments();
+  const total = departments.length;
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
