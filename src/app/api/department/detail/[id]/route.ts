@@ -1,31 +1,51 @@
-// src/app/api/department/detail/[id]/route.ts
 import { NextResponse } from "next/server";
 import { nestGet } from "@/lib/server-api";
 import type { Department } from "@/dto/departmentDto";
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
 
-  const r = await nestGet<{ data?: Department | Department[] }>(
-    `/departments/detail/${id}`
-  );
+    console.log("[API] GET /api/department/detail/" + id);
 
-  if (!r.success) {
+    const r = await nestGet<Department | { data?: Department }>(
+      `/departments/detail/${id}`
+    );
+
+    console.log("[API] Backend response:", {
+      success: r.success,
+      hasData: r.success ? !!r.data : false,
+      dataKeys: (r.success && r.data) ? Object.keys(r.data) : [],
+    });
+
+    if (!r.success) {
+      console.error("[API] Backend failed:", r.message);
+      return NextResponse.json(
+        { success: false, message: r.message },
+        { status: 400 }
+      );
+    }
+
+    // unwrap กรณี backend ห่อ data
+    const payload =
+      r.data && typeof r.data === "object" && "data" in r.data
+        ? r.data.data
+        : r.data;
+
+    console.log("[API] Sending payload:", payload ? "object with keys: " + Object.keys(payload).join(", ") : "null");
+
+    return NextResponse.json({
+      success: true,
+      data: payload ?? null,
+    });
+  } catch (error: any) {
+    console.error("[API] Exception in GET /api/department/detail:", error);
     return NextResponse.json(
-      { success: false, message: r.message },
-      { status: 400 }
+      { success: false, message: error?.message || "Internal server error" },
+      { status: 500 }
     );
   }
-
-  const payload = r.data?.data;
-  const list = Array.isArray(payload)
-    ? payload
-    : payload
-    ? [payload]
-    : [];
-
-  return NextResponse.json({
-    success: true,
-    data: list,
-  });
 }

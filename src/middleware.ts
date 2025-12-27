@@ -105,7 +105,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathStarts(pathname, "/organizer/department")) {
-    if (role !== "hr") return forbid();
+    if (!["hr", "admin"].includes(role)) return forbid();
   }
 
   if (pathStarts(pathname, "/admin") && role !== "admin") {

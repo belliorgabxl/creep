@@ -1,3 +1,4 @@
+// lib/menu.ts
 import {
   LayoutDashboard,
   Building2,
@@ -5,6 +6,7 @@ import {
   TrendingUp,
   ClipboardList,
   FileCheck,
+  Users,
 } from "lucide-react";
 
 export type RoleKey =
@@ -30,13 +32,20 @@ export const MENU: MenuItem[] = [
     href: (roleHome) => roleHome,
     icon: LayoutDashboard,
     label: "ภาพรวม",
-    allow: ["department_user", "department_head", "planning", "director"],
+    allow: ["department_user", "department_head", "planning", "director", "hr"],
   },
   {
     id: "department",
     href: "/organizer/department",
     icon: Building2,
     label: "หน่วยงาน",
+    allow: ["hr", "admin"],
+  },
+  {
+    id: "users",
+    href: "/organizer/users",
+    icon: Users,
+    label: "พนักงาน",
     allow: ["hr", "admin"],
   },
   {
@@ -75,6 +84,7 @@ export const MENU: MenuItem[] = [
     ],
   },
 ];
+
 export const canSeeMenuHandler = (role: RoleKey, item: MenuItem) => {
   if (item.deny?.includes(role)) return false;
   if (!item.allow) return true;

@@ -14,7 +14,7 @@ export async function GET() {
     );
   }
 
-  const r = await nestGet<Department[]>("/api/department", {
+  const r = await nestGet<{ data: Department[]; total: number }>("/departments", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -27,5 +27,7 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ success: true, data: r.data ?? [] });
+  // Backend returns { data: [...], total: 8 }
+  const departments = r.data?.data ?? [];
+  return NextResponse.json({ success: true, data: departments });
 }

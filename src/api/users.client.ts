@@ -4,7 +4,7 @@ import type {
   UpdateUserStatusRequest,
   GetUserRespond,
 } from "@/dto/userDto";
-import { clientFetch } from "@/lib/client-api";
+import { clientFetch, clientFetchArray } from "@/lib/client-api";
 /* -------------------- query -------------------- */
 
 /**
@@ -37,7 +37,7 @@ export async function GetUserByOrgFromApi(
       qs.set("status", filter);
     }
 
-    const r = await clientFetch<{
+    const r = await clientFetchArray<{
       data: GetUserRespond[];
       total: number;
       page: number;
