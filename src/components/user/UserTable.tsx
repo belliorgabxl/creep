@@ -87,7 +87,7 @@ type User = {
   title?: string;
   email?: string;
   department?: string;
-  department_name?: string;
+  department_name?: string | null;
   status?: "Active" | "On leave" | "Inactive" | string;
   isActive?: boolean;
 };
