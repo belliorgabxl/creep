@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { nestGet } from "@/lib/server-api";
+import type { OrganizationResponse } from "@/dto/organizationDto";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -10,23 +12,32 @@ export async function GET() {
     );
   }
 
-  // Return user data in flat format
+  // Fetch organization name if org_id is available
+  let organization_name: string | null = null;
+  if (user.org_id) {
+    const orgRes = await nestGet<OrganizationResponse>(`/organizations/${user.org_id}`);
+    if (orgRes.success && orgRes.data?.name) {
+      organization_name = orgRes.data.name;
+    }
+  }
+
+  const fullName = user.name ?? user.username;
+
   return NextResponse.json({
     authenticated: true,
     id: user.sub,
+    name: fullName,
+    full_name: fullName,
     organization_id: user.org_id ?? null,
+    organization_name,
     department_id: user.department_id ?? null,
-    department_name: null, // TODO: Fetch from department API if needed
-    is_active: true, // TODO: Add is_active to user claims if needed
+    department_name: null,
+    is_active: true,
     role: user.role ?? null,
     role_code: user.role ?? null,
     approval_level: user.approval_level ?? 0,
     username: user.username,
-    email: null, // TODO: Add email to user claims if needed
-    position: null, // TODO: Add position to user claims if needed
-    first_name: null, // TODO: Add first_name to user claims if needed
-    last_name: null, // TODO: Add last_name to user claims if needed
-    full_name: user.name ?? user.username,
-    last_login_at: null, // TODO: Add last_login_at to user claims if needed
+    email: null,
+    position: null,
   });
 }
