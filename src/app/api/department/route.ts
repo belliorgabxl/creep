@@ -23,7 +23,7 @@ export async function GET() {
   if (!r.success) {
     return NextResponse.json(
       { success: false, message: r.message },
-      { status: 400 }
+      { status: r.status ?? 400 }
     );
   }
 

@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import ApiClient from "@/lib/api-clients";
 import { decodeExternalJwt, signUserToken } from "@/lib/auth";
 
+const AUTH_COOKIES = ["auth_token", "api_token", "refresh_token", "token_exp"] as const;
+
+function clearSession(res: NextResponse) {
+  for (const name of AUTH_COOKIES) {
+    res.cookies.set(name, "", { maxAge: 0, path: "/" });
+  }
+  return res;
+}
+
+// Cookie maxAge must reflect each token's own exp claim — see login/route.ts.
+function maxAgeFromJwt(token: string | undefined, fallbackSec: number): number {
+  if (!token) return fallbackSec;
+  const claims = decodeExternalJwt<{ exp?: number }>(token);
+  if (typeof claims?.exp !== "number") return fallbackSec;
+  const sec = claims.exp - Math.floor(Date.now() / 1000);
+  return sec > 0 ? sec : 0;
+}
+
 export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === "production";
 
@@ -21,7 +39,7 @@ export async function POST(req: NextRequest) {
     const data: any = res?.data ?? {};
 
     const newExternalToken: string = data?.token || data?.access_token || data?.jwt;
-    const newRefreshToken: string = data?.refresh_token || refreshToken;
+    const newRefreshToken: string | undefined = data?.refresh_token;
 
     if (!newExternalToken) {
       return NextResponse.json({ success: false, message: "No token returned" }, { status: 401 });
@@ -44,19 +62,23 @@ export async function POST(req: NextRequest) {
       department_id: claims.department_id || claims.dept_id || undefined,
     };
 
-    // Sign new frontend JWT valid for 1 hour
-    const TTL = 60 * 60;
-    const ourJwt = await signUserToken(userForOurJwt, TTL);
+    const apiTokenMaxAge = maxAgeFromJwt(newExternalToken, 3600);
+    const refreshTokenMaxAge = maxAgeFromJwt(newRefreshToken, 30 * 24 * 3600);
+    // Our session wrapper must not outlive the refresh token backing it.
+    const authTokenMaxAge = Math.min(apiTokenMaxAge || 3600, refreshTokenMaxAge || 3600);
+
+    const ourJwt = await signUserToken(userForOurJwt, authTokenMaxAge);
 
     const response = NextResponse.json({ success: true });
 
-    // token_exp readable by JS so SessionGuard can detect approaching expiry
-    response.cookies.set("token_exp", String(Math.floor(Date.now() / 1000) + TTL), {
+    // token_exp readable by JS so SessionGuard can detect approaching expiry —
+    // must track api_token's real exp, not the frontend-chosen auth_token TTL.
+    response.cookies.set("token_exp", String(Math.floor(Date.now() / 1000) + apiTokenMaxAge), {
       httpOnly: false,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: TTL,
+      maxAge: apiTokenMaxAge,
     });
 
     response.cookies.set("auth_token", ourJwt, {
@@ -64,7 +86,7 @@ export async function POST(req: NextRequest) {
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: TTL,
+      maxAge: authTokenMaxAge,
     });
 
     response.cookies.set("api_token", newExternalToken, {
@@ -72,7 +94,7 @@ export async function POST(req: NextRequest) {
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: TTL,
+      maxAge: apiTokenMaxAge,
     });
 
     if (newRefreshToken) {
@@ -81,18 +103,24 @@ export async function POST(req: NextRequest) {
         secure: isProd,
         sameSite: isProd ? "none" : "lax",
         path: "/",
-        maxAge: 30 * 24 * 3600,
+        maxAge: refreshTokenMaxAge,
       });
     }
 
     return response;
   } catch (err: any) {
-    // Refresh failed — clear all tokens
-    const resFail = NextResponse.json({ success: false, message: "Refresh failed" }, { status: 401 });
-    resFail.cookies.set("auth_token", "", { maxAge: 0, path: "/" });
-    resFail.cookies.set("api_token", "", { maxAge: 0, path: "/" });
-    resFail.cookies.set("refresh_token", "", { maxAge: 0, path: "/" });
-    return resFail;
+    // Only a definitive rejection from the backend (401/403 — refresh token is
+    // genuinely invalid or expired) should clear the session. A network error,
+    // timeout, or 5xx is transient — clearing cookies here would log the user
+    // out for a problem that might resolve on the very next request.
+    const status = err?.response?.status;
+    const shouldClear = status === 401 || status === 403;
+
+    const resFail = NextResponse.json(
+      { success: false, message: "Refresh failed" },
+      { status: shouldClear ? 401 : 503 }
+    );
+    return shouldClear ? clearSession(resFail) : resFail;
   }
 }
 
@@ -112,16 +140,19 @@ export async function GET(req: NextRequest) {
   });
 
   if (!r.ok) {
-    const res = NextResponse.redirect(new URL("/login", req.url));
-    res.cookies.set("auth_token", "", { maxAge: 0, path: "/" });
-    res.cookies.set("api_token", "", { maxAge: 0, path: "/" });
-    res.cookies.set("refresh_token", "", { maxAge: 0, path: "/" });
-    return res;
+    // A transient (503) failure should not force a logout — send the user back
+    // to where they were and let the next request retry the refresh.
+    if (r.status !== 401) {
+      return NextResponse.redirect(new URL(redirect, req.url));
+    }
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("reason", "expired");
+    return clearSession(NextResponse.redirect(loginUrl));
   }
 
   const res = NextResponse.redirect(new URL(redirect, req.url));
-  const setCookie = r.headers.get("set-cookie");
-  if (setCookie) res.headers.append("set-cookie", setCookie);
+  for (const cookie of r.headers.getSetCookie()) {
+    res.headers.append("set-cookie", cookie);
+  }
   return res;
 }
-

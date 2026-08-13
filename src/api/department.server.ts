@@ -18,25 +18,17 @@ export type DepartmentListResponse = {
 export async function GetDepartmentsByOrgFromApiServer(
   orgId: string
 ): Promise<DepartmentListResponse> {
-  try {
-    const r = await nestFetch<DepartmentListResponse>(`/departments/${orgId}`, {
-      method: "GET",
+  const r = await nestFetch<DepartmentListResponse>(`/departments/${orgId}`, {
+    method: "GET",
+  });
+
+  if (!r.success) {
+    throw Object.assign(new Error(r.message || "Failed to fetch departments"), {
+      status: r.status ?? 400,
     });
-
-    if (!r.success) {
-      console.warn(`[GetDepartmentsByOrgFromApiServer] Backend API failed:`, r.message);
-      return {
-        data: [],
-      };
-    }
-
-    return r.data ?? { data: [] };
-  } catch (error) {
-    console.error("[GetDepartmentsByOrgFromApiServer] Error:", error);
-    return {
-      data: [],
-    };
   }
+
+  return r.data ?? { data: [] };
 }
 
 export async function UpdateDepartmentFromApiServer(
