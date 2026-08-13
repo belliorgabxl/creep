@@ -8,6 +8,18 @@ function pickSafeMessage(data: any) {
   return data?.message || data?.error || "";
 }
 
+// Returns the seconds-from-now a token is actually valid for, read from its own
+// exp claim — cookie maxAge must track the JWT's real lifetime, not a value the
+// frontend picks independently, or the cookie can outlive (or expire before) the
+// token it holds.
+function maxAgeFromJwt(token: string | undefined, fallbackSec: number): number {
+  if (!token) return fallbackSec;
+  const claims = decodeExternalJwt<{ exp?: number }>(token);
+  if (typeof claims?.exp !== "number") return fallbackSec;
+  const sec = claims.exp - Math.floor(Date.now() / 1000);
+  return sec > 0 ? sec : 0;
+}
+
 async function loginExternal(username: string, password: string) {
   const baseURL = process.env.API_BASE_URL;
   if (!baseURL) throw new Error("Missing API_BASE_URL");
@@ -107,8 +119,22 @@ export async function POST(req: Request) {
       department_id: claims.department_id || claims.dept_id || undefined,
     };
 
+    // ดึง refresh token จาก raw (response จาก external API)
+    const externalRefreshToken: string | undefined =
+      raw?.refresh_token || raw?.data?.refresh_token || undefined;
+
+    // Cookie maxAge must reflect each token's own exp claim — api_token and
+    // refresh_token are signed by the backend independently of anything the
+    // frontend decides here.
+    const apiTokenMaxAge = maxAgeFromJwt(externalToken, 3600);
+    const refreshTokenMaxAge = maxAgeFromJwt(externalRefreshToken, 30 * 24 * 3600);
+
     const hours = (n: number) => n * 3600;
-    const expiretoken = remember ? hours(24 * 7) : hours(1);
+    const requested = remember ? hours(24 * 7) : hours(1);
+    // Our own session wrapper must never outlive the refresh token backing it —
+    // otherwise auth_token still verifies while the backend has no way to renew
+    // the underlying api_token, and the user is stuck logged in with dead data.
+    const expiretoken = Math.min(requested, refreshTokenMaxAge || requested);
 
     const ourJwt = await signUserToken(userForOurJwt, expiretoken);
 
@@ -118,9 +144,6 @@ export async function POST(req: Request) {
     );
 
     const isProd = process.env.NODE_ENV === "production";
-
-    // ดึง refresh token จาก raw (response จาก external API)
-    const externalRefreshToken = raw?.refresh_token || raw?.data?.refresh_token || undefined;
 
     // เซ็ต auth_token (httpOnly)
     res.cookies.set("auth_token", ourJwt, {
@@ -138,28 +161,28 @@ export async function POST(req: Request) {
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: expiretoken,
+      maxAge: apiTokenMaxAge,
       priority: "high",
     });
 
-    // เซ็ต token_exp (readable by JS) เพื่อให้ SessionGuard อ่านเวลาหมดอายุได้
-    res.cookies.set("token_exp", String(Math.floor(Date.now() / 1000) + expiretoken), {
+    // เซ็ต token_exp (readable by JS) เพื่อให้ SessionGuard อ่านเวลาหมดอายุได้ —
+    // ต้องอ้างอิง exp จริงของ api_token ไม่ใช่ของ auth_token
+    res.cookies.set("token_exp", String(Math.floor(Date.now() / 1000) + apiTokenMaxAge), {
       httpOnly: false,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: expiretoken,
+      maxAge: apiTokenMaxAge,
     });
 
-    // เซ็ต refresh_token เป็น httpOnly cookie (ตัวอย่าง 30 วัน)
-    const refreshMaxAge = 30 * 24 * 3600; // 30 days in seconds
+    // เซ็ต refresh_token เป็น httpOnly cookie
     if (externalRefreshToken) {
       res.cookies.set("refresh_token", externalRefreshToken, {
         httpOnly: true,
         secure: isProd,
         sameSite: isProd ? "none" : "lax",
         path: "/",
-        maxAge: refreshMaxAge,
+        maxAge: refreshTokenMaxAge,
         priority: "high",
       });
     }

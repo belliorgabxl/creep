@@ -7,9 +7,10 @@ const PUBLIC_EXACT = new Set([
   "/login",
   "/forgot-password",
   "/403",
-  "/auth/refresh",
 ]);
 const PUBLIC_PREFIXES: string[] = [];
+
+const AUTH_COOKIES = ["auth_token", "api_token", "refresh_token", "token_exp"] as const;
 
 const secret = process.env.JWT_SECRET;
 if (!secret) throw new Error("Missing JWT_SECRET");
@@ -24,13 +25,20 @@ function pathStarts(pathname: string, base: string) {
   return pathname === base || pathname.startsWith(base + "/");
 }
 
+function clearSession(res: NextResponse) {
+  for (const name of AUTH_COOKIES) {
+    res.cookies.set(name, "", { maxAge: 0, path: "/" });
+  }
+  return res;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const token = request.cookies.get("auth_token")?.value ?? null;
   const refreshToken = request.cookies.get("refresh_token")?.value ?? null;
 
   if (isPublicPath(pathname)) {
-    if (pathname !== "/403" && pathname !== "/auth/refresh" && token) {
+    if (pathname !== "/403" && token) {
       try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const role = typeof payload.role === "string" ? payload.role : "";
@@ -48,13 +56,16 @@ export async function middleware(request: NextRequest) {
   if (!token) {
     // No auth_token at all
     if (refreshToken) {
-      // Try silent refresh — redirect to GET /auth/refresh which re-issues cookies and bounces back
-      const refreshUrl = new URL("/auth/refresh", request.url);
+      // Try silent refresh — redirect to the refresh route handler, which re-issues
+      // cookies and bounces back. This must point at /api/auth/refresh: the actual
+      // handler lives at src/app/api/auth/refresh/route.ts, not a page route.
+      const refreshUrl = new URL("/api/auth/refresh", request.url);
       refreshUrl.searchParams.set("redirect", destination);
       return NextResponse.redirect(refreshUrl);
     }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", destination);
+    loginUrl.searchParams.set("reason", "expired");
     return NextResponse.redirect(loginUrl);
   }
 
@@ -65,7 +76,7 @@ export async function middleware(request: NextRequest) {
     // auth_token expired or invalid
     if (refreshToken) {
       // Silent refresh
-      const refreshUrl = new URL("/auth/refresh", request.url);
+      const refreshUrl = new URL("/api/auth/refresh", request.url);
       refreshUrl.searchParams.set("redirect", destination);
       const res = NextResponse.redirect(refreshUrl);
       // Clear expired auth_token so the next request doesn't loop
@@ -74,20 +85,17 @@ export async function middleware(request: NextRequest) {
     }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", destination);
-    const res = NextResponse.redirect(loginUrl);
-    res.cookies.delete("auth_token");
-    res.cookies.delete("api_token");
-    return res;
+    loginUrl.searchParams.set("reason", "expired");
+    return clearSession(NextResponse.redirect(loginUrl));
   }
 
   const role = payload.role;
   const approval_level = payload.approval_level || 0;
-  
+
   if (!role) {
-    const res = NextResponse.redirect(new URL("/login", request.url));
-    res.cookies.delete("auth_token");
-    res.cookies.delete("api_token");
-    return res;
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("reason", "expired");
+    return clearSession(NextResponse.redirect(loginUrl));
   }
 
   const forbid = () => NextResponse.redirect(new URL("/403", request.url));

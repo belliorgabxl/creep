@@ -55,6 +55,14 @@ function LoginInner() {
     safeInternalRedirect(sp.get("redirect")) ??
     safeInternalRedirect(sp.get("callbackUrl"));
 
+  const reason = sp.get("reason");
+  const reasonMessage =
+    reason === "inactive"
+      ? "คุณไม่ได้ใช้งานเป็นเวลานาน ระบบจึงออกจากระบบให้อัตโนมัติ"
+      : reason === "expired"
+      ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+      : null;
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -252,6 +260,12 @@ function LoginInner() {
                       จดจำการเข้าสู่ระบบ
                     </label>
                   </div>
+
+                  {!error && reasonMessage && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                      {reasonMessage}
+                    </div>
+                  )}
 
                   {error && (
                     <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
