@@ -14,7 +14,14 @@ export async function clientFetch<T>(
 
     if (res.status === 401) {
       if (typeof window !== "undefined") {
-        window.location.href = "/login";
+        // A dead backend session (api_token/refresh_token) can coexist with a
+        // still-valid auth_token — our own wrapper JWT outlives what it wraps
+        // (e.g. right after a breaking auth deploy on an already-open tab).
+        // Middleware only checks auth_token, so redirecting to /login without
+        // clearing cookies first bounces straight back to the app and loops.
+        // Clear the session cookies before navigating so /login actually sticks.
+        await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+        window.location.href = "/login?reason=expired";
       }
       return { success: false, message: "Unauthenticated" } as any;
     }
@@ -39,6 +46,17 @@ export async function clientFetchArray<T>(
       ...init,
       headers: { Accept: "application/json", ...(init?.headers ?? {}) },
     });
+
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        // See clientFetch — must clear session cookies before navigating,
+        // or a still-valid auth_token bounces straight back from /login.
+        await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+        window.location.href = "/login?reason=expired";
+      }
+      return { success: false, message: "Unauthenticated" };
+    }
+
     const json = await res.json().catch(() => null);
 
     if (!res.ok) {

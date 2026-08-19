@@ -131,9 +131,9 @@ export async function middleware(request: NextRequest) {
     if (["hr", "admin", "planning"].includes(role)) return forbid();
   }
 
-  // /organizer/department - ต้องเป็น hr หรือ admin
+  // /organizer/department - ต้องเป็น hr, admin หรือ director
   if (pathStarts(pathname, "/organizer/department")) {
-    if (!["hr", "admin"].includes(role)) return forbid();
+    if (!["hr", "admin", "director"].includes(role)) return forbid();
   }
 
   // /admin - ต้องเป็น admin
