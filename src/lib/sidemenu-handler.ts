@@ -49,7 +49,7 @@ export const MENU: MenuItem[] = [
     href: "/organizer/department",
     icon: Building2,
     label: "หน่วยงาน",
-    allow: ["hr"],
+    allow: ["hr", "director"],
     deny: ["admin"],
   },
   {
@@ -57,7 +57,7 @@ export const MENU: MenuItem[] = [
     href: "/organizer/users",
     icon: Users,
     label: "พนักงาน",
-    allow: ["hr"],
+    allow: ["hr", "director"],
     deny: ["admin"],
   },
   {
