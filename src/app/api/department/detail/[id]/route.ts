@@ -25,7 +25,7 @@ export async function GET(
       console.error("[API] Backend failed:", r.message);
       return NextResponse.json(
         { success: false, message: r.message },
-        { status: 400 }
+        { status: r.status ?? 400 }
       );
     }
 

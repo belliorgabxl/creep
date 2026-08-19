@@ -3,7 +3,7 @@ import { clientFetch } from "@/lib/client-api";
 
 export async function fetchDepartments(): Promise<Department[]> {
   const r = await clientFetch<{ data?: Department[] } | Department[]>("/api/department", { cache: "no-store" });
-  if (!r.success) return [];
+  if (!r.success) throw new Error(r.message || "โหลดข้อมูลหน่วยงานไม่สำเร็จ");
   const body = r.data as any;
   return Array.isArray(body) ? body : (body?.data ?? []);
 }

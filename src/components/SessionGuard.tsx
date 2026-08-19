@@ -11,17 +11,20 @@ const REFRESH_BEFORE_EXPIRY_MS = 5 * 60 * 1000;
 const CHECK_INTERVAL_MS = 60 * 1000;
 
 const ACTIVITY_EVENTS = ["mousemove", "keydown", "click", "scroll", "touchstart"] as const;
+const LAST_ACTIVITY_KEY = "ebudget_last_activity";
 
 function getTokenExp(): number | null {
-  // auth_token is httpOnly, so we read from a lightweight non-httpOnly indicator
-  // OR we parse the exp from a cookie we control.
-  // Since we don't have a readable exp cookie, we'll rely on the
-  // /api/auth/refresh endpoint returning 401 as the signal.
-  // This function reads a "token_exp" cookie set during login/refresh.
+  // token_exp is a lightweight non-httpOnly cookie set during login/refresh,
+  // tracking api_token's real exp claim (auth_token itself stays httpOnly).
   const match = document.cookie.match(/(?:^|;\s*)token_exp=([^;]+)/);
   if (!match) return null;
   return parseInt(match[1], 10) || null;
 }
+
+// Module-scope so every SessionGuard instance (and re-render) shares one
+// in-flight refresh — otherwise the periodic check and an activity-triggered
+// check can race, and the response that lands second can undo the first.
+let inflightRefresh: Promise<boolean> | null = null;
 
 export default function SessionGuard() {
   const router = useRouter();
@@ -29,21 +32,38 @@ export default function SessionGuard() {
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const logout = useCallback(() => {
-    router.push("/login?reason=inactive");
-  }, [router]);
+  const logout = useCallback(async () => {
+    try {
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+    } catch {}
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {}
+    // Hard navigation clears all client-side Next.js cache/state, not just the route.
+    window.location.replace("/login?reason=inactive");
+  }, []);
 
   const tryRefresh = useCallback(async (): Promise<boolean> => {
-    try {
-      const res = await fetch("/api/auth/refresh", { method: "POST" });
-      return res.ok;
-    } catch {
-      return false;
-    }
+    if (inflightRefresh) return inflightRefresh;
+    inflightRefresh = (async () => {
+      try {
+        const res = await fetch("/api/auth/refresh", { method: "POST" });
+        return res.ok;
+      } catch {
+        return false;
+      } finally {
+        inflightRefresh = null;
+      }
+    })();
+    return inflightRefresh;
   }, []);
 
   const resetInactivityTimer = useCallback(() => {
-    lastActivityRef.current = Date.now();
+    const now = Date.now();
+    lastActivityRef.current = now;
+    try {
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(now));
+    } catch {}
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
     inactivityTimerRef.current = setTimeout(logout, INACTIVE_MS);
   }, [logout]);
@@ -76,6 +96,17 @@ export default function SessionGuard() {
   }, [tryRefresh, logout]);
 
   useEffect(() => {
+    // If the tab was closed/reloaded past the inactivity window, honor that
+    // instead of granting a fresh INACTIVE_MS on every reload.
+    let saved = 0;
+    try {
+      saved = Number(localStorage.getItem(LAST_ACTIVITY_KEY) || 0);
+    } catch {}
+    if (saved && Date.now() - saved >= INACTIVE_MS) {
+      logout();
+      return;
+    }
+
     // Start inactivity timer
     resetInactivityTimer();
 
@@ -91,7 +122,7 @@ export default function SessionGuard() {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
     };
-  }, [resetInactivityTimer, checkAndRefresh]);
+  }, [resetInactivityTimer, checkAndRefresh, logout]);
 
   return null;
 }
