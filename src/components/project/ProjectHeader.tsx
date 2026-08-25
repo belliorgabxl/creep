@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Eye, BookOpen } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 type ProjectsHeaderProps = {
   title?: string;
@@ -22,17 +22,6 @@ export function ProjectsHeader({
       </div>
 
       <div className="flex items-center gap-2">
-        {showCreateButton && (
-          <Link
-            href="/organizer/projects/regular-work-project/new"
-            className="inline-flex items-center gap-2 rounded-lg border border-indigo-200
-              bg-white px-3.5 py-2 text-sm font-medium text-indigo-700 transition-colors
-              hover:bg-indigo-50"
-          >
-            <BookOpen className="h-4 w-4" />
-            แผนงานประจำ
-          </Link>
-        )}
         {showCreateButton && (
           <Link
             href="/organizer/projects/new"
