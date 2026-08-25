@@ -1,8 +1,9 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, Save, ListChecks, Briefcase } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Save, ListChecks, Briefcase, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ActivitiesRow,
@@ -532,9 +533,20 @@ export default function CreateProjectPage() {
                 <ChevronLeft className="h-4 w-4" /> ย้อนกลับ
               </button>
             </div>
-            <p className="text-base font-medium text-gray-700">
-              เลือกแผนงานประจำ
-            </p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-base font-medium text-gray-700">
+                เลือกแผนงานประจำ
+              </p>
+              <Link
+                href="/organizer/projects/regular-work-project/new"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200
+                  bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors
+                  hover:bg-indigo-50 shrink-0"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                เพิ่มแผนงานประจำ
+              </Link>
+            </div>
             <input
               type="text"
               value={templateSearch}
@@ -548,9 +560,18 @@ export default function CreateProjectPage() {
                 <Loader2 className="animate-spin h-6 w-6 text-indigo-600" />
               </div>
             ) : filteredTemplates.length === 0 ? (
-              <p className="text-sm text-gray-500 py-6 text-center">
-                ไม่พบแผนงานประจำในระบบ
-              </p>
+              <div className="py-6 text-center space-y-2">
+                <p className="text-sm text-gray-500">
+                  {templateSearch ? "ไม่พบแผนงานประจำที่ค้นหา" : "ยังไม่มีแผนงานประจำในระบบ"}
+                </p>
+                <Link
+                  href="/organizer/projects/regular-work-project/new"
+                  className="inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:underline"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  เพิ่มแผนงานประจำใหม่
+                </Link>
+              </div>
             ) : (
               <ul className="divide-y border rounded-lg overflow-hidden">
                 {filteredTemplates.map((t) => (
