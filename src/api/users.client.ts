@@ -321,13 +321,13 @@ export async function UpdateUserStatusFromApi(
  */
 export async function UpdateUserFromApi(
   payload: UpdateUserRequest
-): Promise<boolean> {
+): Promise<{ success: boolean; message?: string }> {
   const r = await clientFetch("/api/users/details", {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
 
-  return r.success;
+  return { success: r.success, message: r.success ? undefined : r.message };
 }
 
 /**

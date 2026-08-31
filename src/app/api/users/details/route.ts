@@ -3,12 +3,12 @@ import { UpdateUserFromApiServer } from "@/api/users.server";
 
 export async function PATCH(req: Request) {
   const payload = await req.json();
-  const ok = await UpdateUserFromApiServer(payload);
+  const r = await UpdateUserFromApiServer(payload);
 
-  if (!ok) {
+  if (!r.success) {
     return NextResponse.json(
-      { success: false },
-      { status: 400 }
+      { success: false, message: r.message },
+      { status: r.status ?? 400 }
     );
   }
 

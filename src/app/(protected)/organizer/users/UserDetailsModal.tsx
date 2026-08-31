@@ -213,9 +213,10 @@ export default function UserDetailsModal({ open, user, loading, error, onClose, 
     try {
       const payload: any = {
         user_id: (editData as any).id ?? (user as any)?.id ?? "",
+        username: (editData as any).username ?? "",
         email: (editData as any).email ?? "",
         first_name: (editData as any).first_name ?? "",
-        lastname: (editData as any).last_name ?? (editData as any).lastname ?? "",
+        last_name: (editData as any).last_name ?? "",
         position: (editData as any).position ?? "",
         role_id: selectedRoleId ?? 0,
         department_id: String((editData as any).department_id ?? ""),
@@ -226,14 +227,15 @@ export default function UserDetailsModal({ open, user, loading, error, onClose, 
         if (maybe) payload.role_id = maybe.id;
       }
 
-      const ok = await UpdateUserFromApi(payload);
-      if (ok) {
+      const result = await UpdateUserFromApi(payload);
+      if (result.success) {
         const updatedUser: GetUserRespond = {
           ...(localUser ?? (user as GetUserRespond) ?? ({} as GetUserRespond)),
           id: payload.user_id,
+          username: payload.username,
           email: payload.email,
           first_name: payload.first_name,
-          last_name: payload.lastname,
+          last_name: payload.last_name,
           position: payload.position,
           department_id: payload.department_id,
           department_name: departments.find((d) => d.id === payload.department_id)?.name ?? (localUser ?? user)?.department_name,
@@ -256,7 +258,7 @@ export default function UserDetailsModal({ open, user, loading, error, onClose, 
         } catch {}
       } else {
         try {
-          push("error", "บันทึกไม่สำเร็จ", "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์");
+          push("error", "บันทึกไม่สำเร็จ", result.message || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์");
         } catch {}
       }
     } catch (err) {

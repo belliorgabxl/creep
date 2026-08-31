@@ -184,12 +184,14 @@ export async function UpdateUserStatusFromApiServer(
 
 export async function UpdateUserFromApiServer(
   payload: UpdateUserRequest
-): Promise<boolean> {
+): Promise<{ success: boolean; message?: string; status?: number }> {
   const r = await nestFetch("/users/details", {
     method: "PATCH",
     body: JSON.stringify(payload),
     headers: { "Content-Type": "application/json" },
   });
 
-  return r.success;
+  return r.success
+    ? { success: true }
+    : { success: false, message: r.message, status: r.status };
 }
